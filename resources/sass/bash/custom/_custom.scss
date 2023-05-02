@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:100,300,400,500,600,700,800,900&display=swap&subset=cyrillic-ext');
+@import "~boxicons/css/boxicons.min";
+
+body{
+    font-family: 'Fira Sans', sans-serif;
+}
+
+.timeline {
+    .form-group {
+      padding-bottom: 15px;
+    }
+    legend span {
+      font-weight: bold;
+    }
+    &::before {
+      display: none;
+    }
+    .fa-check-circle {
+      color: #4fe455;
+      font-size: 16pt;
+    }
+    .fa-check-circle-o {
+      color: #f44336;
+      font-size: 16pt;
+    }
+    .entry {
+      display: table;
+      width: 100%;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #dae1f4;
+    }
+    .entry-img {
+      display: inline-block !important;
+    }
+    .entry {
+      &.no-border {
+        border: none;
+        > * {
+          border: none;
+        }
+      }
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      > * {
+        display: table-cell;
+        vertical-align: middle;
+      }
+      .title, .body {
+        float: none;
+        margin: 0;
+      }
+      .title {
+        font-weight: 400;
+        width: 20%;
+        padding-right: 2rem;
+        border-right: 1px solid #eee;
+        &::before {
+          display: none;
+        }
+        h3 {
+          font-size: 1rem;
+          margin: 0;
+          white-space: nowrap;
+          color: #5d77bc;
+        }
+      }
+      .body {
+        width: 100%;
+        padding: 0 2rem;
+        p {
+          font-size: 1.1rem;
+          font-weight: 300;
+          line-height: 1.5rem;
+          margin-bottom: 0;
+          color: #16236c;
+          a {
+            color: #ff315c;
+          }
+          img {
+            height: 80px;
+            width: auto !important;
+          }
+          &:first-child {
+            font-weight: 500;
+          }
+        }
+        ul li {
+          font-family: "Roboto", sans-serif;
+          font-weight: 500;
+          font-size: .875rem;
+          color: #5d77bc;
+          &::before {
+            display: none;
+          }
+        }
+      }
+      .actions {
+        padding-left: 2rem;
+        white-space: nowrap;
+        a {
+          display: inline-block;
+          margin-right: .5rem;
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+    .status {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-clip: padding-box;
+      /* stops bg color from leaking outside the border: */
+      &.status-active {
+        background: #00CC99;
+      }
+      &.status-inactive {
+        background: #ff315c;
+      }
+    }
+    .fa-check-circle {
+      color: #4fe455;
+      font-size: 16pt;
+    }
+    .fa-check-circle-o {
+      color: #ff5722;
+      font-size: 16pt;
+    }
+}
+
+
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 27px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #00CC99;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 6px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 6px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 26px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+  left: 45px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+      transform: scale(0);
+  }
+  100% {
+      transform: scale(1);
+}
+}
+@keyframes lds-ellipsis3 {
+  0% {
+      transform: scale(1);
+  }
+  100% {
+      transform: scale(0);
+  }
+}
+@keyframes lds-ellipsis2 {
+  0% {
+      transform: translate(0, 0);
+  }
+  100% {
+      transform: translate(19px, 0);
+  }
+}
+
+.fr-wrapper > div:first-child:not(.fr-element){
+  display: none;
+}

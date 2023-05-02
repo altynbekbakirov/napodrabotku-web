@@ -1,0 +1,198 @@
+@media (max-width: 577px) {
+}
+
+@media (max-width: 768px) {
+
+}
+
+@media (max-width: 992px){
+
+    #left-nav {
+        &-user{
+            display: none !important;
+        }
+
+        &-close{
+            // display: block;
+            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            right: -25px;
+            color: #fff;
+        }
+        .left{
+            &-nav{
+                &-left{
+                    .nav{
+                        &-locale{
+                            margin: 0 auto;
+                        }
+                    }
+                }
+                &-right{
+                    .navbar{
+                        &-nav{
+                            margin: 0 auto;
+                        }
+                    }
+                    .nav{
+                        &-social{
+                            margin: 15px 0;
+                            ul{
+                                text-align: center;
+                                li{
+                                    display: inline-block;
+                                }
+                            }
+                        }
+
+                        &-phone{
+                            margin-bottom: 15px;
+                            text-align: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #right-nav {
+        display: flex !important;
+        flex-direction: column !important;
+        flex-grow: 1 !important;
+        height: 100% !important;
+        display: block;
+        z-index: 2002;
+
+        &-close{
+            // display: block;
+            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            left: -25px;
+            color: #fff;
+        }
+
+        .navbar{
+            &-bottom{
+                padding: 0;
+                overflow-y: scroll;
+                height: 100%;
+                display: inline-block;
+                .nav{
+                    &-item{
+                        display: block;
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+
+    .navbar{
+        &-brand{
+            margin: 0;
+            padding: 0;
+            img{
+                margin: 0;
+                height: 40px;
+                width: auto;
+            }
+            &-text{
+                display: none;
+            }
+        }
+    }
+
+    .main{
+        height: 250px;
+
+        .form{
+            &-search{
+                max-width: 90%;
+            }
+        }
+    }
+
+    .card-block{
+        &-primary, &-second{
+            height: 60px !important;
+            margin-bottom: 10px !important;
+            box-shadow: none !important;
+
+            i{
+                font-size: 30px !important;
+            }
+        }
+    }
+
+    .slide{
+        height: 100%;
+        &-item{
+            h4{
+                font-size: 1.2rem;
+
+            }
+            &-desc{
+                line-height: normal;
+            }
+            img{
+                padding: 30px 15px 30px;
+            }
+            .media{
+                &-body{
+                    padding: 0 30px;
+                }
+            }
+        }
+        &-controls{
+            padding: 0 15px;
+            &-numbers{
+                display: none;
+            }
+        }
+    }
+
+    .feedback{
+        height: 800px;
+        &-desc{
+            margin-bottom: 15px;
+        }
+    }
+
+    .btn{
+        &-more{
+            &-white{
+                padding: 0.3rem 0.5rem;
+            }
+        }
+    }
+
+}
+
+// MIN WIDTH
+@media (min-width: 992px) {
+    #left-nav, #right-nav {
+        position: -webkit-sticky;
+        position: sticky;
+        top: auto;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+        width: auto;
+        height: auto;
+        width: 100%;
+        padding: inherit;
+        display: contents;
+    }
+    #hamburger-menu, #user-menu  {
+        display: none;
+    }
+    #left-nav {
+        right: auto;
+    }
+    #right-nav {
+        left: auto;
+        // display: none;
+    }
+}

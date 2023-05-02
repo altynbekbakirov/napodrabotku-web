@@ -1,0 +1,12 @@
+@mixin transition {
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -o-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+}
+
+@mixin boxshadow {    
+    -webkit-box-shadow: 0px 3px 12px 0px rgba(200, 200, 200, 0.3);
+    -moz-box-shadow: 0px 3px 12px 0px rgba(200, 200, 200, 0.3);
+    box-shadow: 0px 3px 12px 0px rgba(200, 200, 200, 0.3);
+}

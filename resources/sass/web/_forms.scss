@@ -1,0 +1,63 @@
+.form{
+    &-search{
+        position: relative;
+        max-width: 600px;
+        width: 100%;
+        margin: 0 auto;
+        input{
+            padding: 1rem;
+            width: 100%;
+            border: none;
+            border-radius: 3px;
+            color: $primary-color;
+
+            box-shadow: 0px 20px 30px 0px rgba($color: $primary-color, $alpha: 0.3);
+            
+            &:focus{
+                &::-webkit-input-placeholder{color: transparent;}
+                &::-moz-placeholder{color: transparent;}
+                &:-ms-input-placeholder{color: transparent;}
+                &::placeholder{color: transparent;}
+            }
+
+            &::-webkit-input-placeholder{color: rgba($color: #000, $alpha: 0.6);}
+            &::-moz-placeholder{color: rgba($color: #000, $alpha: 0.6);}
+            &:-ms-input-placeholder{color: rgba($color: #000, $alpha: 0.6);}
+            &::placeholder{color: rgba($color: #000, $alpha: 0.6);}
+        }
+        
+        .submit-search{
+            position: absolute;
+            z-index: 3;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            
+            color: #929ca5;
+
+            i{
+                position: relative;
+                top: 3px;
+                padding-right: 10px;
+                font-size: 18px;
+            }
+            span{
+                padding-left: 10px;
+                color: $primary-color;
+            }
+            &:hover{
+                color: $gray;
+            }
+
+            &:hover, &:focus{
+                outline: none;
+                box-shadow: none;
+                border-color: none;
+            }
+        }
+        .btn:active{
+            box-shadow: none;
+            -webkit-box-shadow:none;
+        }
+    }
+}

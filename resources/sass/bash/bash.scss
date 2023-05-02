@@ -1,0 +1,56 @@
+//
+//** Default Stylesheets
+//
+
+////////////////////////////////////////////////////////////////
+///////////// DO NOT MODIFY BELOW INCLUDE ORDER ////////////////
+////////////////////////////////////////////////////////////////
+//== 1: Framework Config
+@import "main/framework-config";  // demo level framework config override
+@import "main/default/framework/config"; // metronic framework config
+@import "main/default/framework/vendors/bootstrap/variables"; // metronic bootstrap override config
+
+//== 2: Framework Components Config
+@import "main/default/framework/components/base/config";
+@import "main/default/framework/components/general/config";
+
+//== 3: Bootstrap Include
+@import "main/default/framework/vendors/bootstrap/bootstrap.scss";
+
+//== 4: Framework Components
+@import "main/default/framework/include";
+
+//== 5: Snippets
+@import "main/default/snippets/include";
+////////////////////////////////////////////////////////////////
+///////////// DO NOT MODIFY ABOVE INCLUDE ORDER ////////////////
+////////////////////////////////////////////////////////////////
+
+//== 6: Demo Config
+@import "main/demo-config";
+@import "main/base/_config";
+@import "main/header/_config";
+@import "main/aside/_config";
+@import "main/menu-header/_config";
+@import "main/menu-aside/_config";   
+@import "main/footer/_config";
+
+//== 7: Demo Layout
+@import "main/base/page";
+@import "main/base/body";
+
+@import "main/header/brand";
+@import "main/header/header";
+@import "main/header/topbar";
+@import "main/header/search";
+
+@import "main/aside/aside-left";
+@import "main/aside/aside-right";
+@import "main/aside/aside-header-menu-mobile";
+
+@import "main/menu-header/menu";
+@import "main/menu-aside/menu";
+
+@import "main/subheader/default";
+
+@import "main/footer/default";
