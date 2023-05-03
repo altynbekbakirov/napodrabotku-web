@@ -39,7 +39,7 @@
                                             'data-width' => '100%',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_period',
-                                        ],
+                                        ]
                                     ) !!}
                                 </div>
                                 <div class="col-md-2 my-2 my-md-0">
@@ -198,6 +198,7 @@
                 type: 'GET',
                 success: function(result) {
                     table.draw();
+                    location.reload();
                     // var $el = $('#kt_datatable_search_status');
                     // $el.empty();
                     // $result.each(newOptions, function(key, value) {
