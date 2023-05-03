@@ -154,14 +154,18 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $requestData = $request->all();
+        $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
+        $request->replace($requestData);
+
         $this->validate($request, [
             'name'  => ['required', 'min:3', 'max:255'],
             'lastname' => ['required', 'min:3', 'max:255'],
             'email' => ['required', 'email', 'unique:users'],
-            'gender' => ['required'],    
+            'gender' => ['required'],
             'citizen' => ['required'],
             'password' => ['required', 'min:5'],
-            'phone_number' => ['required'],
+            'phone_number' => ['required', 'unique:users'],
             'address' => ['required', 'min:3', 'max:255'],
             'region' => ['required'],
             'birth_date' => ['required'],
@@ -236,14 +240,18 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         // dd($request->all());
+        $requestData = $request->all();
+        $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
+        $request->replace($requestData);
+
         if ($user->login!=$request->login){
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'lastname' => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],
-                'gender' => ['required'],    
+                'gender' => ['required'],
                 'citizen' => ['required'],
-                'phone_number' => ['required'],
+                'phone_number' => ['required', 'unique:users,phone_number,'.$user->id],
                 'address' => ['required', 'min:3', 'max:255'],
                 'region' => ['required'],
                 'birth_date' => ['required'],
@@ -253,10 +261,10 @@ class UserController extends Controller
                 'name'  => ['required', 'min:3', 'max:255'],
                 'lastname' => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],
-                'gender' => ['required'],    
+                'gender' => ['required'],
                 'citizen' => ['required'],
                 // 'password' => ['required', 'min:5'],
-                'phone_number' => ['required'],
+                'phone_number' => ['required', 'unique:users,phone_number,'.$user->id],
                 'address' => ['required', 'min:3', 'max:255'],
                 'region' => ['required'],
                 'birth_date' => ['required'],

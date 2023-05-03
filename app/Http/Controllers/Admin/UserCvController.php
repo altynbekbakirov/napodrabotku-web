@@ -285,37 +285,5 @@ class UserCvController extends Controller
         $vacancy->status = $value;
         $vacancy->save();
         return 'success';
-
-        $vacancies_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
-        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('status')->toArray();
-        $statuses_count = array_count_values($statuses);
-
-        foreach ($statuses as $key => $value) {
-            if ($value === 'not_processed') {
-                $statuses[$value] = 'He обработан (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-            if ($value === 'processing') {
-                $statuses[$value] = 'B обработке (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-            if ($value === 'selected') {
-                $statuses[$value] = 'Отобран (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-            if ($value === 'interview') {
-                $statuses[$value] = 'Собеседование (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-            if ($value === 'hired') {
-                $statuses[$value] = 'Принят на работу (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-            if ($value === 'rejected') {
-                $statuses[$value] = 'Отклонен (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
-            }
-        }
-        return $statuses;
     }
 }
