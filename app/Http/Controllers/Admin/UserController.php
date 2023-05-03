@@ -171,7 +171,8 @@ class UserController extends Controller
             'birth_date' => ['required'],
         ]);
         $request->login = $request->email;
-        $user = User::create($request->except( 'password', 'avatar', 'avatar_remove'));
+        $user = User::create($request->except( 'password', 'avatar', 'avatar_remove', 'region'));
+        $user->region = Region::where('nameKg', $request->region)->first() ? Region::where('nameKg', $request->region)->first()->id : null;
         if($request->password){
             $user->password = Hash::make($request->password);
         }

@@ -15,6 +15,8 @@ class Region extends Model
     protected $fillable = [
         'nameKg',
         'nameRu',
+        'nameEn',
+        'country',
     ];
 
     public function getName($lang)

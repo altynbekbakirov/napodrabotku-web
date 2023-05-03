@@ -66,7 +66,8 @@ Route::middleware('auth')->group( function () {
     Route::name('currencies.delete')->get('currencies/delete/{currency}', ['uses' => 'CurrencyController@destroy']);
 
     // Ajax
-    Route::name('districts.region')->post('region/districts', ['uses' => 'VacancyController@districts']);
+    Route::name('districts.region')->post('region/districts', ['uses' => 'AjaxController@districts']);
+    Route::name('regions.country')->post('country/regions', ['uses' => 'AjaxController@regions']);
     Route::name('dadata.user')->post('dadata/user', ['uses' => 'AjaxController@dadataUser']);
 
 

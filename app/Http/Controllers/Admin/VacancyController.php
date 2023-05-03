@@ -329,16 +329,5 @@ class VacancyController extends Controller
         $result = array('meta' => $meta, 'data' => $resultPaginated->all());
         return json_encode($result);
     }
-
-    public function districts(Request $request)
-    {
-        $result = '';
-        $districts = District::where('region', $request->region)->get();
-        foreach ($districts as $district){
-            $result .= '<option value="'.$district->id.'">'.$district->nameRu.'</option>';
-        }
-
-        return $result;
-    }
 }
 

@@ -25,6 +25,27 @@
 
 @section('scripts')
     <script>
+        $('[name=country_id]').on('change', function() {
+            var url = "{{ route('regions.country') }}";
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                cache: false,
+                type: 'POST',
+                url: url,
+                data: {
+                    'country': $(this).val(),
+                },
+                success: function (data) {
+                    if(data) {
+                        $('[name=region_id]').html(data);
+                        $('[name=region_id]').selectpicker('refresh');
+                    }
+                }
+
+            });
+        });
         $('[name=region_id]').on('change', function() {
             var url = "{{ route('districts.region') }}";
             $.ajax({
@@ -58,7 +79,7 @@
                         // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
                         // home, end, period, and numpad decimal
                         return (
-                            key == 8 || 
+                            key == 8 ||
                             key == 9 ||
                             key == 13 ||
                             key == 46 ||

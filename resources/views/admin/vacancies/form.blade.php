@@ -63,7 +63,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Выберите регион/область: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('region_id', $regions, null, ['class' => 'selectpicker '.$errors->first('region_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('region_id', [], null, ['class' => 'selectpicker '.$errors->first('region_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('region_id'))
                 <div class="invalid-feedback">{{ $errors->first('region_id') }}</div>
             @endif
@@ -72,7 +72,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Выберите город: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('district_id', $districts, null, ['class' => 'selectpicker '.$errors->first('district_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('district_id', [], null, ['class' => 'selectpicker '.$errors->first('district_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('district_id'))
                 <div class="invalid-feedback">{{ $errors->first('district_id') }}</div>
             @endif

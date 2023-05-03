@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Models\Country;
 use App\Models\District;
 use App\Models\Region;
 use App\Models\Schedule;
@@ -19,10 +20,12 @@ class RegionController extends Controller
 //        $regions = $this->csvToArray($csvFile,',');
 //
 //        foreach ($regions as $region) {
+//            $country = Country::where('nameRu', 'Россия')->firstOrFail();
 //            Region::create([
 //                'nameKg' => $region['name'],
 //                'nameRu' => $region['name_with_type'],
-//                'nameEn' => $region['geoname_name']
+//                'nameEn' => $region['geoname_name'],
+//                'country' => $country->id
 //            ]);
 //        }
 
