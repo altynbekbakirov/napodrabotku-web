@@ -176,9 +176,33 @@ class UserCvController extends Controller
 
     public function create()
     {
-        $title = 'Отклики';
-        $vacancy = new Vacancy();
-        return view('admin.user_cv.create', compact('title', 'vacancy'));
+        $title = 'Добавить отклик';
+        $vacancies = Vacancy::pluck('name', 'id')->toArray();
+        $users = User::pluck('name', 'id')->toArray();
+        $vacancy = new UserVacancy();
+        $statuses = [
+            'not_processed' => 'He обработан',
+            'processing' => 'B обработке',
+            'selected' => 'Отобран',
+            'interview' => 'Собеседование',
+            'hired' => 'Принят на работу',
+            'rejected' => 'Отклонен'
+        ];
+
+        $user_cv = new UserCV();
+
+        return view('admin.user_cv.create', compact('title', 'vacancy', 'vacancies', 'users', 'statuses'));
+    }
+
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'vacancy_id'  => ['required'],
+            'user_id' => ['required'],
+            'status_id' => ['required'],
+        ]);
+
+        return redirect()->route('user_cv.index');
     }
 
     public function show($id)
