@@ -12,8 +12,8 @@
                     <h3 class="card-title">Добавить</h3>
                 </div>
                 <!--begin::Form-->
-                {!! Form::model($vacancy, ['route' => 'vacancies.store', 'enctype' => 'multipart/form-data', 'class' => 'form']) !!}
-                    @include('admin.vacancies.form', $vacancy)
+                {!! Form::model($vacancy, ['route' => 'user_cv.store', 'enctype' => 'multipart/form-data', 'class' => 'form']) !!}
+                    @include('admin.user_cv.form', $vacancy)
                 {!! Form::close() !!}
                 <!--end::Form-->
             </div>
@@ -58,7 +58,7 @@
                         // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
                         // home, end, period, and numpad decimal
                         return (
-                            key == 8 || 
+                            key == 8 ||
                             key == 9 ||
                             key == 13 ||
                             key == 46 ||
