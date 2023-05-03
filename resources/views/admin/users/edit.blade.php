@@ -50,6 +50,21 @@
         //     placeholder: ru_code
         // });
 
+        if($('.phone_number').val().substring(0, 2) == '+7' || $('.phone_number').val().substring(0, 1) == '7'){
+            $('.phone_number').mask(ru_code, {
+                placeholder: ru_code
+            });
+        }
+        else if($('.phone_number').val().substring(0, 2) == '+9' || $('.phone_number').val().substring(0, 1) == '9'){
+            $('.phone_number').mask(kg_code, {
+                placeholder: kg_code
+            });
+        } else {
+            $('.phone_number').mask(uz_code, {
+                placeholder: uz_code
+            });
+        }
+
         $('.phone_number').on('change keyup paste', function(e) {
             if($(this).val().substring(0, 2) == '+7' || $(this).val().substring(0, 1) == '7'){
                 $('.phone_number').mask(ru_code, {
@@ -72,6 +87,7 @@
         let suggestionsDiv = $('#suggestions');
         let suggestionsLoading = $('#suggestionsLoading');
         let suggestions = [];
+        let form = $('.form');
 
         $('input[name=address]').on('keyup', function () {
             clearTimeout(timer);
@@ -115,6 +131,9 @@
                                     $('input[name=district]').val(item.data.city);
                                     $('input[name=street]').val(item.data.street);
                                     $('input[name=house]').val(item.data.house);
+
+                                    form.append('<input type="hidden" name="lat" value="'+item.data.geo_lat+'">');
+                                    form.append('<input type="hidden" name="long" value="'+item.data.geo_lon+'">');
 
                                     suggestionsDiv.find('ul').removeClass('show');
                                 });

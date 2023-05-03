@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\District;
 use App\Models\JobType;
 use App\Models\Region;
 use App\Models\User;
@@ -171,8 +172,9 @@ class UserController extends Controller
             'birth_date' => ['required'],
         ]);
         $request->login = $request->email;
-        $user = User::create($request->except( 'password', 'avatar', 'avatar_remove', 'region'));
+        $user = User::create($request->except( 'password', 'avatar', 'avatar_remove', 'region', 'district'));
         $user->region = Region::where('nameKg', $request->region)->first() ? Region::where('nameKg', $request->region)->first()->id : null;
+        $user->district = District::where('nameKg', $request->district)->first() ? District::where('nameKg', $request->district)->first()->id : null;
         if($request->password){
             $user->password = Hash::make($request->password);
         }
@@ -235,12 +237,14 @@ class UserController extends Controller
 		];
 		$citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
+        $user->region = Region::find($user->region) ? Region::find($user->region)->nameKg : '';
+        $user->district = District::find($user->district) ? District::find($user->district)->nameKg : '';
         return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
     }
 
     public function update(Request $request, User $user)
     {
-        // dd($request->all());
+
         $requestData = $request->all();
         $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
         $request->replace($requestData);
@@ -272,7 +276,9 @@ class UserController extends Controller
                 'vacancy_type' => ['nullable'],
             ]);
         }
-        $user->update($request->except( 'password', 'image', 'image_remove'));
+        $user->update($request->except( 'password', 'image', 'image_remove', 'region', 'district'));
+        $user->region = Region::where('nameKg', $request->region)->first() ? Region::where('nameKg', $request->region)->first()->id : null;
+        $user->district = District::where('nameKg', $request->district)->first() ? District::where('nameKg', $request->district)->first()->id : null;
 
         if($request->password){
             $user->password = Hash::make($request->password);

@@ -72,6 +72,7 @@
         let suggestionsDiv = $('#suggestions');
         let suggestionsLoading = $('#suggestionsLoading');
         let suggestions = [];
+        let form = $('.form');
 
         $('input[name=address]').on('keyup', function () {
             clearTimeout(timer);
@@ -115,6 +116,9 @@
                                     $('input[name=district]').val(item.data.city);
                                     $('input[name=street]').val(item.data.street);
                                     $('input[name=house]').val(item.data.house);
+
+                                    form.append('<input type="hidden" name="lat" value="'+item.data.geo_lat+'">');
+                                    form.append('<input type="hidden" name="long" value="'+item.data.geo_lon+'">');
 
                                     suggestionsDiv.find('ul').removeClass('show');
                                 });
