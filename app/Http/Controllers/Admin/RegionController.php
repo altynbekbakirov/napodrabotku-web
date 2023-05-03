@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Models\District;
 use App\Models\Region;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
@@ -11,6 +12,20 @@ class RegionController extends Controller
     public function index()
     {
         $title = 'Регионы';
+
+        // regions.csv to db
+//        $csvFileName = "region.csv";
+//        $csvFile = public_path($csvFileName);
+//        $regions = $this->csvToArray($csvFile,',');
+//
+//        foreach ($regions as $region) {
+//            Region::create([
+//                'nameKg' => $region['name'],
+//                'nameRu' => $region['name_with_type'],
+//                'nameEn' => $region['geoname_name']
+//            ]);
+//        }
+
         return view('admin.regions.index', compact('title'));
     }
 
@@ -36,6 +51,22 @@ class RegionController extends Controller
     public function show(Region $region)
     {
         $title = 'Регионы - '.$region->nameRu;
+
+        // city.csv to db
+//        $csvFileName = "city.csv";
+//        $csvFile = public_path($csvFileName);
+//        $cities = $this->csvToArray($csvFile,',');
+//
+//        foreach ($cities as $city) {
+//            $region1 = Region::where('nameKg', $city['region'])->firstOrFail();
+//            District::create([
+//                'nameKg' => $city['city'],
+//                'nameRu' => $city['city'],
+//                'nameEn' => $city['city'],
+//                'region' => $region1->id
+//            ]);
+//        }
+
         return view('admin.regions.show', compact('region', 'title'));
     }
 
@@ -144,6 +175,28 @@ class RegionController extends Controller
         $result = array('meta' => $meta, 'data' => $resultPaginated->all());
         return json_encode($result);
 
+    }
+
+    function csvToArray($filename = '', $delimiter = ',')
+    {
+        if (!file_exists($filename) || !is_readable($filename))
+            return false;
+
+        $header = null;
+        $data = array();
+        if (($handle = fopen($filename, 'r')) !== false)
+        {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false)
+            {
+                if (!$header)
+                    $header = $row;
+                else
+                    $data[] = array_combine($header, $row);
+            }
+            fclose($handle);
+        }
+
+        return $data;
     }
 }
 

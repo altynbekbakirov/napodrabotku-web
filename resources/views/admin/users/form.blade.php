@@ -54,7 +54,7 @@
 		<div class="form-group row">
             <label class="col-lg-3 col-form-label">Пол: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::select('gender', $sexes, null, ['class' => 'selectpicker form-control '.$errors->first('gender', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+                {!! Form::select('gender', $sexes, null, ['class' => 'selectpicker form-control '.$errors->first('gender', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-size' => '6']) !!}
                 @if ($errors->has('gender'))
                     <div class="invalid-feedback">{{ $errors->first('gender') }}</div>
                 @endif
@@ -63,16 +63,16 @@
 		<div class="form-group row">
             <label class="col-lg-3 col-form-label">Гражданство: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::select('citizen', $citizenship, null, ['class' => 'selectpicker form-control '.$errors->first('citizen', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+                {!! Form::select('citizen', $citizenship, null, ['class' => 'selectpicker form-control '.$errors->first('citizen', 'is-invalid'), 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
                 @if ($errors->has('citizen'))
                     <div class="invalid-feedback">{{ $errors->first('citizen') }}</div>
                 @endif
             </div>
-        </div>		
+        </div>
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Тип пользователя:</label>
             <div class="col-lg-4">
-                {!! Form::select('type', $types, null, ['class' => 'selectpicker', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+                {!! Form::select('type', $types, null, ['class' => 'selectpicker', 'title' => 'Выбрать', 'data-width' => '100%', 'data-size' => '6']) !!}
             </div>
         </div>
         <div class="form-group row">
@@ -96,7 +96,7 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Телефон: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::text('phone_number', null, ['class' => 'phone_number form-control '.$errors->first('phone_number', 'is-invalid').'']) !!}
+                {!! Form::text('phone_number', null, ['class' => 'phone_number form-control '.$errors->first('phone_number', 'is-invalid')]) !!}
                 @if ($errors->has('phone_number'))
                     <div class="invalid-feedback">{{ $errors->first('phone_number') }}</div>
                 @endif
@@ -105,25 +105,59 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Адрес: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::text('address', null, ['class' => 'form-control '.$errors->first('address', 'is-invalid').'']) !!}
+                {!! Form::text('address', null, ['class' => 'form-control '.$errors->first('address', 'is-invalid')]) !!}
+                <div id="suggestions" class="position-relative">
+                    <ul class="dropdown-menu w-100">
+                        <div id="suggestionsLoading" class="text-center">
+                            <i class="bx bx-md bx-loader bx-spin bx-flip-vertical"></i>
+                        </div>
+                    </ul>
+                </div>
                 @if ($errors->has('address'))
                     <div class="invalid-feedback">{{ $errors->first('address') }}</div>
                 @endif
             </div>
         </div>
         <div class="form-group row">
-            <label class="col-lg-3 col-form-label">Регион проживания: <span style="color: red">*</span></label>
+            <label class="col-lg-3 col-form-label">Регион: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::text('region', null, ['class' => 'form-control '.$errors->first('region', 'is-invalid').'']) !!}
+                {!! Form::text('region', null, ['class' => 'form-control '.$errors->first('region', 'is-invalid')]) !!}
                 @if ($errors->has('region'))
                     <div class="invalid-feedback">{{ $errors->first('region') }}</div>
                 @endif
             </div>
         </div>
         <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Город:</label>
+            <div class="col-lg-4">
+                {!! Form::text('district', null, ['class' => 'form-control '.$errors->first('district', 'is-invalid')]) !!}
+                @if ($errors->has('district'))
+                    <div class="invalid-feedback">{{ $errors->first('district') }}</div>
+                @endif
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Улица:</label>
+            <div class="col-lg-4">
+                {!! Form::text('street', null, ['class' => 'form-control '.$errors->first('street', 'is-invalid')]) !!}
+                @if ($errors->has('street'))
+                    <div class="invalid-feedback">{{ $errors->first('street') }}</div>
+                @endif
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Дом:</label>
+            <div class="col-lg-4">
+                {!! Form::text('house', null, ['class' => 'form-control '.$errors->first('house', 'is-invalid')]) !!}
+                @if ($errors->has('house'))
+                    <div class="invalid-feedback">{{ $errors->first('house') }}</div>
+                @endif
+            </div>
+        </div>
+        <div class="form-group row">
             <label class="col-lg-3 col-form-label">Дата рождения: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::text('birth_date', null, ['class' => 'datepicker form-control '.$errors->first('birth_date', 'is-invalid').'']) !!}
+                {!! Form::text('birth_date', null, ['class' => 'datepicker form-control '.$errors->first('birth_date', 'is-invalid')]) !!}
                 @if ($errors->has('birth_date'))
                     <div class="invalid-feedback">{{ $errors->first('birth_date') }}</div>
                 @endif

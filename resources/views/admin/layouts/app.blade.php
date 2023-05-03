@@ -18,6 +18,7 @@
     <link href="{{asset('assets/plugins/global/plugins.bundle.css')}}" rel="stylesheet" type="text/css" />
     <link href="{{asset('assets/plugins/custom/prismjs/prismjs.bundle.css')}}" rel="stylesheet" type="text/css" />
     <link href="{{asset('assets/css/style.bundle.css')}}" rel="stylesheet" type="text/css" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!--end::Global Theme Styles-->
     <!--begin::Layout Themes(used by all pages)-->
     <!--end::Layout Themes-->
@@ -33,6 +34,10 @@
     </style>
 
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css')}}" rel="stylesheet" type="text/css">
+
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=d88902f6-178b-4bba-82ed-0a1f4707031d
+&lang=ru_RU" type="text/javascript">
+    </script>
 </head>
 <!--end::Head-->
 <!--begin::Body-->

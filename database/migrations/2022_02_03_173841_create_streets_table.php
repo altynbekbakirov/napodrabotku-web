@@ -19,14 +19,11 @@ class CreateStreetsTable extends Migration
             $table->string('nameRu')->nullable();
             $table->string('nameEn')->nullable();
 
-
-            // TODO убрать '_id' если возникнет ошибка
             $table->bigInteger('region_id')->unsigned()->nullable();
             $table->foreign('region_id')
                 ->references('id')
                 ->on('regions')
                 ->onDelete('cascade');
-
 
             $table->bigInteger('district_id')->unsigned()->nullable();
             $table->foreign('district_id')
@@ -51,8 +48,6 @@ class CreateStreetsTable extends Migration
                 ->references('id')
                 ->on('districts')
                 ->onDelete('cascade');
-
-
 
             $table->timestamps();
         });

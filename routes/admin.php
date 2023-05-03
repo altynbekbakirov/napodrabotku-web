@@ -46,12 +46,6 @@ Route::middleware('auth')->group( function () {
     Route::name('user_cv.show')->get('user_cv/{user_vacancy}', ['uses' => 'UserCvController@show']);
     Route::name('user_cv.update_status')->get('user_cv/{id}/{value}', ['uses' => 'UserCvController@update_status']);
 
-    // TODO потом убрать
-//    Route::prefix('skillset_categories')->group(function (){
-//        Route::name('skillset_categories.index')->get('/', ['uses' => 'UserCvController@show']);
-//    });
-
-
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);
     Route::name('vacancy_types.delete')->get('vacancy_types/delete/{vacancy_type}', ['uses' => 'VacancyTypeController@destroy']);
@@ -73,6 +67,7 @@ Route::middleware('auth')->group( function () {
 
     // Ajax
     Route::name('districts.region')->post('region/districts', ['uses' => 'VacancyController@districts']);
+    Route::name('dadata.user')->post('dadata/user', ['uses' => 'AjaxController@dadataUser']);
 
 
     // Api Datatable

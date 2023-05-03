@@ -15,6 +15,8 @@ class District extends Model
     protected $fillable = [
         'nameKg',
         'nameRu',
+        'nameEn',
+        'region',
     ];
 
     public function getName($lang)

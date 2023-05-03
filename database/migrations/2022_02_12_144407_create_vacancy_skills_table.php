@@ -15,10 +15,19 @@ class CreateVacancySkillsTable extends Migration
     {
         Schema::create('vacancy_skills', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('vacancy_id')->unsigned();
-            $table->bigInteger('skill_id')->unsigned();
-            $table->foreign('vacancy_id')->references('id')->on('vacancies')->onDelete('cascade');
-            $table->foreign('skill_id')->references('id')->on('skillsets')->onDelete('cascade');
+
+            $table->bigInteger('vacancy_id')->unsigned()->nullable();
+            $table->foreign('vacancy_id')
+                ->references('id')
+                ->on('vacancies')
+                ->onDelete('cascade');
+
+            $table->bigInteger('skill_id')->unsigned()->nullable();
+            $table->foreign('skill_id')
+                ->references('id')
+                ->on('skillsets')
+                ->onDelete('cascade');
+
             $table->tinyInteger('level')->nullable();
             $table->timestamps();
         });

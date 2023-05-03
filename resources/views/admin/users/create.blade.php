@@ -27,7 +27,7 @@
     <script>
         var avatar2 = new KTImageInput('kt_image_2');
 
-        $('.datepicker').daterangepicker({ 
+        $('.datepicker').daterangepicker({
             singleDatePicker: true,
             showDropdowns: true,
             autoUpdateInput: true,
@@ -45,7 +45,7 @@
         let kg_code = '+996 999 99 99 99';
         let uz_code = '+998 999 999 99 99';
 
-        
+
         // $('.phone_number').mask(ru_code, {
         //     placeholder: ru_code
         // });
@@ -64,7 +64,76 @@
                 $('.phone_number').mask(uz_code, {
                     placeholder: uz_code
                 });
-            } 
+            }
+        });
+
+        let timer;
+        let timeout = 2000;
+        let suggestionsDiv = $('#suggestions');
+        let suggestionsLoading = $('#suggestionsLoading');
+        let suggestions = [];
+
+        $('input[name=address]').on('keyup', function () {
+            clearTimeout(timer);
+
+            suggestionsDiv.find('ul').removeClass('show');
+            suggestionsDiv.find('ul').children('li').remove();
+            suggestionsLoading.removeClass('d-none');
+
+            let value = $(this).val();
+            if(value.length > 3) {
+
+                suggestionsDiv.find('ul').addClass('show');
+
+                timer = setTimeout(function(){
+
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        url: `{{route('dadata.user')}}`,
+                        type: 'POST',
+                        data: {
+                            key: value
+                        },
+                        dataType: 'json',
+                        success: function(data) {
+                            if(data.suggestions){
+                                suggestionsLoading.addClass('d-none');
+                                suggestionsDiv.find('ul').children('li').remove();
+                                for(let i=0; i<data.suggestions.length; i++){
+                                    suggestionsDiv.find('ul').append('<li><a data-index="'+i+'" class="dropdown-item" href="#">'+data.suggestions[i].value+'</a></li>');
+                                }
+
+                                $('#suggestions .dropdown-item').on('click', function (e) {
+                                    e.preventDefault();
+                                    let index = $(this).attr('data-index');
+                                    let item = data.suggestions[index];
+
+                                    $('input[name=address]').val(item.value);
+                                    $('input[name=region]').val(item.data.region);
+                                    $('input[name=district]').val(item.data.city);
+                                    $('input[name=street]').val(item.data.street);
+                                    $('input[name=house]').val(item.data.house);
+
+                                    suggestionsDiv.find('ul').removeClass('show');
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.log('Произошла ошибка при обновлении статуса: ' + error);
+                        }
+                    });
+
+                }, timeout);
+            } else {
+
+                suggestionsDiv.find('ul').removeClass('show');
+                suggestionsDiv.find('ul').children('li').remove();
+                suggestionsLoading.removeClass('d-none');
+
+            }
+
         });
 
     </script>
