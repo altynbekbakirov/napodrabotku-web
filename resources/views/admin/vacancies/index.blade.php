@@ -44,7 +44,7 @@
                                     @if(auth()->user()->type == 'ADMIN')
                                         <div class="col-md-2">
                                             <label for="region">Компании</label>
-                                            {!! Form::select('company', $companies, null, ['class' => 'selectpicker form-control', 'placeholder' => 'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_company']) !!}
+                                            {!! Form::select('company', $companies, null, ['class' => 'selectpicker form-control', 'title'=>'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_company', 'multiple' => 'multiple']) !!}
                                         </div>
                                     @endif
                                 </div>

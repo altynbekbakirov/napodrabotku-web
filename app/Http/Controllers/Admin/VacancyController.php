@@ -55,7 +55,7 @@ class VacancyController extends Controller
             }
 
             if (request()->company_id) {
-                $data = $data->where('company_id', request()->company_id);
+                $data = $data->whereIn('company_id', request()->company_id);
             }
 
             $data = $data->orderBy('id', 'desc')->get();
@@ -134,9 +134,8 @@ class VacancyController extends Controller
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
-            'country_id' => ['required'],
-            'region_id' => ['required'],
-            'district_id' => ['required'],
+            'address' => ['required', 'min:3', 'max:255'],
+            'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -144,8 +143,9 @@ class VacancyController extends Controller
             'experience' => ['required'],
             'pay_period' => ['required'],
         ]);
-        $vacancy = Vacancy::create($request->except('region_id'));
-        $vacancy->region_id = $request->region_id;
+        $vacancy = Vacancy::create($request->except('region', 'district'));
+        $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
+        $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $vacancy->save();
 
         return redirect()->route('vacancies.index');
@@ -162,16 +162,16 @@ class VacancyController extends Controller
         $title = 'Вакансии';
 
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
-        $regions = Region::pluck('nameRu', 'id')->toArray();
-        $districts = District::where('region', $vacancy->region_id)->pluck('nameRu', 'id')->toArray();
-        $countries = Country::pluck('nameRu', 'id')->toArray();
         $busynesses = Busyness::pluck('name_ru', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $currencies = Currency::pluck('name_ru', 'id')->toArray();
 
-        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries'));
+        $vacancy->region = Region::find($vacancy->region) ? Region::find($vacancy->region)->nameRu : '';
+        $vacancy->district = District::find($vacancy->district) ? District::find($vacancy->district)->nameRu : '';
+
+        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies'));
     }
 
     public function update(Request $request, Vacancy $vacancy)
@@ -183,9 +183,8 @@ class VacancyController extends Controller
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
-            'country_id' => ['required'],
-            'region_id' => ['required'],
-            'district_id' => ['required'],
+            'address' => ['required', 'min:3', 'max:255'],
+            'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -193,7 +192,10 @@ class VacancyController extends Controller
             'experience' => ['required'],
             'pay_period' => ['required'],
         ]);
-        $vacancy->update($request->all());
+        $vacancy->update($request->except('region', 'district'));
+        $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
+        $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+        $vacancy->save();
 
         return redirect()->route('vacancies.index');
     }

@@ -12,7 +12,7 @@
                 </li>
                 <li class="menu-item menu-item-submenu menu-item-rel" data-menu-toggle="click" aria-haspopup="true">
                     <a href="javascript:;" class="menu-link menu-toggle">
-                        <span class="menu-text">Соискатели</span>
+                        <span class="menu-text">Пользователи</span>
                         <span class="menu-desc"></span>
                         <i class="menu-arrow"></i>
                     </a>
@@ -99,9 +99,14 @@
                         <span class="menu-text">Отклики</span>
                     </a>
                 </li>
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('admin.chat')}}" class="menu-link">
                         <span class="menu-text">Чат</span>
+                    </a>
+                </li> --}}
+                <li class="menu-item">
+                    <a href="{{route('admin.account')}}" class="menu-link">
+                        <span class="menu-text">Личный кабинет</span>
                     </a>
                 </li>
             @endif
