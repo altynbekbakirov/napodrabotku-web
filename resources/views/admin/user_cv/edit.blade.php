@@ -25,22 +25,48 @@
 
 @section('scripts')
     <script>
-        $('[name=region_id]').on('change', function() {
-            var url = "{{ route('districts.region') }}";
+       $('[name=vacancy_id]').on('change', function() {
+            var id = $(this).val();
+            var url = "{{ route('user_cv.get_vacancy') }}";
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': "{{ csrf_token() }}"
                 },
                 cache: false,
-                type: 'POST',
-                url: url,
+                type: 'post',
                 data: {
-                    'region': $(this).val(),
+                    id: id
                 },
-                success: function (data) {
-                    if(data) {
-                        $('[name=district_id]').html(data);
-                        $('[name=district_id]').selectpicker('refresh');
+                dataType: "json",
+                url: url,
+                success: function(data) {
+                    if (data) {
+                        $('input[name=vacancy_region]').val(data.nameRu);
+                    }
+                }
+
+            });
+        });
+
+        $('[name=user_id]').on('change', function() {
+            var id = $(this).val();
+            var url = "{{ route('user_cv.get_user') }}";
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                cache: false,
+                type: 'post',
+                data: {
+                    id: id
+                },
+                dataType: "json",
+                url: url,
+                success: function(data) {
+                    if (data) {
+                        console.log(data);
+                        $('input[name=user_citizen]').val(data.nameRu);
+                        $('input[name=user_age]').val(data.age);
                     }
                 }
 

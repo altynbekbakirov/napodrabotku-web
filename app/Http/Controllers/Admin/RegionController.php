@@ -36,8 +36,9 @@ class RegionController extends Controller
     {
         $region = new Region();
         $title = 'Регионы';
+        $countries = Country::pluck('nameRu', 'id')->toArray();
 
-        return view('admin.regions.create', compact('region', 'title'));
+        return view('admin.regions.create', compact('region', 'title', 'countries'));
     }
 
     public function store(Request $request)
@@ -45,6 +46,7 @@ class RegionController extends Controller
         $this->validate($request, [
             'nameKg' => ['required'],
             'nameRu' => ['required'],
+            'country' => ['required']
         ]);
         Region::create($request->all());
 
@@ -76,7 +78,9 @@ class RegionController extends Controller
     public function edit(Region $region)
     {
         $title = 'Регионы';
-        return view('admin.regions.edit', compact('region', 'title'));
+        $countries = Country::pluck('nameRu', 'id')->toArray();
+        // $region->country =  Country::find($region->country) ? Country::find($region->country)->id : null;
+        return view('admin.regions.edit', compact('region', 'title', 'countries'));
     }
 
     public function update(Request $request, Region $region)
@@ -84,6 +88,7 @@ class RegionController extends Controller
         $this->validate($request, [
             'nameKg' => ['required'],
             'nameRu' => ['required'],
+            'country' => ['required']
         ]);
         $region->update($request->all());
 

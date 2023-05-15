@@ -2,7 +2,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::text('name', null, ['class' => 'form-control '.$errors->first('name', 'is-invalid').'']) !!}
+            {!! Form::text('name', null, ['class' => 'form-control '.$errors->first('name', 'is-invalid').'',  ]) !!}
             @if ($errors->has('name'))
                 <div class="invalid-feedback">{{ $errors->first('name') }}</div>
             @endif
@@ -11,19 +11,19 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Зарплата: <span style="color: red">*</span></label>
         <div class="col-lg-1">
-            {!! Form::text('salary', null, ['class' => 'form-control salary-input '.$errors->first('salary', 'is-invalid').'']) !!}
+            {!! Form::number('salary', null, ['class' => 'form-control salary-input '.$errors->first('salary', 'is-invalid').'',  ]) !!}
             @if ($errors->has('salary'))
                 <div class="invalid-feedback">{{ $errors->first('salary') }}</div>
             @endif
         </div>
         <div class="col-lg-1">
-            {!! Form::select('currency', $currencies, null, ['class' => 'selectpicker '.$errors->first('currency', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('currency', $currencies, null, ['class' => 'selectpicker '.$errors->first('currency', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('currency'))
                 <div class="invalid-feedback">{{ $errors->first('currency') }}</div>
             @endif
         </div>
         <div class="col-lg-2">
-            {!! Form::select('period', ['Месяц' => 'Месяц', 'Три месяца' => 'Три месяца', 'Полгода'=>'Полгода', 'Год'=>'Год', 'Более года'=>'Более года'], null, ['class' => 'selectpicker '.$errors->first('period', 'is-invalid').'', 'title' => 'Выберите период', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('period', ['Ставка за час' => 'Ставка за час', 'Ставка за смену' => 'Ставка за смену', 'В неделю'=>'В неделю', 'В месяц'=>'В месяц'], null, ['class' => 'selectpicker '.$errors->first('period', 'is-invalid').'',   'title' => 'Выберите период', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('period'))
                 <div class="invalid-feedback">{{ $errors->first('period') }}</div>
             @endif
@@ -45,43 +45,62 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Описание: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::textarea('description', null, ['class' => 'form-control '.$errors->first('description', 'is-invalid').'', 'rows' => '6']) !!}
+            {!! Form::textarea('description', null, ['class' => 'form-control '.$errors->first('description', 'is-invalid').'',   'rows' => '6']) !!}
             @if ($errors->has('description'))
                 <div class="invalid-feedback">{{ $errors->first('description') }}</div>
             @endif
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Страна: <span style="color: red">*</span></label>
+        <label class="col-lg-3 col-form-label">Адрес: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('country_id', $countries, null, ['class' => 'selectpicker '.$errors->first('country_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
-            @if ($errors->has('country_id'))
-                <div class="invalid-feedback">{{ $errors->first('country_id') }}</div>
+            {!! Form::text('address', null, ['class' => 'form-control '.$errors->first('address', 'is-invalid'),]) !!}
+            <div id="suggestions" class="position-relative">
+                <ul class="dropdown-menu w-100">
+                    <div id="suggestionsLoading" class="text-center">
+                        <i class="bx bx-md bx-loader bx-spin bx-flip-vertical"></i>
+                    </div>
+                </ul>
+            </div>
+            @if ($errors->has('address'))
+                <div class="invalid-feedback">{{ $errors->first('address') }}</div>
             @endif
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Выберите регион/область: <span style="color: red">*</span></label>
+        <label class="col-lg-3 col-form-label">Регион: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('region_id', [], null, ['class' => 'selectpicker '.$errors->first('region_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
-            @if ($errors->has('region_id'))
-                <div class="invalid-feedback">{{ $errors->first('region_id') }}</div>
+            {!! Form::text('region', null, ['class' => 'form-control '.$errors->first('region', 'is-invalid'),  ]) !!}
+            @if ($errors->has('region'))
+                <div class="invalid-feedback">{{ $errors->first('region') }}</div>
             @endif
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Выберите город: <span style="color: red">*</span></label>
+        <label class="col-lg-3 col-form-label">Город:</label>
         <div class="col-lg-4">
-            {!! Form::select('district_id', [], null, ['class' => 'selectpicker '.$errors->first('district_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
-            @if ($errors->has('district_id'))
-                <div class="invalid-feedback">{{ $errors->first('district_id') }}</div>
+            {!! Form::text('district', null, ['class' => 'form-control '.$errors->first('district', 'is-invalid')]) !!}
+            @if ($errors->has('district'))
+                <div class="invalid-feedback">{{ $errors->first('district') }}</div>
             @endif
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Улица:</label>
+        <div class="col-lg-4">
+            {!! Form::text('street', null, ['class' => 'form-control ']) !!}
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Дом:</label>
+        <div class="col-lg-4">
+            {!! Form::text('house', null, ['class' => 'form-control ']) !!}
         </div>
     </div>
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Выберите вид занятости: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('busyness_id', $busynesses, null, ['class' => 'selectpicker '.$errors->first('busyness_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('busyness_id', $busynesses, null, ['class' => 'selectpicker '.$errors->first('busyness_id', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('busyness_id'))
                 <div class="invalid-feedback">{{ $errors->first('busyness_id') }}</div>
             @endif
@@ -99,7 +118,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Выберите сферу работы: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('job_type_id', $job_types, null, ['class' => 'selectpicker '.$errors->first('job_type_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('job_type_id', $job_types, null, ['class' => 'selectpicker '.$errors->first('job_type_id', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('job_type_id'))
                 <div class="invalid-feedback">{{ $errors->first('job_type_id') }}</div>
             @endif
@@ -108,7 +127,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Выберите график работы: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('schedule_id', $schedules, null, ['class' => 'selectpicker '.$errors->first('schedule_id', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('schedule_id', $schedules, null, ['class' => 'selectpicker '.$errors->first('schedule_id', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('schedule_id'))
                 <div class="invalid-feedback">{{ $errors->first('schedule_id') }}</div>
             @endif
@@ -117,7 +136,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Укажите требуемый опыт работы: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('experience', ['Без опыта', 'Полгода', 'Более года'], null, ['class' => 'selectpicker '.$errors->first('experience', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('experience', ['Без опыта', 'Полгода', 'Более года'], null, ['class' => 'selectpicker '.$errors->first('experience', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('experience'))
                 <div class="invalid-feedback">{{ $errors->first('experience') }}</div>
             @endif
@@ -126,7 +145,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Частота выплат: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::select('pay_period', ['Ежедневная', 'Еженедельная', 'Ежемесячная'], null, ['class' => 'selectpicker '.$errors->first('pay_period', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
+            {!! Form::select('pay_period', ['Ежедневная', 'Еженедельная', 'Ежемесячная'], null, ['class' => 'selectpicker '.$errors->first('pay_period', 'is-invalid').'',   'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
             @if ($errors->has('pay_period'))
                 <div class="invalid-feedback">{{ $errors->first('pay_period') }}</div>
             @endif

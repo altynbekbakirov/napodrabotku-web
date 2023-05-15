@@ -13,6 +13,7 @@ Route::middleware('auth')->group( function () {
     Route::name('nav_toggle')->post('/nav_toggle', 'HomeController@nav_toggle');
 
     Route::name('admin.profile')->get('/profile', ['uses' => 'HomeController@profile']);
+    Route::name('admin.account')->get('/account', ['uses' => 'HomeController@account']);
     Route::name('admin.chat')->get('/chat', ['uses' => 'HomeController@chat']);
     Route::name('admin.chat.delete')->get('/chat/{chat}/delete', ['uses' => 'HomeController@chat']);
     Route::name('admin.chat.message')->post('/chat/{chat}/message', ['uses' => 'HomeController@message']);
@@ -45,6 +46,8 @@ Route::middleware('auth')->group( function () {
     // CUSTOM ROUTES
     Route::name('user_cv.show')->get('user_cv/{user_vacancy}', ['uses' => 'UserCvController@show']);
     Route::name('user_cv.update_status')->get('user_cv/{id}/{value}', ['uses' => 'UserCvController@update_status']);
+    Route::name('user_cv.get_vacancy')->post('user_cv/vacancy/region', ['uses' => 'UserCvController@get_vacancy']);
+    Route::name('user_cv.get_user')->post('user_cv/vacancy/citizen', ['uses' => 'UserCvController@get_user']);
 
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);

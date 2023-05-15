@@ -44,7 +44,6 @@
                             </div>
                         </div>
                     </div>
-                    <!--end::Search Form-->
                     <!--end: Search Form-->
                     <!--begin: Datatable-->
                     <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable"></div>
@@ -99,7 +98,6 @@
 
             // column sorting
             sortable: true,
-
             pagination: true,
 
             search: {

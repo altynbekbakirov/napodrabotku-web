@@ -27,10 +27,25 @@ class UserCvController extends Controller
 
         $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
         $vacancies_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
-        $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region_id')->toArray();
+        $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
+        $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
+        $countries = Country::whereIn('id', $regions_countries)->pluck('nameRu', 'id')->toArray();
         $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('status')->toArray();
         $statuses_count = array_count_values($statuses);
+        $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
+        $sexes = User::whereIn('id', $user_ids)->pluck('gender')->toArray();
+
+        foreach ($sexes as $key => $value) {
+            if ($value === 'male') {
+                $sexes[$value] = 'Мужской';
+                unset($sexes[$key]);
+            }
+            if ($value === 'female') {
+                $sexes[$value] = 'Женский';
+                unset($sexes[$key]);
+            }
+        }
 
         foreach ($statuses as $key => $value) {
             if ($value === 'not_processed') {
@@ -59,27 +74,18 @@ class UserCvController extends Controller
             }
         }
 
-        $sexes = User::where('id', auth()->user()->id)->pluck('gender')->toArray();
-        foreach ($sexes as $key => $value) {
-            if ($value === 'male') {
-                $sexes[$value] = 'Мужской';
-                unset($sexes[$key]);
-            }
-            if ($value === 'female') {
-                $sexes[$value] = 'Женский';
-                unset($sexes[$key]);
-            }
-        }
-
         $title = 'Поданные резюме';
+
         if (request()->ajax()) {
 
-            if (request()->region_id && request()->period_id) {
-                $company_vacancies = Vacancy::where('region_id', request()->region_id)->where('period', request()->period_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            if (request()->country_id && request()->region_id) {
+                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else if (request()->country_id) {
+                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
             } else if (request()->region_id) {
-                $company_vacancies = Vacancy::where('region_id', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
-            } else if (request()->period_id) {
-                $company_vacancies = Vacancy::where('period', request()->period_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
             } else {
                 $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
             }
@@ -95,6 +101,9 @@ class UserCvController extends Controller
             }
 
             $data = $data->whereIn("vacancy_id", $company_vacancies)->where("type", 'SUBMITTED')->orderBy('id', 'desc');
+            // $currentDateTime = date('Y-m-d H:i:s');
+            // $from = date('Y-m-d', strtotime('-29 day', strtotime($currentDateTime)));
+            // $data = $data->whereBetween('created_at', [$from, $currentDateTime]);
 
             if (request()->name) {
                 $data = $data->with(['usersList']);
@@ -108,43 +117,58 @@ class UserCvController extends Controller
 
             if (request()->sex_id) {
                 $data = $data->with(['usersList']);
-                $user_name = request()->sex_id;
-                $data = $data->where(function ($query) use ($user_name) {
-                    $query->whereHas('usersList', function ($q) use ($user_name) {
-                        $q->where('gender', $user_name);
+                $user_sex = request()->sex_id;
+                $data = $data->where(function ($query) use ($user_sex) {
+                    $query->whereHas('usersList', function ($q) use ($user_sex) {
+                        $q->where('gender', $user_sex);
                     });
                 });
             }
 
-            $data = $data->get();
+            if (request()->period_id) {
+                $dates = explode('-', request()->period_id);
+                $dates[0] = trim($dates[0]);
+                $dates[1] = trim($dates[1]);
+                $data = $data->whereRaw(
+                    "(created_at >= ? AND created_at <= ?)",
+                    [
+                        date('Y-m-d', strtotime($dates[0])) . " 00:00:00",
+                        date('Y-m-d', strtotime($dates[1])) . " 23:59:59"
+                    ]
+                );
+            }
 
             return datatables()->of($data)
                 ->addIndexColumn()
-                ->addColumn('acts', function ($row) {
-                    return '
-                    <a href="' . route('user_cv.show', $row) . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
-                        Перейти в чат
-                    </a>';
-                })
+                // ->addColumn('acts', function ($row) {
+                //     return '
+                //     <a href="' . route('user_cv.show', $row) . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                //         Перейти в чат
+                //     </a>';
+                // })
                 ->addColumn('date', function ($row) {
-                    return date('d/m/y H:i', strtotime($row->created_at));
+                    return date('d-m-Y H:i', strtotime($row->created_at));
                 })
                 ->addColumn('name', function ($row) {
-                    return $row->vacancy->name;
+                    $actions = '<a href="' . route('vacancies.edit', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' .$row->vacancy->name . '</a>';
+                    return $actions;
+                })
+                ->addColumn('country', function ($row) {
+                    $region = Region::where('id', $row->vacancy->region)->first()->country;
+                    return Country::where('id', $region)->first()->nameRu;
                 })
                 ->addColumn('region', function ($row) {
-                    return Region::where('id', $row->vacancy->region_id)->first()->nameRu;
+                    return Region::where('id', $row->vacancy->region)->first()->nameRu;
                 })
                 ->addColumn('citizen', function ($row) {
                     return Country::where('id', $row->user->citizen)->first()->nameRu;
                 })
                 ->addColumn('user_name', function ($row) {
-                    return $row->user->lastname . ' ' . $row->user->name . ' ' . $row->user->phone_number;
+                    return $row->user->name . ' <a href="https://wa.me/'. preg_replace("/[^0-9\-]/", "", $row->user->phone_number) .'" class="text-link mr-2" title="Редактировать">' .$row->user->phone_number . '</a>';
                 })
                 ->addColumn('birth_date', function ($row) {
-                    $birthdate_str = $row->user->birth_date;
-                    $birthdate = new DateTime($birthdate_str);
-                    $current_date = new DateTime();
+                    $birthdate = new DateTime($row->user->birth_date);
+                    $current_date = new DateTime('today');
                     $age = $birthdate->diff($current_date)->y;
                     return $age . ' лет';
                 })
@@ -165,20 +189,17 @@ class UserCvController extends Controller
                     }
                     return '<select class="select_status form-control">' . $options . '</select>';
                 })
-                ->addColumn('user_name', function ($row) {
-                    return $row->user->lastname . ' ' . $row->user->name . ' ' . $row->user->phone_number;
-                })
-                ->rawColumns(['acts', 'status'])
+                ->rawColumns(['acts', 'status', 'name', 'user_name'])
                 ->make(true);
         }
-        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses'));
+        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses', "user_ids", "countries"));
     }
 
     public function create()
     {
         $title = 'Добавить отклик';
-        $vacancies = Vacancy::pluck('name', 'id')->toArray();
-        $users = User::pluck('name', 'id')->toArray();
+        $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
+        $users = User::where('type', '=', 'USER')->pluck('name', 'id')->toArray();
         $vacancy = new UserVacancy();
         $statuses = [
             'not_processed' => 'He обработан',
@@ -194,7 +215,7 @@ class UserCvController extends Controller
         return view('admin.user_cv.create', compact('title', 'vacancy', 'vacancies', 'users', 'statuses'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, UserVacancy $userVacancy)
     {
         $this->validate($request, [
             'vacancy_id'  => ['required'],
@@ -202,6 +223,12 @@ class UserCvController extends Controller
             'status_id' => ['required'],
         ]);
 
+        $userVacancy->user_id = $request->user_id;
+        $userVacancy->vacancy_id = $request->vacancy_id;
+        $userVacancy->status = $request->status_id;
+        $userVacancy->type = 'SUBMITTED';
+
+        $userVacancy->save();
         return redirect()->route('user_cv.index');
     }
 
@@ -309,5 +336,25 @@ class UserCvController extends Controller
         $vacancy->status = $value;
         $vacancy->save();
         return 'success';
+    }
+
+    public function get_vacancy(Request $request)
+    {
+        $vacancy = Vacancy::where('id', $request->id)->first();
+        $region = Region::find($vacancy->region);
+        $country = Country::find($region->country);
+        $region->countryName = $country->nameRu;
+        return json_encode($region);
+    }
+
+    public function get_user(Request $request)
+    {
+        $user = User::where('id', $request->id)->first();
+        $citizen = Country::find($user->citizen);
+        $birthdate = new DateTime($user->birth_date);
+        $current_date = new DateTime('today');
+        $age = $birthdate->diff($current_date)->y;
+        $citizen->age = $age;
+        return json_encode($citizen);
     }
 }

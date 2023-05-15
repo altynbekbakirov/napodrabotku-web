@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserCV;
 use App\Models\Country;
 use App\Models\VacancyType;
+use App\Models\Busyness;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -21,11 +22,11 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->type == 'USER'){
+        if ($request->type == 'USER') {
             $title = 'Соискатели';
-        } elseif ($request->type == 'COMPANY'){
+        } elseif ($request->type == 'COMPANY') {
             $title = 'Работодатели';
-        } elseif($request->type == 'ADMIN') {
+        } elseif ($request->type == 'ADMIN') {
             $title = 'Администраторы';
         } else {
             abort(403);
@@ -47,12 +48,12 @@ class UserController extends Controller
         $regions = Region::pluck('nameRu', 'id')->toArray();
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
 
-        if(request()->ajax()){
+        if (request()->ajax()) {
             $data = User::query();
 
-            if(request()->type == 'USER'){
+            if (request()->type == 'USER') {
                 $data = $data->where('type', 'USER');
-            } else if(request()->type == 'COMPANY') {
+            } else if (request()->type == 'COMPANY') {
                 $data = $data->where('type', 'COMPANY');
             } else {
                 $data = $data->where('type', 'ADMIN');
@@ -67,19 +68,19 @@ class UserController extends Controller
             }
 
             if (request()->age) {
-                if(request()->age == 1){
+                if (request()->age == 1) {
                     $data = $data->where('birth_date', '<=', Carbon::now()->subYears(18)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(25)->format('Y-m-d'));
                 }
-                if(request()->age == 2){
+                if (request()->age == 2) {
                     $data = $data->where('birth_date', '<=', Carbon::now()->subYears(25)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(30)->format('Y-m-d'));
                 }
-                if(request()->age == 3){
+                if (request()->age == 3) {
                     $data = $data->where('birth_date', '<=', Carbon::now()->subYears(30)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(40)->format('Y-m-d'));
                 }
-                if(request()->age == 4){
+                if (request()->age == 4) {
                     $data = $data->where('birth_date', '<=', Carbon::now()->subYears(40)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(50)->format('Y-m-d'));
                 }
-                if(request()->age == 5){
+                if (request()->age == 5) {
                     $data = $data->where('birth_date', '<=', Carbon::now()->subYears(50)->format('Y-m-d'));
                 }
             }
@@ -88,13 +89,13 @@ class UserController extends Controller
                 $data = $data->where('job_type', request()->job_type);
             }
 
-//            $data = $data->get();
+            //            $data = $data->get();
 
             return datatables()->of($data)
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
                     return '
-                    <a href="'.route('users.show', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
+                    <a href="' . route('users.show', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -105,7 +106,7 @@ class UserController extends Controller
                             </svg>
                         </span>
                     </a>
-                    <a href="'.route('users.edit', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
+                    <a href="' . route('users.edit', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -115,7 +116,7 @@ class UserController extends Controller
                             </svg>
                         </span>
                     </a>
-                    <a href="'.route('users.delete', $row).'" class="btn btn-sm btn-clean btn-icon" title="Удалить">
+                    <a href="' . route('users.delete', $row) . '" class="btn btn-sm btn-clean btn-icon" title="Удалить">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -127,7 +128,9 @@ class UserController extends Controller
                         </span>
                     </a>';
                 })
-                ->addColumn('region', function ($row) { return $row->region && Region::find($row->region) ? Region::find($row->region)->nameRu : '-'; })
+                ->addColumn('region', function ($row) {
+                    return $row->region && Region::find($row->region) ? Region::find($row->region)->nameRu : '-';
+                })
                 ->rawColumns(['acts'])
                 ->make(true);
         }
@@ -135,22 +138,33 @@ class UserController extends Controller
         return view('admin.users.index', compact('title', 'genders', 'regions', 'ages', 'job_types'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = new User();
-        $title = 'Соискатели';
+        if ($request->type == 'COMPANY') {
+            $title = 'Работодатель';
+            $user->type = 'COMPANY';
+        } else if ($request->type == 'ADMIN') {
+            $title = 'Администратор';
+            $user->type = 'ADMIN';
+        } else {
+            $title = 'Соискатель';
+            $user->type = 'USER';
+        }
+
         $types = [
             'USER' => 'Соискатель',
             'COMPANY' => 'Работодатель',
             'ADMIN' => 'Администратор'
         ];
-		$sexes = [
-			'male' => 'Мужской',
-			'female' => 'Женский'
-		];
-		$citizenship = Country::pluck('nameRu', 'id')->toArray();
+        $sexes = [
+            'male' => 'Мужской',
+            'female' => 'Женский'
+        ];
+        $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
-        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
+        $businesses = Busyness::pluck('name_ru', 'id')->toArray();
+        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
     }
 
     public function store(Request $request)
@@ -172,13 +186,14 @@ class UserController extends Controller
             'birth_date' => ['required'],
         ]);
         $request->login = $request->email;
-        $user = User::create($request->except( 'password', 'avatar', 'avatar_remove', 'region', 'district'));
-        $user->region = Region::where('nameKg', $request->region)->first() ? Region::where('nameKg', $request->region)->first()->id : null;
-        $user->district = District::where('nameKg', $request->district)->first() ? District::where('nameKg', $request->district)->first()->id : null;
-        if($request->password){
+        $user = User::create($request->except('password', 'avatar', 'avatar_remove', 'region', 'district'));
+        $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
+        $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+        if ($request->password) {
             $user->password = Hash::make($request->password);
         }
-        if($request->file('image')){
+        $user->birth_date = date("Y-m-d", strtotime($request->birth_date));
+        if ($request->file('image')) {
 
             $file = $request->file('image');
 
@@ -187,16 +202,16 @@ class UserController extends Controller
                 mkdir($dir, 0777, true);
             }
 
-            $name = Str::slug($user->name, '-').'.'.$file->getClientOriginalExtension();
+            $name = Str::slug($user->name, '-') . '.' . $file->getClientOriginalExtension();
 
-            Image::make($file)->fit(400, 400)->save($dir.$name, 75);
+            Image::make($file)->fit(400, 400)->save($dir . $name, 75);
 
-            $user->avatar = $dir.$name;
+            $user->avatar = $dir . $name;
         }
 
         $user->save();
 
-        if($user && $user->type == 'USER') {
+        if ($user && $user->type == 'USER') {
             UserCV::create([
                 'user_id' => $user->id
             ]);
@@ -213,11 +228,11 @@ class UserController extends Controller
             'COMPANY' => 'Работодатель',
             'ADMIN' => 'Администратор'
         ];
-		$sexes = [
-			'male' => 'Мужской',
-			'female' => 'Женский'
-		];
-		$citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
+        $sexes = [
+            'male' => 'Мужской',
+            'female' => 'Женский'
+        ];
+        $citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
         return view('admin.users.show', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
     }
@@ -232,14 +247,16 @@ class UserController extends Controller
             'ADMIN' => 'Администратор'
         ];
         $sexes = [
-			'male' => 'Мужской',
-			'female' => 'Женский'
-		];
-		$citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
+            'male' => 'Мужской',
+            'female' => 'Женский'
+        ];
+        $citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
-        $user->region = Region::find($user->region) ? Region::find($user->region)->nameKg : '';
-        $user->district = District::find($user->district) ? District::find($user->district)->nameKg : '';
-        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
+        $businesses = Busyness::pluck('name_ru', 'id')->toArray();
+        $user->region = Region::find($user->region) ? Region::find($user->region)->nameRu : '';
+        $user->district = District::find($user->district) ? District::find($user->district)->nameRu : '';
+        $user->birth_date = date('d-m-Y', strtotime($user->birth_date));
+        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
     }
 
     public function update(Request $request, User $user)
@@ -249,7 +266,7 @@ class UserController extends Controller
         $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
         $request->replace($requestData);
 
-        if ($user->login!=$request->login){
+        if ($user->login != $request->login) {
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'lastname' => ['required', 'min:3', 'max:255'],
@@ -260,6 +277,7 @@ class UserController extends Controller
                 'address' => ['required', 'min:3', 'max:255'],
                 'region' => ['required'],
                 'birth_date' => ['required'],
+                'vacancy_type' => ['nullable'],
             ]);
         } else {
             $this->validate($request, [
@@ -276,17 +294,18 @@ class UserController extends Controller
                 'vacancy_type' => ['nullable'],
             ]);
         }
-        $user->update($request->except( 'password', 'image', 'image_remove', 'region', 'district'));
-        $user->region = Region::where('nameKg', $request->region)->first() ? Region::where('nameKg', $request->region)->first()->id : null;
-        $user->district = District::where('nameKg', $request->district)->first() ? District::where('nameKg', $request->district)->first()->id : null;
+        $user->update($request->except('password', 'image', 'image_remove', 'region', 'district'));
+        $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
+        $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+        $user->birth_date = date("Y-m-d", strtotime($request->birth_date));
 
-        if($request->password){
+        if ($request->password) {
             $user->password = Hash::make($request->password);
         }
 
-        if($request->file('image')){
+        if ($request->file('image')) {
 
-            if($user->avatar) @unlink($user->avatar);
+            if ($user->avatar) @unlink($user->avatar);
             $file = $request->file('image');
 
             $dir  = 'assets/media/users/';
@@ -294,16 +313,16 @@ class UserController extends Controller
                 mkdir($dir, 0777, true);
             }
 
-            $name = Str::slug($user->name, '-').'.'.$file->getClientOriginalExtension();
+            $name = Str::slug($user->name, '-') . '.' . $file->getClientOriginalExtension();
 
-            Image::make($file)->fit(400, 400)->save($dir.$name, 75);
+            Image::make($file)->fit(400, 400)->save($dir . $name, 75);
 
-            $user->avatar = $dir.$name;
+            $user->avatar = $dir . $name;
         }
 
         $user->save();
 
-        if(auth()->user()->type == 'COMPANY'){
+        if (auth()->user()->type == 'COMPANY') {
             return redirect()->route('admin.profile');
         }
         return redirect()->route('users.show', $user);
@@ -312,7 +331,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $type = $user->type;
-        if($user->avatar) @unlink($user->avatar);
+        if ($user->avatar) @unlink($user->avatar);
         $user->delete();
         return redirect()->route('users.index', ['type' => $type]);
     }
@@ -323,11 +342,17 @@ class UserController extends Controller
         $sort = $request->sort;
         $query = $request->input('query');
 
-        if(array_key_exists('perpage', $pagination)) { $perpage = $pagination['perpage']; }
-        else { $perpage = 5; }
+        if (array_key_exists('perpage', $pagination)) {
+            $perpage = $pagination['perpage'];
+        } else {
+            $perpage = 5;
+        }
 
-        if(array_key_exists('page', $pagination)) { $page = $pagination['page']; }
-        else { $page = 1; }
+        if (array_key_exists('page', $pagination)) {
+            $page = $pagination['page'];
+        } else {
+            $page = 1;
+        }
 
         Paginator::currentPageResolver(function () use ($page) {
             return $page;
@@ -335,55 +360,55 @@ class UserController extends Controller
 
         $type = $request->type;
 
-        if($type == 'USER'){
+        if ($type == 'USER') {
             $resultPaginated = User::where('type', 'USER');
-        } else if($type == 'COMPANY') {
+        } else if ($type == 'COMPANY') {
             $resultPaginated = User::where('type', 'COMPANY');
         } else {
             $resultPaginated = User::where('type', 'ADMIN');
         }
 
-        if($query){
-            if(array_key_exists('generalSearch', $query)){
+        if ($query) {
+            if (array_key_exists('generalSearch', $query)) {
                 $resultPaginated = $resultPaginated->search($query['generalSearch'], null, true, true);
             }
-            if(array_key_exists('region', $query)){
-                if($query['region'] > 0){
+            if (array_key_exists('region', $query)) {
+                if ($query['region'] > 0) {
                     $resultPaginated = $resultPaginated->where('region', $query['region']);
                 }
             }
-            if(array_key_exists('job_type', $query)){
-                if($query['job_type'] > 0){
+            if (array_key_exists('job_type', $query)) {
+                if ($query['job_type'] > 0) {
                     $resultPaginated = $resultPaginated->where('job_type', $query['job_type']);
                 }
             }
-            if(array_key_exists('gender', $query)){
-                if($query['gender'] != 99){
+            if (array_key_exists('gender', $query)) {
+                if ($query['gender'] != 99) {
                     $resultPaginated = $resultPaginated->where('gender', $query['gender']);
                 }
             }
-            if(array_key_exists('age', $query)){
-                if($query['age'] != 99){
-                    if($query['age'] == 1){
+            if (array_key_exists('age', $query)) {
+                if ($query['age'] != 99) {
+                    if ($query['age'] == 1) {
                         $resultPaginated = $resultPaginated->where('birth_date', '<=', Carbon::now()->subYears(18)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(25)->format('Y-m-d'));
                     }
-                    if($query['age'] == 2){
+                    if ($query['age'] == 2) {
                         $resultPaginated = $resultPaginated->where('birth_date', '<=', Carbon::now()->subYears(25)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(30)->format('Y-m-d'));
                     }
-                    if($query['age'] == 3){
+                    if ($query['age'] == 3) {
                         $resultPaginated = $resultPaginated->where('birth_date', '<=', Carbon::now()->subYears(30)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(40)->format('Y-m-d'));
                     }
-                    if($query['age'] == 4){
+                    if ($query['age'] == 4) {
                         $resultPaginated = $resultPaginated->where('birth_date', '<=', Carbon::now()->subYears(40)->format('Y-m-d'))->where('birth_date', '>', Carbon::now()->subYears(50)->format('Y-m-d'));
                     }
-                    if($query['age'] == 5){
+                    if ($query['age'] == 5) {
                         $resultPaginated = $resultPaginated->where('birth_date', '<=', Carbon::now()->subYears(50)->format('Y-m-d'));
                     }
                 }
             }
         }
 
-        if($sort && $sort['field'] != 'order'){
+        if ($sort && $sort['field'] != 'order') {
             $resultPaginated = $resultPaginated->orderBy($sort['field'], $sort['sort']);
         } else {
             $resultPaginated = $resultPaginated->orderBy('name', 'asc')->orderBy('lastname', 'asc');
@@ -398,7 +423,7 @@ class UserController extends Controller
             $row->region = Region::find($row->region) ? Region::find($row->region)->nameRu : '-';
 
             $row->actions = '
-                <a href="'.route('users.show', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
+                <a href="' . route('users.show', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -409,7 +434,7 @@ class UserController extends Controller
                         </svg>
                     </span>
                 </a>
-                <a href="'.route('users.edit', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
+                <a href="' . route('users.edit', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -419,7 +444,7 @@ class UserController extends Controller
                         </svg>
                     </span>
                 </a>
-                <a href="'.route('users.delete', $row).'" class="btn btn-sm btn-clean btn-icon" title="Удалить">
+                <a href="' . route('users.delete', $row) . '" class="btn btn-sm btn-clean btn-icon" title="Удалить">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -433,11 +458,17 @@ class UserController extends Controller
             ';
         }
 
-        if(array_key_exists('pages', $pagination)) { $pages = $pagination['pages']; }
-        else { $pages = $resultPaginated->lastPage(); }
+        if (array_key_exists('pages', $pagination)) {
+            $pages = $pagination['pages'];
+        } else {
+            $pages = $resultPaginated->lastPage();
+        }
 
-        if(array_key_exists('total', $pagination)) { $total = $pagination['total']; }
-        else { $total = $resultPaginated->total(); }
+        if (array_key_exists('total', $pagination)) {
+            $total = $pagination['total'];
+        } else {
+            $total = $resultPaginated->total();
+        }
 
         $pages = $resultPaginated->lastPage();
         $total = $resultPaginated->total();

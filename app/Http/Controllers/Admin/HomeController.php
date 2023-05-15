@@ -50,6 +50,13 @@ class HomeController extends Controller
         return view('admin.profile', compact('title'));
     }
 
+    public function account()
+    {
+        $title = 'Личный кабинет';
+        return view('admin.account', compact('title'));
+    }
+
+
     public function chat(Request $request)
     {
         $title = 'Чаты';

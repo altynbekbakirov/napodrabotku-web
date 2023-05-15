@@ -50,23 +50,27 @@ class LoginController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|min:6',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator, 'login');
+            return redirect()->back()->withErrors(['error' => 'Неправильное имя пользователя или пароль']);
         } else {
             $credentials = $request->only('email', 'password');
 
             $user = User::where('email', $request->email)->first();
-            if($user->type == 'USER') {
-                return redirect()->back()->with('login', 'Нет доступа!');
-            } else {
-                if (auth()->attempt($credentials, true)) {
-                    return redirect()->intended(route('admin.index'));
+            if($user){
+                if($user->type == 'USER') {
+                    return redirect()->back()->with('login', 'Нет доступа!');
                 } else {
-                    return redirect()->back()->with('login_failed', trans('auth.failed'));
+                    if (auth()->attempt($credentials, true)) {
+                        return redirect()->intended(route('admin.index'));
+                    } else {
+                        return redirect()->back()->withErrors(['error' => 'Авторизация не удалась']);
+                    }
                 }
+            } else {
+                return redirect()->back()->withErrors(['error' => 'Такого пользователя не существует']);
             }
         }
 

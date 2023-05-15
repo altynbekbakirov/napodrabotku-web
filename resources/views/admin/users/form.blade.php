@@ -72,7 +72,7 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Тип пользователя:</label>
             <div class="col-lg-4">
-                {!! Form::select('type', $types, null, ['class' => 'selectpicker', 'title' => 'Выбрать', 'data-width' => '100%', 'data-size' => '6']) !!}
+                {!! Form::select('type', $types, null, ['class' => 'selectpicker', 'title' => 'Выбрать', 'data-width' => '100%', 'data-size' => '6', 'disabled' => 'true']) !!}
             </div>
         </div>
         <div class="form-group row">
@@ -157,16 +157,28 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Дата рождения: <span style="color: red">*</span></label>
             <div class="col-lg-4">
-                {!! Form::text('birth_date', null, ['class' => 'datepicker form-control '.$errors->first('birth_date', 'is-invalid')]) !!}
+                {!! Form::text('birth_date', null, ['readonly' => 'true', 'class' => 'datepicker form-control '.$errors->first('birth_date', 'is-invalid')]) !!}
                 @if ($errors->has('birth_date'))
                     <div class="invalid-feedback">{{ $errors->first('birth_date') }}</div>
                 @endif
             </div>
         </div>
         <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Возраст:</label>
+            <div class="col-lg-4">
+                {!! Form::text('age', null, ['class' => 'form-control', 'readonly' => 'true']) !!}
+            </div>
+        </div>
+        <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
                 {!! Form::select('vacancy_type', $vacancy_types, null, ['class' => 'selectpicker form-control', 'placeholder' => 'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_vacancy_type']) !!}
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Вид занятости:</label>
+            <div class="col-lg-4">
+                {!! Form::select('business', $businesses, null, ['class' => 'selectpicker form-control', 'placeholder' => 'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_vacancy_type']) !!}
             </div>
         </div>
         <div class="form-group row align-items-center">

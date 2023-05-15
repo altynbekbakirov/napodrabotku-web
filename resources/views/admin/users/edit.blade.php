@@ -35,7 +35,7 @@
             timePicker: false,
             timePicker24Hour: false,
             locale: {
-                format: 'YYYY-MM-DD',
+                format: 'DD-MM-YYYY',
                 cancelLabel: 'Очистить',
                 applyLabel: 'Применить',
             }
@@ -127,7 +127,7 @@
                                     let item = data.suggestions[index];
 
                                     $('input[name=address]').val(item.value);
-                                    $('input[name=region]').val(item.data.region);
+                                    $('input[name=region]').val(item.data.region_with_type);
                                     $('input[name=district]').val(item.data.city);
                                     $('input[name=street]').val(item.data.street);
                                     $('input[name=house]').val(item.data.house);

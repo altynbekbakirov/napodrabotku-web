@@ -12,39 +12,16 @@
                     <!--begin: Search Form-->
                     <div class="row mt-7">
                         <div class="col-md-12">
-                            <div class="row">
-                                <div class="col-md-1 my-2 my-md-0">
-                                    <div class="input-icon">
-                                        <input type="text" class="form-control" placeholder="Поиск..."
-                                            id="kt_datatable_search_query" />
-                                        <span>
-                                            <i class="la la-search"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                            <div class="form-group row">
                                 <div class="col-md-2 my-2 my-md-0">
-                                    {!! Form::select(
-                                        'period',
-                                        [
-                                            'Месяц' => 'Месяц',
-                                            'Три месяца' => 'Три месяца',
-                                            'Полгода' => 'Полгода',
-                                            'Год' => 'Год',
-                                            'Более года' => 'Более года',
-                                        ],
-                                        null,
-                                        [
-                                            'class' => 'selectpicker form-control',
-                                            'placeholder' => 'Выберите период',
-                                            'data-width' => '100%',
-                                            'data-size' => '6',
-                                            'id' => 'kt_datatable_search_period',
-                                        ]
-                                    ) !!}
+                                    {!! Form::text('period', null, [
+                                        'class' => 'datepicker form-control',
+                                        'data-width' => '100%',
+                                        'readonly' => 'true']) !!}
                                 </div>
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('vacancy', $vacancies, null, [
-                                        'class' => 'selectpicker form-control',
+                                        'class' => 'selectpicker',
                                         'placeholder' => 'Выберите вакансию',
                                         'data-width' => '100%',
                                         'data-size' => '6',
@@ -52,8 +29,17 @@
                                     ]) !!}
                                 </div>
                                 <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('country', $countries, null, [
+                                        'class' => 'selectpicker',
+                                        'placeholder' => 'Страна вакансии',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'id' => 'kt_datatable_search_region',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('region', $regions, null, [
-                                        'class' => 'selectpicker form-control',
+                                        'class' => 'selectpicker',
                                         'placeholder' => 'Регион вакансии',
                                         'data-width' => '100%',
                                         'data-size' => '6',
@@ -72,13 +58,24 @@
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('statuses', $statuses, null, [
                                         'class' => 'selectpicker form-control',
-                                        'placeholder' => 'Статус отклика (Всего ' . count($vacancies) . ')',
+                                        'placeholder' => 'Статус отклика (Всего ' . count($user_ids) . ')',
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'id' => 'kt_datatable_search_status',
                                     ]) !!}
                                 </div>
-                                <div class="col-md-1 mt-5 mt-lg-0 text-right">
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-2 my-2 my-md-0">
+                                    <div class="input-icon">
+                                        <input type="text" class="form-control" placeholder="Поиск..."
+                                            id="kt_datatable_search_query" />
+                                        <span>
+                                            <i class="la la-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-10 mt-5 mt-lg-0 text-right">
                                     <a href="{{ route('user_cv.create') }}" class="btn btn-primary font-weight-bold">
                                         <span class="svg-icon svg-icon-md">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Flatten.svg-->
@@ -110,12 +107,13 @@
                                     <th>#</th>
                                     <th>Дата отклика</th>
                                     <th>Название вакансии</th>
+                                    <th>Страна вакансии</th>
                                     <th>Регион вакансии</th>
                                     <th>Соискатель</th>
                                     <th>Гражданство соискателя</th>
                                     <th>Возраст соискателя</th>
                                     <th width='150px'>Статус отклика</th>
-                                    <th width='120px'>&nbsp;</th>
+                                    {{-- <th width='120px'>&nbsp;</th> --}}
                                 </tr>
                             </thead>
                         </table>
@@ -140,11 +138,11 @@
                 data: function(d) {
                     d.name = $('#kt_datatable_search_query').val();
                     d.vacancy_id = $('select[name=vacancy]').val();
+                    d.country_id = $('select[name=country]').val();
                     d.region_id = $('select[name=region]').val();
-                    d.period_id = $('select[name=period]').val();
+                    d.period_id = $('input[name=period]').val();
                     d.sex_id = $('select[name=sex]').val();
                     d.status_id = $('select[name=statuses]').val();
-                    console.log($('select[name=statuses]').val());
                 }
             },
             columns: [{
@@ -155,6 +153,9 @@
                 },
                 {
                     data: 'name'
+                },
+                {
+                    data: 'country'
                 },
                 {
                     data: 'region'
@@ -171,9 +172,6 @@
                 {
                     data: 'status'
                 },
-                {
-                    data: 'acts'
-                },
             ],
             order: [
                 [0, "asc"]
@@ -186,6 +184,32 @@
 
         $('#kt_datatable_search_query').keyup(function() {
             table.draw();
+        });
+
+        var start = moment().subtract(29, 'days');
+        var end = moment();
+
+        $('.datepicker').daterangepicker({
+            buttonClasses: ' btn',
+            applyClass: 'btn-primary',
+            cancelClass: 'btn-secondary',
+            startDate: start,
+            endDate: end,
+            ranges: {
+                '7 дней': [moment().subtract(6, 'days'), moment()],
+                '30 дней': [moment().subtract(29, 'days'), moment()],
+                'Год': [moment().subtract(1, 'year'), moment()]
+            },
+            locale: {
+                format: 'DD.MM.YYYY',
+                cancelLabel: 'Очистить',
+                applyLabel: 'Применить',
+                customRangeLabel: 'Другие даты'
+            }
+        }, function(start, end, label) {
+            $('.datepicker').val(start.format('DD.MM.YYYY') + ' / ' + end.format('DD.MM.YYYY'));
+            console.log(start.format('DD.MM.YYYY'));
+            console.log(end.format('DD.MM.YYYY'));
         });
 
 
@@ -216,11 +240,15 @@
             table.draw();
         });
 
+        $("select[name=country]").on("change", function() {
+            table.draw();
+        });
+
         $("select[name=region]").on("change", function() {
             table.draw();
         });
 
-        $("select[name=period]").on("change", function() {
+        $("input[name=period]").on("change", function() {
             table.draw();
         });
 
