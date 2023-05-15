@@ -28,12 +28,15 @@ class RegionController extends Controller
 
             $region = Region::where('nameRu', $request->region)->orWhere('nameKg', $request->region)->first();
 
-            foreach (District::where('region', $region->id)->orderBy('nameRu', 'asc')->get() as $item){
-                array_push($result, [
-                    'id'=> $item->id,
-                    'name'=> $item->getName($request->lang)
-                ]);
+            if($region){
+                foreach (District::where('region', $region->id)->orderBy('nameRu', 'asc')->get() as $item){
+                    array_push($result, [
+                        'id'=> $item->id,
+                        'name'=> $item->getName($request->lang)
+                    ]);
+                }
             }
+
         } else {
             foreach (District::orderBy('nameRu', 'asc')->get() as $item){
                 array_push($result, [
