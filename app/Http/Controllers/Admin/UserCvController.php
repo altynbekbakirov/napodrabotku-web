@@ -29,10 +29,13 @@ class UserCvController extends Controller
         $vacancies_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
         $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
+        $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
+        $countries = Country::whereIn('id', $regions_countries)->pluck('nameRu', 'id')->toArray();
         $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('status')->toArray();
         $statuses_count = array_count_values($statuses);
         $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
         $sexes = User::whereIn('id', $user_ids)->pluck('gender')->toArray();
+
         foreach ($sexes as $key => $value) {
             if ($value === 'male') {
                 $sexes[$value] = 'Мужской';
@@ -75,7 +78,13 @@ class UserCvController extends Controller
 
         if (request()->ajax()) {
 
-            if (request()->region_id) {
+            if (request()->country_id && request()->region_id) {
+                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else if (request()->country_id) {
+                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else if (request()->region_id) {
                 $company_vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
             } else {
                 $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
@@ -183,7 +192,7 @@ class UserCvController extends Controller
                 ->rawColumns(['acts', 'status', 'name', 'user_name'])
                 ->make(true);
         }
-        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses'));
+        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses', "user_ids", "countries"));
     }
 
     public function create()

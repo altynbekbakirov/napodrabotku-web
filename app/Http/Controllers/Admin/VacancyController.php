@@ -35,7 +35,7 @@ class VacancyController extends Controller
             }
 
             if (request()->region_id) {
-                $data = $data->where('region_id', request()->region_id);
+                $data = $data->where('region', request()->region_id);
             }
 
             if (request()->busyness_id) {
@@ -98,7 +98,7 @@ class VacancyController extends Controller
                     </a>';
                 })
                 ->addColumn('company_name', function ($row) { return $row->company ? $row->company->name : '-'; })
-                ->addColumn('region', function ($row) { return Region::find($row->region_id) ? Region::find($row->region_id)->nameRu : '-'; })
+                ->addColumn('region', function ($row) { return Region::find($row->region) ? Region::find($row->region)->nameRu : '-'; })
                 ->addColumn('job_type', function ($row) { return $row->jobtype ? $row->jobtype->name_ru : '-'; })
                 ->rawColumns(['acts'])
                 ->make(true);

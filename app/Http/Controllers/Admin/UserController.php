@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserCV;
 use App\Models\Country;
 use App\Models\VacancyType;
+use App\Models\Busyness;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -162,7 +163,8 @@ class UserController extends Controller
         ];
         $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
-        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
+        $businesses = Busyness::pluck('name_ru', 'id')->toArray();
+        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
     }
 
     public function store(Request $request)
@@ -250,10 +252,11 @@ class UserController extends Controller
         ];
         $citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
+        $businesses = Busyness::pluck('name_ru', 'id')->toArray();
         $user->region = Region::find($user->region) ? Region::find($user->region)->nameRu : '';
         $user->district = District::find($user->district) ? District::find($user->district)->nameRu : '';
         $user->birth_date = date('d-m-Y', strtotime($user->birth_date));
-        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
+        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
     }
 
     public function update(Request $request, User $user)

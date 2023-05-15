@@ -169,14 +169,18 @@
                 {!! Form::text('age', null, ['class' => 'form-control', 'readonly' => 'true']) !!}
             </div>
         </div>
-        @if($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
                 {!! Form::select('vacancy_type', $vacancy_types, null, ['class' => 'selectpicker form-control', 'placeholder' => 'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_vacancy_type']) !!}
             </div>
         </div>
-        @endif
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Вид занятости:</label>
+            <div class="col-lg-4">
+                {!! Form::select('business', $businesses, null, ['class' => 'selectpicker form-control', 'placeholder' => 'Любой', 'data-width' => '100%', 'data-size' => '6', 'id' => 'kt_datatable_search_vacancy_type']) !!}
+            </div>
+        </div>
         <div class="form-group row align-items-center">
             <label class="col-lg-3 col-form-label">Статус:</label>
             <div class="col-lg-4">

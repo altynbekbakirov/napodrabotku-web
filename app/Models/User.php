@@ -45,6 +45,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'phone_number',
         'address',
         'type',
+        'business',
         'avatar',
         'active',
         'linkedin',

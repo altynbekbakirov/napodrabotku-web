@@ -13,15 +13,6 @@
                     <div class="row mt-7">
                         <div class="col-md-12">
                             <div class="form-group row">
-                                <div class="col-md-1 my-2 my-md-0">
-                                    <div class="input-icon">
-                                        <input type="text" class="form-control" placeholder="Поиск..."
-                                            id="kt_datatable_search_query" />
-                                        <span>
-                                            <i class="la la-search"></i>
-                                        </span>
-                                    </div>
-                                </div>
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::text('period', null, [
                                         'class' => 'datepicker form-control',
@@ -35,6 +26,15 @@
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'id' => 'kt_datatable_search_vacancy',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('country', $countries, null, [
+                                        'class' => 'selectpicker',
+                                        'placeholder' => 'Страна вакансии',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'id' => 'kt_datatable_search_region',
                                     ]) !!}
                                 </div>
                                 <div class="col-md-2 my-2 my-md-0">
@@ -58,13 +58,24 @@
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('statuses', $statuses, null, [
                                         'class' => 'selectpicker form-control',
-                                        'placeholder' => 'Статус отклика (Всего ' . count($statuses) . ')',
+                                        'placeholder' => 'Статус отклика (Всего ' . count($user_ids) . ')',
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'id' => 'kt_datatable_search_status',
                                     ]) !!}
                                 </div>
-                                <div class="col-md-1 mt-5 mt-lg-0 text-right">
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-2 my-2 my-md-0">
+                                    <div class="input-icon">
+                                        <input type="text" class="form-control" placeholder="Поиск..."
+                                            id="kt_datatable_search_query" />
+                                        <span>
+                                            <i class="la la-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-10 mt-5 mt-lg-0 text-right">
                                     <a href="{{ route('user_cv.create') }}" class="btn btn-primary font-weight-bold">
                                         <span class="svg-icon svg-icon-md">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Flatten.svg-->
@@ -127,6 +138,7 @@
                 data: function(d) {
                     d.name = $('#kt_datatable_search_query').val();
                     d.vacancy_id = $('select[name=vacancy]').val();
+                    d.country_id = $('select[name=country]').val();
                     d.region_id = $('select[name=region]').val();
                     d.period_id = $('input[name=period]').val();
                     d.sex_id = $('select[name=sex]').val();
@@ -225,6 +237,10 @@
         });
 
         $("select[name=vacancy]").on("change", function() {
+            table.draw();
+        });
+
+        $("select[name=country]").on("change", function() {
             table.draw();
         });
 
