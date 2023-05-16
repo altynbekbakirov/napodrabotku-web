@@ -495,12 +495,12 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
         if($user) {
-            if($model == 'regions') $result = $user->filter_region;
-            if($model == 'activities') $result = $user->filter_activity;
-            if($model == 'types') $result = $user->filter_type;
-            if($model == 'busyness') $result = $user->filter_busyness;
-            if($model == 'schedules') $result = $user->filter_schedule;
-            if($model == 'districts') $result = $user->filter_district;
+            if($model == 'regions') $result = $user->filter_region ?? [];
+            if($model == 'activities') $result = $user->filter_activity ?? [];
+            if($model == 'types') $result = $user->filter_type ?? [];
+            if($model == 'busyness') $result = $user->filter_busyness ?? [];
+            if($model == 'schedules') $result = $user->filter_schedule ?? [];
+            if($model == 'districts') $result = $user->filter_district ?? [];
         }
 
         return $result;
@@ -692,22 +692,22 @@ class UserController extends Controller
                 $user_vacancies = UserVacancy::where('user_id', $user->id)->delete();
                 $user_skills = DB::table('user_skills')->where('user_id', $user->id)->delete();
                 $user_email_codes = DB::table('user_email_codes')->where('user_id', $user->id)->delete();
-    
+
                 $user_cv_id = UserCV::where('user_id', $user->id)->pluck('id');
-    
+
                 $user_experiens = UserExperience::whereIn('user_cv_id', $user_cv_id)->delete();
 
                 $user_education = UserEducation::whereIn('user_cv_id', $user_cv_id)->delete();
 
                 $user_courses = DB::table('user_courses')->whereIn('user_cv_id', $user_cv_id)->delete();
-    
+
                 $user_cvs = UserCV::where('user_id', $user->id)->delete();
                 $user->delete();
 
                 return response()->json([
                     'message' => 'OK'
                 ], 200);
-    
+
             } catch (QueryException $e) {
                 return response()->json([
                     'id' => null,

@@ -112,15 +112,13 @@ class Vacancy extends Model
         return Region::all();
     }
 
-
-    public function region()
+    public function getRegion()
     {
-        return $this->belongsTo(Region::class, 'region_id');
+        return $this->belongsTo(Region::class, 'region');
     }
-
-    public function district()
+    public function getDistrict()
     {
-        return $this->belongsTo(District::class, 'district_id');
+        return $this->belongsTo(District::class, 'district');
     }
 
     public function opportunity()

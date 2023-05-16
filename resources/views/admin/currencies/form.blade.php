@@ -1,5 +1,14 @@
 <div class="card-body">
     <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Коротко:</label>
+        <div class="col-lg-4">
+            {!! Form::text('code', null, ['class' => 'form-control']) !!}
+            @if ($errors->has('code'))
+                <div class="invalid-feedback">{{ $errors->first('code') }}</div>
+            @endif
+        </div>
+    </div>
+    <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название (на кыргызском):</label>
         <div class="col-lg-4">
             {!! Form::text('name', null, ['class' => 'form-control']) !!}

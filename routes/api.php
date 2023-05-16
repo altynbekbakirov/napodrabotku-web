@@ -82,7 +82,7 @@ Route::group([
     Route::get('chats', ['uses' => 'ChatController@index']);
     Route::post('chats/delete', ['uses' => 'ChatController@destroyChat']);
 
-    Route::get('messages/{receiver_id}', ['uses' => 'ChatController@messages']);
+    Route::get('messages/{receiver_id}/{vacancy_id}', ['uses' => 'ChatController@messages']);
     Route::post('messages', ['uses' => 'ChatController@saveMessage']);
 
     /// Product Lab

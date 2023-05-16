@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Models\User;
+use App\Models\Vacancy;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -34,6 +35,8 @@ class ChatController extends Controller
                 $result[] = [
                     'id' => $chat->company->id,
                     'name' => $chat->company->name,
+                    'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
+                    'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
                     'avatar' => $chat->company->avatar,
                     'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
                     'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
@@ -47,6 +50,8 @@ class ChatController extends Controller
                 $result[] = [
                     'id' => $chat->user->id,
                     'name' => $chat->user->name,
+                    'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
+                    'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
                     'avatar' => $chat->user->avatar,
                     'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
                     'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
@@ -57,24 +62,32 @@ class ChatController extends Controller
         return json_encode($result);
     }
 
-    public function messages(Request $request, $receiver_id)
+    public function messages(Request $request, $receiver_id, $vacancy_id)
     {
         $result = [];
 
+        $vacancy = Vacancy::find($vacancy_id);
+
         if($this->user->type == 'USER') {
-            $chat = Chat::where('user_id', $this->user->id)->where('company_id', $receiver_id)->where('deleted', false)->first();
+            $chat = Chat::where('user_id', $this->user->id)->where('company_id', $receiver_id);
+            if($vacancy) $chat = $chat->where('vacancy_id', $vacancy_id);
+            $chat = $chat->where('deleted', false)->first();
             if(!$chat) {
                 $chat = Chat::create([
                     'user_id' => $this->user->id,
-                    'company_id' => $receiver_id
+                    'company_id' => $receiver_id,
+                    'vacancy_id' => $vacancy_id
                 ]);
             }
         } else {
-            $chat = Chat::where('user_id', $receiver_id)->where('company_id', $this->user->id)->where('deleted', false)->first();
+            $chat = Chat::where('user_id', $receiver_id)->where('company_id', $this->user->id);
+            if($vacancy) $chat = $chat->where('vacancy_id', $vacancy_id);
+            $chat = $chat->where('deleted', false)->first();
             if(!$chat) {
                 $chat = Chat::create([
                     'user_id' => $receiver_id,
-                    'company_id' => $this->user->id
+                    'company_id' => $this->user->id,
+                    'vacancy_id' => $vacancy_id
                 ]);
             }
         }
@@ -107,9 +120,9 @@ class ChatController extends Controller
     public function saveMessage(Request $request)
     {
         if($this->user->type == 'USER') {
-            $chat = Chat::where('user_id', $this->user->id)->where('company_id', $request->receiver_id)->first();
+            $chat = Chat::where('user_id', $this->user->id)->where('company_id', $request->receiver_id)->where('vacancy_id', $request->vacancy_id)->first();
         } else {
-            $chat = Chat::where('user_id', $request->receiver_id)->where('company_id', $this->user->id)->first();
+            $chat = Chat::where('user_id', $request->receiver_id)->where('company_id', $this->user->id)->where('vacancy_id', $request->vacancy_id)->first();
         }
 
         $message = Message::create([
