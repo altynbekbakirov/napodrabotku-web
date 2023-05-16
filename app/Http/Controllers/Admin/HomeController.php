@@ -9,6 +9,7 @@ use App\Charts\SexChart;
 use App\Charts\UserChart;
 use App\Charts\YearChart;
 use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Cookie;
@@ -75,7 +76,9 @@ class HomeController extends Controller
 
     public function message(Request $request)
     {
-        dd($request);
+        $message = Message::create($request->all());
+
+        return redirect()->back();
     }
 
 

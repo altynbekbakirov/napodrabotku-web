@@ -21,8 +21,14 @@ class UserVacancy extends Model
 
     protected $searchable = [
         'columns' => [
-            'id' => 10,
-            'user_id' => 10,
+            'users.name' => 10,
+            'users.lastname' => 10,
+            'users.surname' => 10,
+            'vacancies.name' => 10,
+        ],
+        'joins' => [
+            'users' => ['user_vacancy.user_id','users.id'],
+            'vacancies' => ['user_vacancy.vacancy_id','vacancies.id'],
         ],
     ];
 

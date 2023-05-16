@@ -16,6 +16,7 @@ use App\Models\UserVacancy;
 use App\Models\Vacancy;
 use App\Models\VacancyType;
 use App\Models\Country;
+use App\Models\Chat;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use DateTime;
@@ -100,19 +101,20 @@ class UserCvController extends Controller
                 $data = UserVacancy::query();
             }
 
-            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("type", 'SUBMITTED')->orderBy('id', 'desc');
+            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("user_vacancy.type", 'SUBMITTED')->orderBy('user_vacancy.id', 'desc');
             // $currentDateTime = date('Y-m-d H:i:s');
             // $from = date('Y-m-d', strtotime('-29 day', strtotime($currentDateTime)));
             // $data = $data->whereBetween('created_at', [$from, $currentDateTime]);
 
-            if (request()->name) {
-                $data = $data->with(['usersList']);
-                $user_name = request()->name;
-                $data = $data->where(function ($query) use ($user_name) {
-                    $query->whereHas('usersList', function ($q) use ($user_name) {
-                        $q->where('name', 'LIKE', '%' . $user_name . '%');
-                    });
-                });
+            if (request()->search) {
+                // $data = $data->with(['usersList']);
+                // $user_name = request()->name;
+                // $data = $data->where(function ($query) use ($user_name) {
+                //     $query->whereHas('usersList', function ($q) use ($user_name) {
+                //         $q->where('name', 'LIKE', '%' . $user_name . '%');
+                //     });
+                // });
+                $data = $data->search(request()->search);
             }
 
             if (request()->sex_id) {
@@ -140,17 +142,23 @@ class UserCvController extends Controller
 
             return datatables()->of($data)
                 ->addIndexColumn()
-                // ->addColumn('acts', function ($row) {
-                //     return '
-                //     <a href="' . route('user_cv.show', $row) . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
-                //         Перейти в чат
-                //     </a>';
-                // })
+                ->addColumn('acts', function ($row) {
+                    $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy->id)->first();
+                    if($chat){
+                        return '
+                            <a href="' . route('admin.chat', ) . '?id='.$chat->id.'" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                                Перейти в чат
+                            </a>';
+                    } else {
+                        return '';
+                    }
+
+                })
                 ->addColumn('date', function ($row) {
                     return date('d-m-Y H:i', strtotime($row->created_at));
                 })
                 ->addColumn('name', function ($row) {
-                    $actions = '<a href="' . route('vacancies.edit', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' .$row->vacancy->name . '</a>';
+                    $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' .$row->vacancy->name . '</a>';
                     return $actions;
                 })
                 ->addColumn('country', function ($row) {

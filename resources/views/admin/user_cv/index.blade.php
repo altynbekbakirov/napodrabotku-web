@@ -113,7 +113,7 @@
                                     <th>Гражданство соискателя</th>
                                     <th>Возраст соискателя</th>
                                     <th width='150px'>Статус отклика</th>
-                                    {{-- <th width='120px'>&nbsp;</th> --}}
+                                    <th width='120px'>&nbsp;</th>
                                 </tr>
                             </thead>
                         </table>
@@ -136,7 +136,7 @@
             ajax: {
                 url: '{{ route('user_cv.index') }}',
                 data: function(d) {
-                    d.name = $('#kt_datatable_search_query').val();
+                    d.search = $('#kt_datatable_search_query').val();
                     d.vacancy_id = $('select[name=vacancy]').val();
                     d.country_id = $('select[name=country]').val();
                     d.region_id = $('select[name=region]').val();
@@ -171,6 +171,9 @@
                 },
                 {
                     data: 'status'
+                },
+                {
+                    data: 'acts'
                 },
             ],
             order: [
@@ -208,8 +211,6 @@
             }
         }, function(start, end, label) {
             $('.datepicker').val(start.format('DD.MM.YYYY') + ' / ' + end.format('DD.MM.YYYY'));
-            console.log(start.format('DD.MM.YYYY'));
-            console.log(end.format('DD.MM.YYYY'));
         });
 
 
