@@ -99,11 +99,11 @@
                         <span class="menu-text">Отклики</span>
                     </a>
                 </li>
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{route('admin.chat')}}" class="menu-link">
                         <span class="menu-text">Чат</span>
                     </a>
-                </li> --}}
+                </li>
                 <li class="menu-item">
                     <a href="{{route('admin.account')}}" class="menu-link">
                         <span class="menu-text">Личный кабинет</span>

@@ -23,12 +23,14 @@
                                         <!--begin:User-->
                                         <div class="rounded d-flex align-items-center justify-content-between p-4 @if($selected_chat && $selected_chat->id == $chat->id) bg-light-primary @endif">
                                             <div class="d-flex align-items-center">
+                                                @if($chat->user->avatar)
                                                 <div class="symbol symbol-circle symbol-50 mr-3">
                                                     <img alt="Pic" src="{{asset($chat->user->avatar)}}" />
                                                 </div>
+                                                @endif
                                                 <div class="d-flex flex-column">
-                                                    <a href="{{route('admin.chat', ['id' => $chat->id])}}" class="text-dark-75 text-hover-primary font-weight-bold font-size-lg">{{$chat->user->name}}</a>
-                                                    <span class="text-muted font-weight-bold font-size-sm">{{$chat->user->cv->job_title}}</span>
+                                                    <a href="{{route('admin.chat', ['id' => $chat->id])}}" class="text-dark-75 text-hover-primary font-weight-bold font-size-lg">{{$chat->user->getFullName()}}</a>
+                                                    <span class="text-muted font-weight-bold font-size-sm">{{$chat->vacancy ? $chat->vacancy->name : ''}}</span>
                                                 </div>
                                             </div>
                                             <div class="d-flex flex-column align-items-end">
@@ -59,7 +61,8 @@
                             <div class="text-left flex-grow-1">&nbsp;</div>
                             <div class="text-center flex-grow-1">
                                 @if($selected_chat)
-                                    {{$selected_chat->user->name}}
+                                    {{$selected_chat->user->getFullName()}}
+                                    <span class="text-muted">({{$selected_chat->vacancy ? $selected_chat->vacancy->name : ''}})</span>
                                 @endif
                             </div>
                             <div class="text-right flex-grow-1">
@@ -106,119 +109,53 @@
 
                                     @if($selected_chat && $selected_chat->messages)
                                         @foreach($selected_chat->messages as $message)
-                                            <!--begin::Message In-->
-                                            <div class="d-flex flex-column mb-5 align-items-start">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-circle symbol-40 mr-3">
-                                                        <img alt="Pic" src="{{asset('assets/media/users/300_12.jpg')}}"/>
+                                            @if($message->user_id == auth()->user()->id)
+                                                <!--begin::Message Out-->
+                                                <div class="d-flex flex-column mb-5 align-items-end">
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <span class="text-muted font-size-sm">{{$message->getCreatedDateTime()}}</span>
+                                                            <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Вы</a>
+                                                        </div>
+                                                        @if(auth()->user()->avatar)
+                                                            <div class="symbol symbol-circle symbol-40 ml-3">
+                                                                <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
+                                                            </div>
+                                                        @else
+                                                            <div class="symbol symbol-circle symbol-40 ml-3">
+                                                                <img alt="Pic" src="{{asset('assets/media/users/default.jpg')}}" />
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <div>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
-                                                        <span class="text-muted font-size-sm">2 Hours</span>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">How likely are you to recommend our company to your friends and family?</div>
-                                            </div>
-                                            <!--end::Message In-->
-                                            <!--begin::Message Out-->
-                                            <div class="d-flex flex-column mb-5 align-items-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <span class="text-muted font-size-sm">3 minutes</span>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
-                                                    </div>
-                                                    <div class="symbol symbol-circle symbol-40 ml-3">
-                                                        <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
+                                                    <div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                                        {{$message->message}}
                                                     </div>
                                                 </div>
-                                                <div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Hey there, we’re just writing to let you know that you’ve been subscribed to a repository on GitHub.</div>
-                                            </div>
-                                            <!--end::Message Out-->
-                                            <!--begin::Message In-->
-                                            <div class="d-flex flex-column mb-5 align-items-start">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-circle symbol-40 mr-3">
-                                                        <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
+                                                <!--end::Message Out-->
+                                            @else
+                                                <!--begin::Message In-->
+                                                <div class="d-flex flex-column mb-5 align-items-start">
+                                                    <div class="d-flex align-items-center">
+                                                        @if($message->user->avatar)
+                                                            <div class="symbol symbol-circle symbol-40 mr-3">
+                                                                <img alt="Pic" src="{{asset($message->user->avatar)}}" />
+                                                            </div>
+                                                        @else
+                                                            <div class="symbol symbol-circle symbol-40 mr-3">
+                                                                <img alt="Pic" src="{{asset('assets/media/users/default.jpg')}}" />
+                                                            </div>
+                                                        @endif
+                                                        <div>
+                                                            <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">{{$message->user->getFullName()}}</a>
+                                                            <span class="text-muted font-size-sm">{{$message->getCreatedDateTime()}}</span>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
-                                                        <span class="text-muted font-size-sm">40 seconds</span>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">Ok, Understood!</div>
-                                            </div>
-                                            <!--end::Message In-->
-                                            <!--begin::Message Out-->
-                                            <div class="d-flex flex-column mb-5 align-items-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <span class="text-muted font-size-sm">Just now</span>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
-                                                    </div>
-                                                    <div class="symbol symbol-circle symbol-40 ml-3">
-                                                        <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
+                                                    <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                                                        {{$message->message}}
                                                     </div>
                                                 </div>
-                                                <div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">You’ll receive notifications for all issues, pull requests!</div>
-                                            </div>
-                                            <!--end::Message Out-->
-                                            <!--begin::Message In-->
-                                            <div class="d-flex flex-column mb-5 align-items-start">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-circle symbol-40 mr-3">
-                                                        <img alt="Pic" src="{{asset('assets/media/users/300_12.jpg')}}" />
-                                                    </div>
-                                                    <div>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
-                                                        <span class="text-muted font-size-sm">40 seconds</span>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">You can unwatch this repository immediately by clicking here:
-                                                    <a href="#">https://github.com</a></div>
-                                            </div>
-                                            <!--end::Message In-->
-                                            <!--begin::Message Out-->
-                                            <div class="d-flex flex-column mb-5 align-items-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <span class="text-muted font-size-sm">Just now</span>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
-                                                    </div>
-                                                    <div class="symbol symbol-circle symbol-40 ml-3">
-                                                        <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Discover what students who viewed Learn Figma - UI/UX Design. Essential Training also viewed</div>
-                                            </div>
-                                            <!--end::Message Out-->
-                                            <!--begin::Message In-->
-                                            <div class="d-flex flex-column mb-5 align-items-start">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-circle symbol-40 mr-3">
-                                                        <img alt="Pic" src="{{asset('assets/media/users/300_12.jpg')}}" />
-                                                    </div>
-                                                    <div>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
-                                                        <span class="text-muted font-size-sm">40 seconds</span>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">Most purchased Business courses during this sale!</div>
-                                            </div>
-                                            <!--end::Message In-->
-                                            <!--begin::Message Out-->
-                                            <div class="d-flex flex-column mb-5 align-items-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <span class="text-muted font-size-sm">Just now</span>
-                                                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
-                                                    </div>
-                                                    <div class="symbol symbol-circle symbol-40 ml-3">
-                                                        <img alt="Pic" src="{{asset(auth()->user()->avatar)}}" />
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Company BBQ to celebrate the last quater achievements and goals. Food and drinks provided</div>
-                                            </div>
-                                            <!--end::Message Out-->
+                                                <!--end::Message In-->
+                                            @endif
                                         @endforeach
                                     @endif
                                 </div>
@@ -231,6 +168,8 @@
                         <div class="card-footer align-items-center">
                             @if($selected_chat && $selected_chat->messages)
                                 {!! Form::open(['route' => ['admin.chat.message', $selected_chat], 'enctype' => 'multipart/form-data', 'class' => 'form']) !!}
+                                    <input type="hidden" name="chat_id" value="{{$selected_chat->id}}">
+                                    <input type="hidden" name="user_id" value="{{auth()->user()->id}}">
                                     <!--begin::Compose-->
                                     <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="message"></textarea>
                                     <div class="d-flex align-items-center justify-content-between mt-5">

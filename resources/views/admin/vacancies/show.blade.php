@@ -14,7 +14,7 @@
                         <h3 class="card-label font-weight-bolder text-dark">{{$vacancy->name}}</h3>
                     </div>
                     <div class="card-toolbar">
-                        <a href="{{route('vacancies.index')}}" class="btn btn-secondary mr-2">Назад</a>
+                        <button type="reset" class="btn btn-secondary" onclick="window.history.back();">Назад</button> &nbsp;&nbsp;
                         <a href="{{route('vacancies.edit', $vacancy)}}" class="btn btn-success mr-2">Редактировать</a>
                         <a href="{{route('vacancies.delete', $vacancy)}}" class="btn btn-danger">Удалить</a>
                     </div>
@@ -51,12 +51,12 @@
 
                         <div class="separator separator-dashed my-10"></div>
 
-                        <div class="form-group row align-items-center">
+                        {{-- <div class="form-group row align-items-center">
                             <label class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Регион:</label>
                             <div class="col-lg-9 col-xl-6">
-                                <p class="font-weight-bold mb-0">{{$vacancy->region ? $vacancy->region->nameRu : '-'}}</p>
+                                <p class="font-weight-bold mb-0">{{$vacancy->region ? $vacancy->region->name_ru : '-'}}</p>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="form-group row align-items-center">
                             <label class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Вид занятости:</label>
                             <div class="col-lg-9 col-xl-6">
