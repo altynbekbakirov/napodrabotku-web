@@ -85,7 +85,7 @@
                                 </a>
                             </li>
                             <li class="menu-item" aria-haspopup="true">
-                                <a href="{{route('currencies.index')}}" class="menu-link">
+                                <a href="{{ route('currencies.index') }}" class="menu-link">
                                     <span class="menu-text">Валюты</span>
                                 </a>
                             </li>
@@ -102,13 +102,18 @@
                 <li class="menu-item">
                     <a href="{{ route('user_cv.index') }}" class="menu-link">
                         <span class="menu-text">Отклики</span>&nbsp;
-                        <span class="label label-warning label-inline font-weight-bold">5</span>
+                        @if ($user_vacancy_feedbacks)
+                            <span class="label label-warning label-inline font-weight-bold">{{$user_vacancy_feedbacks}}</span>
+                        @endif
                     </a>
                 </li>
                 <li class="menu-item">
                     <a href="{{ route('admin.chat') }}" class="menu-link">
                         <span class="menu-text">Чат</span>&nbsp;
-                        <span class="label label-danger label-inline font-weight-bold">5</span>
+                        @if ($unread_messages)
+                            <span
+                                class="label label-danger label-inline font-weight-bold">{{ $unread_messages }}</span>
+                        @endif
                     </a>
                 </li>
                 <li class="menu-item">
