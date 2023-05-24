@@ -152,10 +152,8 @@ class UserCvController extends Controller
                     if ($chat) {
                         $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
                         if (count($msgs) > 0) {
-                            return '
-                            <a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
-                                Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span>
-                            </a>';
+                            return '<a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
+                                Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span></a>';
                         } else {
                             return '
                             <a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
