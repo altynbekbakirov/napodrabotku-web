@@ -14,10 +14,20 @@
                         <div class="col-md-12">
                             <div class="form-group row">
                                 <div class="col-md-2 my-2 my-md-0">
+                                    <div class="input-icon">
+                                        <input type="text" class="form-control" placeholder="Поиск..."
+                                            id="kt_datatable_search_query" />
+                                        <span>
+                                            <i class="la la-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::text('period', null, [
                                         'class' => 'datepicker form-control',
                                         'data-width' => '100%',
-                                        'readonly' => 'true']) !!}
+                                        'readonly' => 'true',
+                                    ]) !!}
                                 </div>
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('vacancy', $vacancies, null, [
@@ -55,27 +65,23 @@
                                         'id' => 'kt_datatable_search_sex',
                                     ]) !!}
                                 </div>
-                                <div class="col-md-2 my-2 my-md-0">
+                                {{-- <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('statuses', $statuses, null, [
                                         'class' => 'selectpicker form-control',
-                                        'placeholder' => 'Статус отклика (Всего ' . count($user_ids) . ')',
+                                        'placeholder' => 'Статус отклика (Всего ' . count($statuses) . ')',
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'id' => 'kt_datatable_search_status',
                                     ]) !!}
-                                </div>
+                                </div> --}}
                             </div>
                             <div class="form-group row">
-                                <div class="col-md-2 my-2 my-md-0">
-                                    <div class="input-icon">
-                                        <input type="text" class="form-control" placeholder="Поиск..."
-                                            id="kt_datatable_search_query" />
-                                        <span>
-                                            <i class="la la-search"></i>
-                                        </span>
-                                    </div>
+                                <div class="col-md-9">
+                                    @foreach ($stats as $status)
+                                        {!! $status !!}
+                                    @endforeach
                                 </div>
-                                <div class="col-md-10 mt-5 mt-lg-0 text-right">
+                                <div class="col-md-3 mt-lg-0 text-right">
                                     <a href="{{ route('user_cv.create') }}" class="btn btn-primary font-weight-bold">
                                         <span class="svg-icon svg-icon-md">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Flatten.svg-->
@@ -100,7 +106,7 @@
                     </div>
                     <!--end: Search Form-->
                     <!--begin: Datatable-->
-                    <div class="table-responsive mt-10">
+                    <div class="table-responsive">
                         <table class="table table-bordered" id="dataTable">
                             <thead>
                                 <tr>
@@ -130,7 +136,29 @@
 @section('scripts')
     <script>
         let table = $('#dataTable').DataTable({
-            dom: `t`,
+            buttons: [
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        columns: [0,1,2,3,4,5,6,7]
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    exportOptions: {
+                        columns: [0,1,2,3,4,5,6,7]
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    exportOptions: {
+                        columns: [0,1,2,3,4,5,6,7]
+                    }
+                },
+            ],
+            dom: `<'row'<'col-sm-6 text-left'><'col-sm-6 text-right'B>>
+			<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
             processing: true,
             serverSide: true,
             ajax: {
@@ -142,7 +170,7 @@
                     d.region_id = $('select[name=region]').val();
                     d.period_id = $('input[name=period]').val();
                     d.sex_id = $('select[name=sex]').val();
-                    d.status_id = $('select[name=statuses]').val();
+                    d.status_id = $("button.btn-success").attr('status_id');
                 }
             },
             columns: [{
@@ -258,6 +286,11 @@
         });
 
         $("select[name=statuses]").on("change", function() {
+            table.draw();
+        });
+        $("button").on("click", function(e) {
+            $("button").removeClass("btn-success").removeClass("btn-light").addClass("btn-light");
+            $(this).removeClass('btn-light').addClass('btn-success');
             table.draw();
         });
     </script>

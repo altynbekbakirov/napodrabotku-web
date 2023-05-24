@@ -17,6 +17,7 @@ use App\Models\Vacancy;
 use App\Models\VacancyType;
 use App\Models\Country;
 use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use DateTime;
@@ -32,7 +33,7 @@ class UserCvController extends Controller
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
         $countries = Country::whereIn('id', $regions_countries)->pluck('nameRu', 'id')->toArray();
-        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('status')->toArray();
+        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->where('type', 'SUBMITTED')->pluck('status')->toArray();
         $statuses_count = array_count_values($statuses);
         $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
         $sexes = User::whereIn('id', $user_ids)->pluck('gender')->toArray();
@@ -48,30 +49,34 @@ class UserCvController extends Controller
             }
         }
 
+        $stats = [
+            'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
+            'not_processed' => '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">He обработан <span class="label label-primary">0</span></button>&nbsp;',
+            'processing' => '<button type="button" class="btn btn-lg btn-light" status_id="processing">B обработке <span class="label label-primary">0</span></button>&nbsp;',
+            'selected' => '<button type="button" class="btn btn-lg btn-light" status_id="selected">Отобран <span class="label label-primary">0</span></button>&nbsp;',
+            'interview' => '<button type="button" class="btn btn-lg btn-light" status_id="interview">Собеседование <span class="label label-primary">0</span></button>&nbsp;',
+            'hired' => '<button type="button" class="btn btn-lg btn-light" status_id="hired">Принят на работу <span class="label label-primary">0</span></button>&nbsp;',
+            'rejected' => '<button type="button" class="btn btn-lg btn-light" status_id="rejected">Отклонен <span class="label label-primary">0</span></button>&nbsp;',
+        ];
+
         foreach ($statuses as $key => $value) {
             if ($value === 'not_processed') {
-                $statuses[$value] = 'He обработан (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">He обработан <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'processing') {
-                $statuses[$value] = 'B обработке (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="processing">B обработке <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'selected') {
-                $statuses[$value] = 'Отобран (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="selected">Отобран <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'interview') {
-                $statuses[$value] = 'Собеседование (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="interview">Собеседование <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'hired') {
-                $statuses[$value] = 'Принят на работу (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="hired">Принят на работу <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'rejected') {
-                $statuses[$value] = 'Отклонен (' . $statuses_count[$value] . ')';
-                unset($statuses[$key]);
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="rejected">Отклонен <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
         }
 
@@ -91,11 +96,11 @@ class UserCvController extends Controller
                 $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
             }
 
-            if (request()->vacancy_id && request()->status_id) {
+            if (request()->vacancy_id && request()->status_id && request()->status_id != 'all') {
                 $data = UserVacancy::where('vacancy_id', request()->vacancy_id)->where('status', request()->status_id);
             } else if (request()->vacancy_id) {
                 $data = UserVacancy::where('vacancy_id', request()->vacancy_id);
-            } else if (request()->status_id) {
+            } else if (request()->status_id && request()->status_id != 'all') {
                 $data = UserVacancy::where('status', request()->status_id);
             } else {
                 $data = UserVacancy::query();
@@ -144,21 +149,28 @@ class UserCvController extends Controller
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
                     $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy->id)->first();
-                    if($chat){
-                        return '
-                            <a href="' . route('admin.chat', ) . '?id='.$chat->id.'" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                    if ($chat) {
+                        $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
+                        if (count($msgs) > 0) {
+                            return '
+                            <a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
+                                Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span>
+                            </a>';
+                        } else {
+                            return '
+                            <a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
                                 Перейти в чат
                             </a>';
+                        }
                     } else {
                         return '';
                     }
-
                 })
                 ->addColumn('date', function ($row) {
                     return date('d-m-Y H:i', strtotime($row->created_at));
                 })
                 ->addColumn('name', function ($row) {
-                    $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' .$row->vacancy->name . '</a>';
+                    $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' . $row->vacancy->name . '</a>';
                     return $actions;
                 })
                 ->addColumn('country', function ($row) {
@@ -172,7 +184,7 @@ class UserCvController extends Controller
                     return Country::where('id', $row->user->citizen)->first()->nameRu;
                 })
                 ->addColumn('user_name', function ($row) {
-                    return $row->user->name . ' <a href="https://wa.me/'. preg_replace("/[^0-9\-]/", "", $row->user->phone_number) .'" class="text-link mr-2" title="Редактировать">' .$row->user->phone_number . '</a>';
+                    return $row->user->name . ' <a href="https://wa.me/' . preg_replace("/[^0-9\-]/", "", $row->user->phone_number) . '" class="text-link mr-2" title="Редактировать">' . $row->user->phone_number . '</a>';
                 })
                 ->addColumn('birth_date', function ($row) {
                     $birthdate = new DateTime($row->user->birth_date);
@@ -181,7 +193,7 @@ class UserCvController extends Controller
                     return $age . ' лет';
                 })
                 ->addColumn('status', function ($row) {
-                    $statuses = [
+                    $sts = [
                         'not_processed' => 'He обработан',
                         'processing' => 'B обработке',
                         'selected' => 'Отобран',
@@ -191,7 +203,7 @@ class UserCvController extends Controller
                     ];
 
                     $options = '';
-                    foreach ($statuses as $value => $label) {
+                    foreach ($sts as $value => $label) {
                         $selected = $row->status == $value ? 'selected' : '';
                         $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
                     }
@@ -200,7 +212,7 @@ class UserCvController extends Controller
                 ->rawColumns(['acts', 'status', 'name', 'user_name'])
                 ->make(true);
         }
-        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses', "user_ids", "countries"));
+        return view('admin.user_cv.index', compact('title', 'vacancies', 'regions', 'sexes', 'statuses', "user_ids", "countries", "statuses_count", "stats"));
     }
 
     public function create()

@@ -6,10 +6,7 @@ use App\Models\User;
 use App\Models\VacancyType as VacancyType;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Hash;
-use Intervention\Image\ImageManagerStatic as Image;
 
 class VacancyTypeController extends Controller
 {

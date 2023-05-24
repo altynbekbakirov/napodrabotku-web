@@ -69,6 +69,14 @@ class HomeController extends Controller
 
         if($chat_id){
             $selected_chat = Chat::findOrFail($chat_id);
+            $messages = Message::chat($chat_id)->get();
+
+        if($messages){
+            foreach ($messages as $message){
+                $message->read = true;
+                $message->save();
+            }
+        }
         }
 
         return view('admin.chat', compact('title', 'chats', 'selected_chat'));
