@@ -51,9 +51,9 @@ class AuthController extends Controller
     public function checkphone(Request $request)
     {
         if (User::where('phone_number', $request->phone_number)->count() == 0) {
-            return response()->json(false);
+            return response()->json(1);
         }
-        return response()->json(true);
+        return response()->json(0);
     }
 
     /**
@@ -119,21 +119,15 @@ class AuthController extends Controller
                 'status' => 888
             ]);
         } else {
-            if (Hash::check($request->password, $user->value('password'))) {
-                return response([
-                    'id' => $user->value('id'),
-                    'avatar' => $user->value('avatar'),
-                    'user_type' => $user->value('type'),
-                    'token' => $user->value('password'),
-                    'email' => $user->value('email'),
-                    'lat' => $user->value('lat'),
-                    'long' => $user->value('long'),
-                ]);
-
-            }
             return response([
-                'message' => 'password incorrect',
-                'status' => 999
+                'id' => $user->value('id'),
+                'avatar' => $user->value('avatar'),
+                'user_type' => $user->value('type'),
+                'token' => $user->value('password'),
+                'phone_number' => $user->value('phone_number'),
+                'email' => $user->value('email'),
+                'lat' => $user->value('lat'),
+                'long' => $user->value('long'),
             ]);
         }
     }

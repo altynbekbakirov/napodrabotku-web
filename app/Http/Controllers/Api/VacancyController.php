@@ -143,21 +143,21 @@ class VacancyController extends Controller
             ->where('is_active', true)
             ->whereDate('created_at', '>', $specificDate);
 
-//        $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids)
-//            ->whereIn('schedule_id', $schedule_ids)
-//            ->whereIn('busyness_id', $busyness_ids)
-//            ->whereIn('vacancy_type_id', $type_ids)
-//            ->whereIn('region_id', $region_ids);
+        $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids)
+            ->whereIn('schedule_id', $schedule_ids)
+            ->whereIn('busyness_id', $busyness_ids)
+            ->whereIn('vacancy_type_id', $type_ids)
+            ->whereIn('region', $region_ids);
 
-//        $vacancies = $vacancies->orderBy('created_at', 'desc');
-//
-//        if ($offset) {
-//            $vacancies = $vacancies->skip($offset);
-//        }
-//
-//        if($limit) {
-//            $vacancies = $vacancies->take($limit);
-//        }
+        $vacancies = $vacancies->orderBy('created_at', 'desc');
+
+        if ($offset) {
+            $vacancies = $vacancies->skip($offset);
+        }
+
+        if($limit) {
+            $vacancies = $vacancies->take($limit);
+        }
 
         $vacancies = $vacancies->get();
 
@@ -281,7 +281,7 @@ class VacancyController extends Controller
                     'busyness_id' => $request->busyness,
                     'schedule_id' => $request->schedule,
                     'job_type_id' => $request->job_type,
-                    'region_id' => $request->region ? $request->region : $user->region,
+                    'region' => $request->region ? $request->region : $user->region,
                     'district_id' => $request->district ? $request->district : $user->district,
                     'vacancy_type_id' => $request->type,
                     'currency' => $request->currency,

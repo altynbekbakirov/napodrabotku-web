@@ -280,7 +280,7 @@ class UserController extends Controller
     {
         $lang = $request->lang ? $request->lang : 'ru';
 
-        if (User::where('email', $request->email)->count() == 0) {
+        if (User::where('phone_number', $request->phone_number)->count() == 0) {
 
             if($lang == 'ru'){
                 $region = Region::where('nameRu', $request->region)->first();
@@ -344,6 +344,7 @@ class UserController extends Controller
                     'id' => $user->id,
                     'token' => $user->password,
                     'email' => $user->email,
+                    'phone_number' => $user->phone_number,
                     'avatar' => $user->avatar,
                     'user_type' => $user->type,
                     'message' => 'Successfully created user!',
@@ -367,7 +368,7 @@ class UserController extends Controller
         return response()->json([
             'id' => null,
             'token' => null,
-            'message' => 'user exist!',
+            'message' => 'user_exist',
             'status' => 999,
         ]);
     }

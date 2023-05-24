@@ -16,6 +16,7 @@ Route::group([
     Route::get('countries', ['uses' => 'CountryController@index']);
     Route::get('schedule', ['uses' => 'ScheduleController@index']);
     Route::get('region', ['uses' => 'RegionController@index']);
+    Route::get('region_by_name', ['uses' => 'RegionController@regionByName']);
     Route::get('districts', ['uses' => 'RegionController@districts']);
     Route::get('currencies', ['uses' => 'CurrencyController@index']);
     Route::get('districts_by_region_id', ['uses' => 'RegionController@districtsByRegionId']);

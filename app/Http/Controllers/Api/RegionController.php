@@ -20,6 +20,19 @@ class RegionController extends Controller
         }
         return $result;
     }
+
+    public function regionByName(Request $request)
+    {
+        if($request->region){
+
+            $region = Region::where('nameRu', $request->region)->orWhere('nameKg', $request->region)->first();
+
+            return json_encode($region->id);
+
+        }
+        return 0;
+    }
+
     public function districts(Request $request)
     {
         $result = [];
