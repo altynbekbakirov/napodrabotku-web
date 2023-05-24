@@ -187,6 +187,7 @@
                 <div class="checkbox-inline">
                     <label class="checkbox">
                         {!! Form::hidden('active', 0) !!}
+                        {!! Form::hidden('type', $user->type) !!}
                         {!! Form::checkbox('active', 1, null, ["id" => "active"]) !!}
                         <span></span>
                     </label>

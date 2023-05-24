@@ -17,7 +17,7 @@
                         <!--begin::Body-->
                         <div class="card-body">
                             <!--begin:Users-->
-                            <div class="mt-7 scroll scroll  -pull">
+                            <div class="mt-7 scroll scroll-pull">
                                 @if($chats)
                                     @foreach($chats as $chat)
                                         <!--begin:User-->
@@ -196,6 +196,6 @@
 @endsection
 
 @section('scripts')
-    <script></script>
+    <script src="{{asset('assets/js/pages/custom/chat/chat.js')}}"></script>
 @endsection
 

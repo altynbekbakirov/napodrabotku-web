@@ -9,6 +9,7 @@ use App\Models\JobSphere;
 use App\Models\JobType;
 use App\Models\Opportunity;
 use App\Models\Region;
+use App\Models\Country;
 use App\Models\SocialOrientation;
 use App\Models\User;
 use App\Models\UserCourse;
@@ -286,14 +287,17 @@ class UserController extends Controller
                 $region = Region::where('nameRu', $request->region)->first();
                 $district = District::where('nameRu', $request->district)->first();
                 $job_type = JobType::where('name_ru', $request->job_type)->first();
+                $citizen = Country::where('id', $region->country)->first();
             } else {
                 $region = Region::where('nameKg', $request->region)->first();
                 $district = District::where('nameKg', $request->district)->first();
                 $job_type = JobType::where('name', $request->job_type)->first();
+                $citizen = Country::where('id', $region->country)->first();
             }
 
             $user = User::create([
                 'name' => $request->name,
+                'lastname' => $request->lastname,
                 'email' => $request->email,
                 'birth_date' => $request->birth_date,
                 'type' => $request->type,
@@ -302,8 +306,10 @@ class UserController extends Controller
                 'phone_number' => $request->phone_number,
                 'linkedin' => $request->linkedin,
                 'is_migrant' => $request->is_migrant == '1',
-                'gender' => $request->gender == '1',
+                'gender' => strtolower($request->gender),
                 'region' => $region ? $region->id : null,
+                'address' => $request->address,
+                'citizen' => $citizen ? $citizen->id : null,
                 'district' => $district ? $district->id : null,
                 'job_type' => $job_type ? $job_type->id : null,
                 'contact_person_fullname' => $request->contact_person_fullname,
