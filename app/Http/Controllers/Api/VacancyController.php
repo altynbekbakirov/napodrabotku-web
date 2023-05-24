@@ -201,37 +201,27 @@ class VacancyController extends Controller
     public function storeCompanyVacancy(Request $request)
     {
         $token = $request->header('Authorization');
-
         $user = User::where("password", $token)->firstOrFail();
 
-        $opportunity = Opportunity::where('name_ru', $request->opportunity)->orWhere('name', $request->opportunity)->first();
-        $opportunity_type = OpportunityType::where('name_ru', $request->opportunity_type)->orWhere('name', $request->opportunity_type)->first();
-        $internship_language = IntershipLanguage::where('name_ru', $request->internship_language)->orWhere('name', $request->internship_language)->first();
-        $opportunity_duration = OpportunityDuration::where('name_ru', $request->opportunity_duration)->orWhere('name', $request->opportunity_duration)->first();
-        $type_of_recommended_letter = RecommendationLetterType::where('name_ru', $request->type_of_recommended_letter)->orWhere('name', $request->type_of_recommended_letter)->first();
+        $period = null;
+        $salary = null;
 
         if ($user && $user->type =='COMPANY') {
             if($request->salary){
                 $salary = $request->salary;
-            } else {
-                if($request->salary_from){
-                    if($request->salary_to){
-                        if($request->currency){
-                            $currency = Currency::find($request->currency);
-                            $salary = $request->salary_from.'-'.$request->salary_to.' '.$currency->getName($request->lang);
-                        } else {
-                            $salary = $request->salary_from.'-'.$request->salary_to;
-                        }
-                    } else {
-                        if($request->getcurrency){
-                            $currency = Currency::find($request->currency);
-                            $salary = $request->salary_from.' '.$currency->getName($request->lang);
-                        } else {
-                            $salary = $request->salary_from;
-                        }
-                    }
-                } else {
-                    $salary = '';
+            }
+            if($request->period){
+                if($request->period == 0){
+                    $period = "Ставка за час";
+                }
+                if($request->period == 1){
+                    $period = "Ставка за смену";
+                }
+                if($request->period == 2){
+                    $period = "В неделю";
+                }
+                if($request->period == 3){
+                    $period = "В месяц";
                 }
             }
 
@@ -239,30 +229,23 @@ class VacancyController extends Controller
                 $vacancy = Vacancy::find($request->id);
                 if($vacancy) {
                     $vacancy->update([
-                        'name' => $request->name ? $request->name : null,
+                        'name' => $request->name ?? null,
                         'salary' => $salary,
-                        'salary_from' => $request->salary_from,
-                        'salary_to' => $request->salary_to,
+                        'currency' => $request->currency,
+                        'period' => $period,
                         'description' => $request->description,
                         'busyness_id' => $request->busyness,
                         'schedule_id' => $request->schedule,
                         'job_type_id' => $request->job_type,
+                        'vacancy_type_id' => $request->type,
                         'region_id' => $request->region ? $request->region : $user->region,
                         'district_id' => $request->district ? $request->district : $user->distirct,
-                        'vacancy_type_id' => $request->type,
-                        'currency' => $request->currency,
+                        'address' => $request->address,
+                        'street' => $request->street,
+                        'house' => $request->house_number,
+                        'experience' => $request->experience,
+                        'pay_period' => $request->pay_period,
                         'is_active' => true,
-                        'is_disability_person_vacancy' => $request->is_disability_person_vacancy,
-                        'opportunity_id' => $opportunity ? $opportunity->id : null,
-                        'opportunity_type_id' => $opportunity_type ? $opportunity_type->id : null,
-                        'internship_language_id' => $internship_language ? $internship_language->id : null,
-                        'opportunity_duration_id' => $opportunity_duration ? $opportunity_duration->id : null,
-                        'age_from' => $request->age_from,
-                        'age_to' => $request->age_to,
-                        'recommendation_letter_type_id' => $type_of_recommended_letter ? $type_of_recommended_letter->id : null,
-                        'is_product_lab_vacancy' => $request->is_product_lab_vacancy,
-                        'vacancy_link' => $request->vacancy_link,
-                        'deadline' => $request->deadline,
                     ]);
                 }
 
@@ -273,31 +256,24 @@ class VacancyController extends Controller
             }
             else {
                 $vacancy = Vacancy::create([
-                    'name' => $request->name ? $request->name : null,
+                    'name' => $request->name ?? null,
+                    'company_id' => $request->company_id,
                     'salary' => $salary,
-                    'salary_from' => $request->salary_from,
-                    'salary_to' => $request->salary_to,
+                    'currency' => $request->currency,
+                    'period' => $period,
                     'description' => $request->description,
                     'busyness_id' => $request->busyness,
                     'schedule_id' => $request->schedule,
                     'job_type_id' => $request->job_type,
-                    'region' => $request->region ? $request->region : $user->region,
-                    'district_id' => $request->district ? $request->district : $user->district,
                     'vacancy_type_id' => $request->type,
-                    'currency' => $request->currency,
-                    'company_id' => $request->company_id,
+                    'region_id' => $request->region ? $request->region : $user->region,
+                    'district_id' => $request->district ? $request->district : $user->distirct,
+                    'address' => $request->address,
+                    'street' => $request->street,
+                    'house' => $request->house_number,
+                    'experience' => $request->experience,
+                    'pay_period' => $request->pay_period,
                     'is_active' => true,
-                    'is_disability_person_vacancy' => $request->is_disability_person_vacancy ? $request->is_disability_person_vacancy : 0,
-                    'opportunity_id' => $opportunity ? $opportunity->id : null,
-                    'opportunity_type_id' => $opportunity_type ? $opportunity_type->id : null,
-                    'internship_language_id' => $internship_language ? $internship_language->id : null,
-                    'opportunity_duration_id' => $opportunity_duration ? $opportunity_duration->id : null,
-                    'age_from' => $request->age_from,
-                    'age_to' => $request->age_to,
-                    'recommendation_letter_type_id' => $type_of_recommended_letter ? $type_of_recommended_letter->id : null,
-                    'is_product_lab_vacancy' => $request->is_product_lab_vacancy,
-                    'vacancy_link' => $request->vacancy_link,
-                    'deadline' => $request->deadline,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
             }

@@ -281,18 +281,22 @@ class UserController extends Controller
     {
         $lang = $request->lang ? $request->lang : 'ru';
 
+        $region = $district = $job_type = $citizen = null;
+
         if (User::where('phone_number', $request->phone_number)->count() == 0) {
 
-            if($lang == 'ru'){
-                $region = Region::where('nameRu', $request->region)->first();
-                $district = District::where('nameRu', $request->district)->first();
-                $job_type = JobType::where('name_ru', $request->job_type)->first();
-                $citizen = Country::where('id', $region->country)->first();
-            } else {
-                $region = Region::where('nameKg', $request->region)->first();
-                $district = District::where('nameKg', $request->district)->first();
-                $job_type = JobType::where('name', $request->job_type)->first();
-                $citizen = Country::where('id', $region->country)->first();
+            if($request->type == 'USER'){
+                if($lang == 'ru'){
+                    $region = Region::where('nameRu', $request->region)->first();
+                    $district = District::where('nameRu', $request->district)->first();
+                    $job_type = JobType::where('name_ru', $request->job_type)->first();
+                    $citizen = Country::where('id', $region->country)->first();
+                } else {
+                    $region = Region::where('nameKg', $request->region)->first();
+                    $district = District::where('nameKg', $request->district)->first();
+                    $job_type = JobType::where('name', $request->job_type)->first();
+                    $citizen = Country::where('id', $region->country)->first();
+                }
             }
 
             $user = User::create([
@@ -314,7 +318,7 @@ class UserController extends Controller
                 'job_type' => $job_type ? $job_type->id : null,
                 'contact_person_fullname' => $request->contact_person_fullname,
                 'contact_person_position' => $request->contact_person_position,
-                'is_product_lab_user' => $request->is_product_lab_user,
+                'is_product_lab_user' => 0,
             ]);
 
             // create empty cv
