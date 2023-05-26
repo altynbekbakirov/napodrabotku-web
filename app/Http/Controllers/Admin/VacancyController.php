@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use App\Models\Busyness;
 use App\Models\Country;
@@ -20,6 +22,7 @@ class VacancyController extends Controller
     {
         $title = 'Вакансии';
 
+        $districts = District::pluck('nameRu', 'id', 'region')->toArray();
         $regions = Region::pluck('nameRu', 'id')->toArray();
         $busynesses = Busyness::pluck('name_ru', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
@@ -27,31 +30,35 @@ class VacancyController extends Controller
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
 
-        if(request()->ajax()){
-            if(auth()->user()->type == 'COMPANY'){
+        if (request()->ajax()) {
+            if (auth()->user()->type == 'COMPANY') {
                 $data = Vacancy::where('company_id', auth()->user()->id);
             } else {
                 $data = Vacancy::query();
             }
 
+            if (request()->district_id) {
+                $data = $data->whereIn('district', request()->district_id);
+            }
+
             if (request()->region_id) {
-                $data = $data->where('region', request()->region_id);
+                $data = $data->whereIn('region', request()->region_id);
             }
 
             if (request()->busyness_id) {
-                $data = $data->where('busyness_id', request()->busyness_id);
+                $data = $data->whereIn('busyness_id', request()->busyness_id);
             }
 
             if (request()->vacancy_type_id) {
-                $data = $data->where('vacancy_type_id', request()->vacancy_type_id);
+                $data = $data->whereIn('vacancy_type_id', request()->vacancy_type_id);
             }
 
             if (request()->job_type_id) {
-                $data = $data->where('job_type_id', request()->job_type_id);
+                $data = $data->whereIn('job_type_id', request()->job_type_id);
             }
 
             if (request()->schedule_id) {
-                $data = $data->where('schedule_id', request()->schedule_id);
+                $data = $data->whereIn('schedule_id', request()->schedule_id);
             }
 
             if (request()->company_id) {
@@ -64,7 +71,7 @@ class VacancyController extends Controller
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
                     return '
-                    <a href="'.route('vacancies.show', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
+                    <a href="' . route('vacancies.show', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -75,7 +82,7 @@ class VacancyController extends Controller
                             </svg>
                         </span>
                     </a>
-                    <a href="'.route('vacancies.edit', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
+                    <a href="' . route('vacancies.edit', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -85,7 +92,7 @@ class VacancyController extends Controller
                             </svg>
                         </span>
                     </a>
-                    <a href="'.route('vacancies.delete', $row).'" class="btn btn-sm btn-clean btn-icon" title="Удалить">
+                    <a href="' . route('vacancies.delete', $row) . '" class="btn btn-sm btn-clean btn-icon" title="Удалить">
                         <span class="svg-icon svg-icon-md">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -97,14 +104,23 @@ class VacancyController extends Controller
                         </span>
                     </a>';
                 })
-                ->addColumn('company_name', function ($row) { return $row->company ? $row->company->name : '-'; })
-                ->addColumn('region', function ($row) { return Region::find($row->region) ? Region::find($row->region)->nameRu : '-'; })
-                ->addColumn('job_type', function ($row) { return $row->jobtype ? $row->jobtype->name_ru : '-'; })
+                ->addColumn('company_name', function ($row) {
+                    return $row->company ? $row->company->name : '-';
+                })
+                ->addColumn('region', function ($row) {
+                    return Region::find($row->region) ? Region::find($row->region)->nameRu : '-';
+                })
+                ->addColumn('job_type', function ($row) {
+                    return $row->jobtype ? $row->jobtype->name_ru : '-';
+                })
+                ->addColumn('created_at', function ($row) {
+                    return date('d-m-Y H:i', strtotime($row->created_at));
+                })
                 ->rawColumns(['acts'])
                 ->make(true);
         }
 
-        return view('admin.vacancies.index', compact('title', 'regions', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'companies'));
+        return view('admin.vacancies.index', compact('title', 'districts', 'regions', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'companies'));
     }
 
     public function create()
@@ -129,13 +145,14 @@ class VacancyController extends Controller
     {
         $this->validate($request, [
             'name' => ['required'],
-            'salary' => ['required'],
+            'salary_from' => ['required'],
+            'salary_to' => ['nullable', 'gt:salary_from'],
             'currency' => ['required'],
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
             'address' => ['required', 'min:3', 'max:255'],
-            'region' => ['required'],
+            // 'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -178,13 +195,14 @@ class VacancyController extends Controller
     {
         $this->validate($request, [
             'name' => ['required'],
-            'salary' => ['required'],
+            'salary_from' => ['required'],
+            'salary_to' => ['nullable', 'gt:salary_from'],
             'currency' => ['required'],
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
             'address' => ['required', 'min:3', 'max:255'],
-            'region' => ['required'],
+            // 'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -212,54 +230,60 @@ class VacancyController extends Controller
         $sort = $request->sort;
         $query = $request->input('query');
 
-        if(array_key_exists('perpage', $pagination)) { $perpage = $pagination['perpage']; }
-        else { $perpage = 5; }
+        if (array_key_exists('perpage', $pagination)) {
+            $perpage = $pagination['perpage'];
+        } else {
+            $perpage = 5;
+        }
 
-        if(array_key_exists('page', $pagination)) { $page = $pagination['page']; }
-        else { $page = 1; }
+        if (array_key_exists('page', $pagination)) {
+            $page = $pagination['page'];
+        } else {
+            $page = 1;
+        }
 
         Paginator::currentPageResolver(function () use ($page) {
             return $page;
         });
 
-        if(auth()->user()->type == 'COMPANY'){
+        if (auth()->user()->type == 'COMPANY') {
             $resultPaginated = Vacancy::where('company_id', auth()->user()->id);
         } else {
             $resultPaginated = Vacancy::whereNotNull('company_id');
         }
 
-        if($query){
-            if(array_key_exists('generalSearch', $query)){
+        if ($query) {
+            if (array_key_exists('generalSearch', $query)) {
                 $resultPaginated = $resultPaginated->search($query['generalSearch'], null, true, true);
             }
-            if(array_key_exists('region', $query)){
-                if($query['region'] > 0){
+            if (array_key_exists('region', $query)) {
+                if ($query['region'] > 0) {
                     $resultPaginated = $resultPaginated->where('region_id', $query['region']);
                 }
             }
-            if(array_key_exists('busyness', $query)){
-                if($query['busyness'] > 0){
+            if (array_key_exists('busyness', $query)) {
+                if ($query['busyness'] > 0) {
                     $resultPaginated = $resultPaginated->where('busyness_id', $query['busyness']);
                 }
             }
-            if(array_key_exists('vacancy_type', $query)){
-                if($query['vacancy_type'] > 0){
+            if (array_key_exists('vacancy_type', $query)) {
+                if ($query['vacancy_type'] > 0) {
                     $resultPaginated = $resultPaginated->where('vacancy_type_id', $query['vacancy_type']);
                 }
             }
-            if(array_key_exists('job_type', $query)){
-                if($query['job_type'] > 0){
+            if (array_key_exists('job_type', $query)) {
+                if ($query['job_type'] > 0) {
                     $resultPaginated = $resultPaginated->where('job_type_id', $query['job_type']);
                 }
             }
-            if(array_key_exists('schedule', $query)){
-                if($query['schedule'] > 0){
+            if (array_key_exists('schedule', $query)) {
+                if ($query['schedule'] > 0) {
                     $resultPaginated = $resultPaginated->where('schedule_id', $query['schedule']);
                 }
             }
         }
 
-        if($sort && $sort['field'] != 'order'){
+        if ($sort && $sort['field'] != 'order') {
             $resultPaginated = $resultPaginated->orderBy($sort['field'], $sort['sort']);
         } else {
             $resultPaginated = $resultPaginated->orderBy('name', 'asc');
@@ -268,7 +292,7 @@ class VacancyController extends Controller
         $resultPaginated = $resultPaginated->paginate($perpage);
 
         foreach ($resultPaginated as $key => $row) {
-//            $row->date = date('d/m/y H:i', strtotime($row->created_at));
+            //            $row->date = date('d/m/y H:i', strtotime($row->created_at));
             $row->order = ($page - 1) * $perpage + $key + 1;
 
             $row->company_name = $row->company->name;
@@ -277,7 +301,7 @@ class VacancyController extends Controller
             $row->job_type = $row->jobtype ? $row->jobtype->name_ru : '-';
 
             $row->actions = '
-                <a href="'.route('vacancies.show', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
+                <a href="' . route('vacancies.show', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Просмотр">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -288,7 +312,7 @@ class VacancyController extends Controller
                         </svg>
                     </span>
                 </a>
-                <a href="'.route('vacancies.edit', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
+                <a href="' . route('vacancies.edit', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -298,7 +322,7 @@ class VacancyController extends Controller
                         </svg>
                     </span>
                 </a>
-                <a href="'.route('vacancies.delete', $row).'" class="btn btn-sm btn-clean btn-icon" title="Удалить">
+                <a href="' . route('vacancies.delete', $row) . '" class="btn btn-sm btn-clean btn-icon" title="Удалить">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -312,11 +336,11 @@ class VacancyController extends Controller
             ';
         }
 
-//        if(array_key_exists('pages', $pagination)) { $pages = $pagination['pages']; }
-//        else { $pages = $resultPaginated->lastPage(); }
-//
-//        if(array_key_exists('total', $pagination)) { $total = $pagination['total']; }
-//        else { $total = $resultPaginated->total(); }
+        //        if(array_key_exists('pages', $pagination)) { $pages = $pagination['pages']; }
+        //        else { $pages = $resultPaginated->lastPage(); }
+        //
+        //        if(array_key_exists('total', $pagination)) { $total = $pagination['total']; }
+        //        else { $total = $resultPaginated->total(); }
 
         $pages = $resultPaginated->lastPage();
         $total = $resultPaginated->total();
@@ -331,5 +355,20 @@ class VacancyController extends Controller
         $result = array('meta' => $meta, 'data' => $resultPaginated->all());
         return json_encode($result);
     }
-}
 
+    public function get_regions($id)
+    {
+        if ($id == 0) {
+            $regions = Region::pluck('nameRu', 'id')->toArray();
+        } else {
+            $array = array();
+            $items = explode(",", $id);
+            foreach($items as $value) {
+                $array[] = intval($value);
+            }
+            $region_ids = District::whereIn('id', $array)->pluck('region')->toArray();
+            $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
+        }
+        return json_encode($regions);
+    }
+}

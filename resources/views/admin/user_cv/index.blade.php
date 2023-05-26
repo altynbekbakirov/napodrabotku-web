@@ -252,12 +252,6 @@
                 success: function(result) {
                     table.draw();
                     location.reload();
-                    // var $el = $('#kt_datatable_search_status');
-                    // $el.empty();
-                    // $result.each(newOptions, function(key, value) {
-                    //     $el.append($("<option></option>")
-                    //         .attr("value", value).text(key));
-                    // });
                 },
                 error: function(xhr, status, error) {
                     console.log('Произошла ошибка при обновлении статуса: ' + error);

@@ -46,7 +46,7 @@
                         <ul class="menu-subnav">
                             <li class="menu-item" aria-haspopup="true">
                                 <a href="{{ route('vacancy_types.index') }}" class="menu-link">
-                                    <span class="menu-text">Типы вакансий</span>
+                                    <span class="menu-text">Профессии</span>
                                 </a>
                             </li>
                             <li class="menu-item" aria-haspopup="true">

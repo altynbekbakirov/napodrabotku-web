@@ -1,7 +1,6 @@
 @extends('admin.layouts.app')
 
 @section('content')
-
     @include('admin.partials.subheader')
 
     <div class="d-flex flex-column-fluid">
@@ -13,17 +12,19 @@
                 </div>
                 <!--begin::Form-->
                 {!! Form::model($vacancy, ['route' => 'vacancies.store', 'enctype' => 'multipart/form-data', 'class' => 'form']) !!}
-                    @include('admin.vacancies.form', $vacancy)
+                @include('admin.vacancies.form', $vacancy)
                 {!! Form::close() !!}
                 <!--end::Form-->
             </div>
         </div>
         <!--end::Container-->
     </div>
-
 @endsection
 
 @section('scripts')
+
+<script src="https://cdn.tiny.cloud/1/vkkx1375a49z5xv1vzho0dwn38cixcyxqx0i0nn8tcn65goy/tinymce/5/tinymce.min.js"></script>
+<script src="https://cdn.tiny.cloud/1/vkkx1375a49z5xv1vzho0dwn38cixcyxqx0i0nn8tcn65goy/tinymce/5/jquery.tinymce.min.js"></script>
     <script>
         $('[name=country_id]').on('change', function() {
             var url = "{{ route('regions.country') }}";
@@ -37,8 +38,8 @@
                 data: {
                     'country': $(this).val(),
                 },
-                success: function (data) {
-                    if(data) {
+                success: function(data) {
+                    if (data) {
                         $('[name=region_id]').html(data);
                         $('[name=region_id]').selectpicker('refresh');
                     }
@@ -58,8 +59,8 @@
                 data: {
                     'region': $(this).val(),
                 },
-                success: function (data) {
-                    if(data) {
+                success: function(data) {
+                    if (data) {
                         $('[name=district_id]').html(data);
                         $('[name=district_id]').selectpicker('refresh');
                     }
@@ -75,7 +76,7 @@
         let suggestions = [];
         let form = $('.form');
 
-        $('input[name=address]').on('keyup', function () {
+        $('input[name=address]').on('keyup', function() {
             clearTimeout(timer);
 
             suggestionsDiv.find('ul').removeClass('show');
@@ -83,43 +84,50 @@
             suggestionsLoading.removeClass('d-none');
 
             let value = $(this).val();
-            if(value.length > 3) {
+            if (value.length > 3) {
 
                 suggestionsDiv.find('ul').addClass('show');
 
-                timer = setTimeout(function(){
+                timer = setTimeout(function() {
 
                     $.ajax({
                         headers: {
                             'X-CSRF-TOKEN': "{{ csrf_token() }}"
                         },
-                        url: `{{route('dadata.user')}}`,
+                        url: `{{ route('dadata.user') }}`,
                         type: 'POST',
                         data: {
                             key: value
                         },
                         dataType: 'json',
                         success: function(data) {
-                            if(data.suggestions){
+                            if (data.suggestions) {
                                 suggestionsLoading.addClass('d-none');
                                 suggestionsDiv.find('ul').children('li').remove();
-                                for(let i=0; i<data.suggestions.length; i++){
-                                    suggestionsDiv.find('ul').append('<li><a data-index="'+i+'" class="dropdown-item" href="#">'+data.suggestions[i].value+'</a></li>');
+                                for (let i = 0; i < data.suggestions.length; i++) {
+                                    suggestionsDiv.find('ul').append('<li><a data-index="' + i +
+                                        '" class="dropdown-item" href="#">' + data
+                                        .suggestions[i].value + '</a></li>');
                                 }
 
-                                $('#suggestions .dropdown-item').on('click', function (e) {
+                                $('#suggestions .dropdown-item').on('click', function(e) {
                                     e.preventDefault();
                                     let index = $(this).attr('data-index');
                                     let item = data.suggestions[index];
 
                                     $('input[name=address]').val(item.value);
-                                    $('input[name=region]').val(item.data.region_with_type);
+                                    $('input[name=region]').val(item.data
+                                        .region_with_type);
                                     $('input[name=district]').val(item.data.city);
                                     $('input[name=street]').val(item.data.street);
                                     $('input[name=house]').val(item.data.house);
 
-                                    form.append('<input type="hidden" name="lat" value="'+item.data.geo_lat+'">');
-                                    form.append('<input type="hidden" name="lonq" value="'+item.data.geo_lon+'">');
+                                    form.append(
+                                        '<input type="hidden" name="lat" value="' +
+                                        item.data.geo_lat + '">');
+                                    form.append(
+                                        '<input type="hidden" name="lonq" value="' +
+                                        item.data.geo_lon + '">');
 
                                     suggestionsDiv.find('ul').removeClass('show');
                                 });
@@ -142,12 +150,9 @@
         });
 
         jQuery.fn.ForceNumericOnly =
-            function()
-                {
-                return this.each(function()
-                {
-                    $(this).keydown(function(e)
-                    {
+            function() {
+                return this.each(function() {
+                    $(this).keydown(function(e) {
                         var key = e.charCode || e.keyCode || 0;
                         // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
                         // home, end, period, and numpad decimal
@@ -165,7 +170,35 @@
                 });
             };
 
-            $('.salary-input').ForceNumericOnly();
+        $('.salary-input').ForceNumericOnly();
+
+        // Class definition
+        var KTTinymce = function() {
+            // Private functions
+            var demos = function() {
+                tinymce.init({
+                    selector: '#kt-tinymce-app',
+                    invalid_elements : 'a',
+                    menubar: false,
+                    toolbar: ['styleselect fontselect fontsizeselect',
+                        'undo redo | cut copy paste | bold italic | alignleft aligncenter alignright alignjustify',
+                        'bullist numlist | outdent indent | blockquote subscript superscript | advlist | lists charmap | print preview |  code'
+                    ],
+                    plugins: 'advlist lists charmap print preview code'
+                });
+            }
+
+            return {
+                // public functions
+                init: function() {
+                    demos();
+                }
+            };
+        }();
+
+        // Initialization
+        jQuery(document).ready(function() {
+            KTTinymce.init();
+        });
     </script>
 @endsection
-
