@@ -20,13 +20,14 @@
                                     <div class="col-md-2">
                                         <label for="district">Населенный пункт</label>
                                         {!! Form::select('district', $districts, null, [
-                                            'class' => 'selectpicker form-control',
+                                            'class' => 'form-control selectpicker show-tick',
                                             'data-width' => '100%',
                                             'data-live-search' => 'true',
                                             'title' => 'Любой',
                                             'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_district',
+                                            // 'multiple data-actions-box' => 'true'
                                         ]) !!}
                                     </div>
                                     <div class="col-md-2">
@@ -40,6 +41,14 @@
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_region',
                                         ]) !!}
+                                        {{-- <select data-live-search="true" data-live-search-style="startsWith"
+                                            class="selectpicker mr-2" title="Любой">
+                                            <option value="4444">4444</option>
+                                            <option value="Fedex">Fedex</option>
+                                            <option value="Elite">Elite</option>
+                                            <option value="Interp">Interp</option>
+                                            <option value="Test">Test</option>
+                                        </select> --}}
                                     </div>
                                     <div class="col-md-2">
                                         <label for="busyness">Вид занятости</label>
@@ -127,6 +136,13 @@
                                 </a>
                             </div>
                         </div>
+                        <div class="row mt-7">
+                            <div class="col-md-9">
+                                @foreach ($stats as $status)
+                                    {!! $status !!}
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     <!--end::Search Form-->
                     <!--begin: Datatable-->
@@ -134,12 +150,17 @@
                         <table class="table table-bordered" id="dataTable">
                             <thead>
                                 <tr>
+                                    <th>
+                                        <input type="checkbox" name="checkbox-all"
+                                            id="checkbox-all" />
+                                    </th>
                                     <th>ID</th>
                                     <th width="300px">НАЗВАНИЕ</th>
                                     <th>КОМПАНИЯ</th>
                                     <th>РЕГИОН</th>
                                     <th>СФЕРА ДЕЯТЕЛЬНОСТИ</th>
                                     <th>ДАТА ДОБАВЛЕНИЯ</th>
+                                    <th>СТАТУС</th>
                                     <th>ДЕЙСТВИЯ</th>
                                 </tr>
                             </thead>
@@ -156,7 +177,6 @@
 @endsection
 
 @section('scripts')
-
     <script>
         let table = $('#dataTable').DataTable({
             buttons: [{
@@ -180,7 +200,10 @@
             ],
             dom: `<'row'<'col-sm-6 text-left'f><'col-sm-6 text-right'B>>
 			<'row'<'col-sm-12'tr>>
-			<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+			<'row'<'col-sm-12 col-md-3'i><'col-sm-12 col-md-2 status_change'><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            fnInitComplete: function() {
+                $('div.status_change').html("<select class='form-control' name='status_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='1'>Убрать в архив</option><option value='2'>Опубликовать</option><option value='3'>Удалить</option></select>");
+            },
             processing: true,
             serverSide: true,
             ajax: {
@@ -193,9 +216,14 @@
                     d.job_type_id = $('select[name=job_type]').val();
                     d.schedule_id = $('select[name=schedule]').val();
                     d.company_id = $('select[name=company]').val();
+                    d.status_id = $("button.btn-success").attr('status_id');
                 }
             },
             columns: [{
+                    data: 'check_box',
+                    "sortable": false
+                },
+                {
                     data: 'id'
                 },
                 {
@@ -214,7 +242,11 @@
                     data: 'created_at'
                 },
                 {
-                    data: 'acts'
+                    data: 'status'
+                },
+                {
+                    data: 'acts',
+                    "sortable": false
                 },
             ],
             order: [
@@ -237,20 +269,36 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function(result) {
-                    console.log(result);
                     var el = $('#kt_datatable_search_region');
                     el.empty();
-                    // $.each(result, function(key, value) {
-                    //     $el.append($("<option></option>")
-                    //         .attr("value", value).text(key));
-                    // });
+                    el.selectpicker('refresh');
+                    $.each(result, function(key, value) {
+                        el.append($("<option></option>")
+                            .attr("value", key).text(value));
+                    });
+                    el.selectpicker('refresh');
                 },
                 error: function(xhr, status, error) {
                     console.log('Произошла ошибка при обновлении статуса: ' + error);
                 }
             });
-            console.log($(this).val());
             table.draw();
+        });
+
+        $('input[name=checkbox-all]').on("change", function() {
+            if (this.checked) {
+                $(':checkbox').each(function() {
+                    this.checked = true;
+                });
+            } else {
+                $(':checkbox').each(function() {
+                    this.checked = false;
+                });
+            }
+        });
+
+        $("select[name=status_change]").on('change', function() {
+            console.log('hello world');
         });
 
         $("select[name=region]").on("change", function() {
@@ -274,6 +322,11 @@
         });
 
         $("select[name=company]").on("change", function() {
+            table.draw();
+        });
+        $("button").on("click", function(e) {
+            $("button").removeClass("btn-success").removeClass("btn-light").addClass("btn-light");
+            $(this).removeClass('btn-light').addClass('btn-success');
             table.draw();
         });
     </script>

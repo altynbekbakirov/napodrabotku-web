@@ -29,12 +29,45 @@ class VacancyController extends Controller
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
+        $statuses = Vacancy::where('company_id', auth()->user()->id)->pluck('status')->toArray();
+        $statuses_count = array_count_values($statuses);
+
+        $stats = [
+            'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
+            'not_published' => '<button type="button" class="btn btn-lg btn-light" status_id="not_published">He опубликовано <span class="label label-primary">0</span></button>&nbsp;',
+            'active' => '<button type="button" class="btn btn-lg btn-light" status_id="active">Активно <span class="label label-primary">0</span></button>&nbsp;',
+            'archived' => '<button type="button" class="btn btn-lg btn-light" status_id="archived">В архиве <span class="label label-primary">0</span></button>&nbsp;',
+            'deleted' => '<button type="button" class="btn btn-lg btn-light" status_id="deleted">Удалено <span class="label label-primary">0</span></button>&nbsp;',
+        ];
+
+        foreach ($statuses as $key => $value) {
+            if ($value === 'not_published') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="not_published">He опубликовано <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'active') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="active">Активно <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'archived') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="archived">В архиве <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'deleted') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="deleted">Удалено <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+        }
 
         if (request()->ajax()) {
             if (auth()->user()->type == 'COMPANY') {
                 $data = Vacancy::where('company_id', auth()->user()->id);
             } else {
                 $data = Vacancy::query();
+            }
+
+            if (request()->status_id && request()->status_id == 'all') {
+                $data = Vacancy::where('company_id', auth()->user()->id);
+            } else if (request()->status_id && request()->status_id != 'all') {
+                $data = Vacancy::where('company_id', auth()->user()->id)->where('status', request()->status_id);
+            } else {
+                $data = Vacancy::where('company_id', auth()->user()->id);
             }
 
             if (request()->district_id) {
@@ -68,6 +101,9 @@ class VacancyController extends Controller
             $data = $data->orderBy('id', 'desc')->get();
 
             return datatables()->of($data)
+                ->addColumn('check_box', function ($row) {
+                    return '<input type="checkbox" name="checkbox-' . $row->id . '" id="checkbox-' . $row->id . '" />';
+                })
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
                     return '
@@ -114,13 +150,29 @@ class VacancyController extends Controller
                     return $row->jobtype ? $row->jobtype->name_ru : '-';
                 })
                 ->addColumn('created_at', function ($row) {
-                    return date('d-m-Y H:i', strtotime($row->created_at));
+                    return date('d.m.Y H:i', strtotime($row->created_at));
                 })
-                ->rawColumns(['acts'])
+                ->addColumn('status', function ($row) {
+                    switch ($row->status) {
+                        case 'active':
+                            $status = '<span style="color:blue;"><strong>Активно</strong></span>';
+                            break;
+                        case 'archived':
+                            $status = '<span style="color:grey;"><strong>В архиве</strong></span>';
+                            break;
+                        case 'deleted':
+                            $status = '<span style="color:red;"><strong>Удалено</strong></span>';
+                            break;
+                        default:
+                            $status = '<span style="color:green;"><strong>Не опубликовано</strong></span>';
+                    }
+                    return $status;
+                })
+                ->rawColumns(['check_box', 'acts', 'status'])
                 ->make(true);
         }
 
-        return view('admin.vacancies.index', compact('title', 'districts', 'regions', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'companies'));
+        return view('admin.vacancies.index', compact('title', 'districts', 'regions', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'companies', 'stats'));
     }
 
     public function create()
@@ -363,7 +415,7 @@ class VacancyController extends Controller
         } else {
             $array = array();
             $items = explode(",", $id);
-            foreach($items as $value) {
+            foreach ($items as $value) {
                 $array[] = intval($value);
             }
             $region_ids = District::whereIn('id', $array)->pluck('region')->toArray();
