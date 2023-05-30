@@ -29,7 +29,11 @@ class VacancyController extends Controller
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
-        $statuses = Vacancy::where('company_id', auth()->user()->id)->pluck('status')->toArray();
+        if (auth()->user()->type == 'COMPANY') {
+            $statuses = Vacancy::where('company_id', auth()->user()->id)->pluck('status')->toArray();
+        } else {
+            $statuses = Vacancy::pluck('status')->toArray();
+        }
         $statuses_count = array_count_values($statuses);
 
         $stats = [
@@ -62,12 +66,8 @@ class VacancyController extends Controller
                 $data = Vacancy::query();
             }
 
-            if (request()->status_id && request()->status_id == 'all') {
-                $data = Vacancy::where('company_id', auth()->user()->id);
-            } else if (request()->status_id && request()->status_id != 'all') {
-                $data = Vacancy::where('company_id', auth()->user()->id)->where('status', request()->status_id);
-            } else {
-                $data = Vacancy::where('company_id', auth()->user()->id);
+            if (request()->status_id && request()->status_id != 'all') {
+                $data = $data->where('status', request()->status_id);
             }
 
             if (request()->district_id) {
@@ -102,7 +102,7 @@ class VacancyController extends Controller
 
             return datatables()->of($data)
                 ->addColumn('check_box', function ($row) {
-                    return '<input type="checkbox" name="checkbox-' . $row->id . '" id="checkbox-' . $row->id . '" />';
+                    return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
                 })
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
@@ -158,13 +158,13 @@ class VacancyController extends Controller
                             $status = '<span style="color:blue;"><strong>Активно</strong></span>';
                             break;
                         case 'archived':
-                            $status = '<span style="color:grey;"><strong>В архиве</strong></span>';
+                            $status = '<span style="color:#D3D3D3;"><strong>В архиве</strong></span>';
                             break;
                         case 'deleted':
                             $status = '<span style="color:red;"><strong>Удалено</strong></span>';
                             break;
                         default:
-                            $status = '<span style="color:green;"><strong>Не опубликовано</strong></span>';
+                            $status = '<span style="color:#90EE90;"><strong>Не опубликовано</strong></span>';
                     }
                     return $status;
                 })
@@ -422,5 +422,15 @@ class VacancyController extends Controller
             $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         }
         return json_encode($regions);
+    }
+
+    public function update_status(Request $request)
+    {
+        foreach ($request->vacancies as $value) {
+            $vacancy = Vacancy::where('id', $value)->first();
+            $vacancy->status = $request->status_type;
+            $vacancy->save();
+        }
+        return 'success';
     }
 }

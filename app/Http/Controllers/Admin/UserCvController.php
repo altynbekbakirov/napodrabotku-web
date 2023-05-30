@@ -80,7 +80,7 @@ class UserCvController extends Controller
             }
         }
 
-        $title = 'Поданные резюме';
+        $title = 'Отклики от соискателей';
 
         if (request()->ajax()) {
 
@@ -245,8 +245,16 @@ class UserCvController extends Controller
         $userVacancy->vacancy_id = $request->vacancy_id;
         $userVacancy->status = $request->status_id;
         $userVacancy->type = 'SUBMITTED';
-
         $userVacancy->save();
+
+        $chat = Chat::where('user_id', $request->user_id)->where('company_id', auth()->user()->id)->where('vacancy_id', $request->vacancy_id)->first();
+        if (!$chat) {
+            $newChat = new Chat();
+            $newChat->user_id = $request->user_id;
+            $newChat->company_id = auth()->user()->id;
+            $newChat->vacancy_id = $request->vacancy_id;
+            $newChat->save();
+        }
         return redirect()->route('user_cv.index');
     }
 
@@ -267,10 +275,6 @@ class UserCvController extends Controller
 
     public function api(Request $request)
     {
-        // $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
-        // $resultPaginated = UserVacancy::whereIn("vacancy_id", $company_vacancies)->where("type", 'SUBMITTED')->orderBy('id', 'desc');
-        // // dd(UserVacancy::get());
-
         $pagination = $request->pagination;
         $sort = $request->sort;
         $query = $request->input('query');

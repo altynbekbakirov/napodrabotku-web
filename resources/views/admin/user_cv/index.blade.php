@@ -76,12 +76,12 @@
                                 </div> --}}
                             </div>
                             <div class="form-group row">
-                                <div class="col-md-9">
+                                <div class="col-md-10">
                                     @foreach ($stats as $status)
                                         {!! $status !!}
                                     @endforeach
                                 </div>
-                                <div class="col-md-3 mt-lg-0 text-right">
+                                <div class="col-md-2 mt-lg-0 text-right">
                                     <a href="{{ route('user_cv.create') }}" class="btn btn-primary font-weight-bold">
                                         <span class="svg-icon svg-icon-md">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Flatten.svg-->

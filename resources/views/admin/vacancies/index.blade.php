@@ -106,6 +106,7 @@
                                             <label for="region">Компании</label>
                                             {!! Form::select('company', $companies, null, [
                                                 'class' => 'selectpicker form-control',
+                                                'data-live-search' => 'true',
                                                 'title' => 'Любой',
                                                 'data-width' => '100%',
                                                 'data-size' => '6',
@@ -151,8 +152,7 @@
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox" name="checkbox-all"
-                                            id="checkbox-all" />
+                                        <input type="checkbox" name="checkbox-all" id="checkbox-all" />
                                     </th>
                                     <th>ID</th>
                                     <th width="300px">НАЗВАНИЕ</th>
@@ -201,8 +201,49 @@
             dom: `<'row'<'col-sm-6 text-left'f><'col-sm-6 text-right'B>>
 			<'row'<'col-sm-12'tr>>
 			<'row'<'col-sm-12 col-md-3'i><'col-sm-12 col-md-2 status_change'><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
-            fnInitComplete: function() {
-                $('div.status_change').html("<select class='form-control' name='status_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='1'>Убрать в архив</option><option value='2'>Опубликовать</option><option value='3'>Удалить</option></select>");
+            initComplete: function() {
+                $('div.status_change').html(
+                    "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='archived'>Убрать в архив</option><option value='active'>Опубликовать</option><option value='deleted'>Удалить</option></select>"
+                );
+                $("select[name=status_select_change]").on('change', function() {
+                    var vacancies = [];
+                    var status_type = $(this).val();
+
+                    $('input[name="checkbox-product"]').each(function() {
+                        if ($(this).is(':checked')) {
+                            vacancies.push($(this).attr('product_data_id'));
+                        }
+                    });
+                    if (!$.isEmptyObject(vacancies)) {
+                        $.ajax({
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            },
+                            cache: false,
+                            type: 'POST',
+                            url: `/admin/vacancies/update_status`,
+                            data: {
+                                'status_type': status_type,
+                                'vacancies': vacancies,
+                            },
+                            success: function(result) {
+                                location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Произошла ошибка при обновлении статуса: ' + error);
+                            }
+
+                        });
+                    }
+                });
+
+                $('input[name="checkbox-product"]').on('change', function() {
+                    if ($(this).is(':checked')) {
+
+                    } else {
+                        $('input[name="checkbox-all"').prop('checked', false);
+                    }
+                });
             },
             processing: true,
             serverSide: true,
@@ -256,6 +297,7 @@
             language: {
                 "url": "{{ asset('js/russian.json') }}"
             },
+
         });
 
         $("select[name=district]").on("change", function() {
@@ -297,10 +339,6 @@
             }
         });
 
-        $("select[name=status_change]").on('change', function() {
-            console.log('hello world');
-        });
-
         $("select[name=region]").on("change", function() {
             table.draw();
         });
@@ -324,6 +362,7 @@
         $("select[name=company]").on("change", function() {
             table.draw();
         });
+
         $("button").on("click", function(e) {
             $("button").removeClass("btn-success").removeClass("btn-light").addClass("btn-light");
             $(this).removeClass('btn-light').addClass('btn-success');
