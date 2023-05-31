@@ -3,19 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Busyness;
 use App\Models\Chat;
-use App\Models\JobType;
-use App\Models\Region;
-use App\Models\Schedule;
-use App\Models\User;
-use App\Models\UserCourse;
-use App\Models\UserCV;
-use App\Models\UserEducation;
-use App\Models\UserExperience;
-use App\Models\UserVacancy;
-use App\Models\Vacancy;
-use App\Models\VacancyType;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 

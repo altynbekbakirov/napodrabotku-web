@@ -12,14 +12,14 @@ class VacancyTypeController extends Controller
 {
     public function index()
     {
-        $title = 'Типы вакансий';
+        $title = 'Профессии';
         return view('admin.vacancy_types.index', compact('title'));
     }
 
     public function create()
     {
         $vacancy_type = new VacancyType();
-        $title = 'Типы вакансий';
+        $title = 'Профессии';
         return view('admin.vacancy_types.create', compact('vacancy_type', 'title'));
     }
 
@@ -29,14 +29,13 @@ class VacancyTypeController extends Controller
             'name' => ['required'],
             'name_ru' => ['required'],
         ]);
-        $vacancy_type = VacancyType::create($request->all());
-
+        VacancyType::create($request->all());
         return redirect()->route('vacancy_types.index');
     }
 
     public function edit(VacancyType $vacancy_type)
     {
-        $title = 'Типы вакансий';
+        $title = 'Профессии';
         return view('admin.vacancy_types.edit', compact('vacancy_type', 'title'));
     }
 
@@ -46,8 +45,8 @@ class VacancyTypeController extends Controller
             'name' => ['required'],
             'name_ru' => ['required'],
         ]);
-        $vacancy_type->update($request->all());
 
+        $vacancy_type->update($request->all());
         return redirect()->route('vacancy_types.index');
     }
 

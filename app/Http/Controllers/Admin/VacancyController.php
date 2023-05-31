@@ -9,12 +9,16 @@ use App\Models\District;
 use App\Models\JobType;
 use App\Models\Region;
 use App\Models\Schedule;
+use App\Models\Chat;
 use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyType;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use MoveMoveIo\DaData\Enums\Language;
+use MoveMoveIo\DaData\Facades\DaDataAddress;
+use Illuminate\Support\Arr;
 
 class VacancyController extends Controller
 {
@@ -179,7 +183,6 @@ class VacancyController extends Controller
     {
         $vacancy = new Vacancy();
         $title = 'Вакансии';
-
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
         $regions = Region::pluck('nameRu', 'id')->toArray();
         $districts = District::pluck('nameRu', 'id')->toArray();
@@ -189,8 +192,13 @@ class VacancyController extends Controller
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $currencies = Currency::pluck('name_ru', 'id')->toArray();
+        $metros = [];
 
-        return view('admin.vacancies.create', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries'));
+        if (app()->getLocale() == 'ru') {
+            $vacancy->currency = 3;
+        }
+
+        return view('admin.vacancies.create', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries', 'metros'));
     }
 
     public function store(Request $request)
@@ -229,18 +237,22 @@ class VacancyController extends Controller
     public function edit(Vacancy $vacancy)
     {
         $title = 'Вакансии';
-
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
         $busynesses = Busyness::pluck('name_ru', 'id')->toArray();
         $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $currencies = Currency::pluck('name_ru', 'id')->toArray();
-
         $vacancy->region = Region::find($vacancy->region) ? Region::find($vacancy->region)->nameRu : '';
         $vacancy->district = District::find($vacancy->district) ? District::find($vacancy->district)->nameRu : '';
+        $metros = [];
 
-        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies'));
+        $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
+        if ($dadata['suggestions']) {
+            $metros = Arr::pluck($dadata['suggestions'][0]['data']['metro'], 'name', 'name');
+        }
+
+        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'metros'));
     }
 
     public function update(Request $request, Vacancy $vacancy)
@@ -272,6 +284,10 @@ class VacancyController extends Controller
 
     public function destroy(Vacancy $vacancy)
     {
+        $chats = Chat::where('vacancy_id', $vacancy->id)->get();
+        foreach ($chats as $chat) {
+            $chat->delete();
+        }
         $vacancy->delete();
         return redirect()->route('vacancies.index');
     }

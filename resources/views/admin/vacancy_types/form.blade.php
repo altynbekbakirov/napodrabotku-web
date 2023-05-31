@@ -2,7 +2,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название (на кыргызском):</label>
         <div class="col-lg-4">
-            {!! Form::text('name', null, ['class' => 'form-control']) !!}
+            {!! Form::text('name', null, ['class' => 'form-control ' . $errors->first('name', 'is-invalid') . '']) !!}
             @if ($errors->has('name'))
                 <div class="invalid-feedback">{{ $errors->first('name') }}</div>
             @endif
@@ -11,7 +11,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название (на русском):</label>
         <div class="col-lg-4">
-            {!! Form::text('name_ru', null, ['class' => 'form-control']) !!}
+            {!! Form::text('name_ru', null, ['class' => 'form-control ' . $errors->first('name_ru', 'is-invalid') . '']) !!}
             @if ($errors->has('name_ru'))
                 <div class="invalid-feedback">{{ $errors->first('name_ru') }}</div>
             @endif

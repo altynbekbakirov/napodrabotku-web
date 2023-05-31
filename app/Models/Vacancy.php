@@ -34,6 +34,7 @@ class Vacancy extends Model
         'house',
         'lat',
         'lonq',
+        'metro',
         'currency',
         'company_id',
         'country_id',
@@ -58,6 +59,10 @@ class Vacancy extends Model
             'id' => 10,
             'name' => 10,
         ],
+    ];
+
+    protected $casts = [
+        'metro' => 'array'
     ];
 
     public function company()

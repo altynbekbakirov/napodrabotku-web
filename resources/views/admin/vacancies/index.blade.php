@@ -8,7 +8,7 @@
 
     <div class="d-flex flex-column-fluid">
         <!--begin::Container-->
-        <div class="container">
+        <div class="container-fluid">
             <!--begin::Card-->
             <div class="card card-custom">
                 <div class="card-body">
@@ -20,44 +20,35 @@
                                     <div class="col-md-2">
                                         <label for="district">Населенный пункт</label>
                                         {!! Form::select('district', $districts, null, [
-                                            'class' => 'form-control selectpicker show-tick',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
                                             'data-live-search' => 'true',
-                                            'title' => 'Любой',
+                                            'data-placeholder' => 'Любой',
                                             'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_district',
-                                            // 'multiple data-actions-box' => 'true'
                                         ]) !!}
                                     </div>
                                     <div class="col-md-2">
                                         <label for="region">Регион</label>
                                         {!! Form::select('region', $regions, null, [
-                                            'class' => 'selectpicker form-control',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
                                             'data-live-search' => 'true',
-                                            'title' => 'Любой',
+                                            'data-placeholder' => 'Любой',
                                             'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_region',
                                         ]) !!}
-                                        {{-- <select data-live-search="true" data-live-search-style="startsWith"
-                                            class="selectpicker mr-2" title="Любой">
-                                            <option value="4444">4444</option>
-                                            <option value="Fedex">Fedex</option>
-                                            <option value="Elite">Elite</option>
-                                            <option value="Interp">Interp</option>
-                                            <option value="Test">Test</option>
-                                        </select> --}}
                                     </div>
                                     <div class="col-md-2">
                                         <label for="busyness">Вид занятости</label>
                                         {!! Form::select('busyness', $busynesses, null, [
-                                            'class' => 'selectpicker form-control',
-                                            'data-live-search' => 'true',
-                                            'title' => 'Любой',
-                                            'multiple' => 'multiple',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
+                                            'data-live-search' => 'true',
+                                            'data-placeholder' => 'Любой',
+                                            'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_busyness',
                                         ]) !!}
@@ -66,11 +57,11 @@
                                     <div class="col-md-2">
                                         <label for="region">Тип вакансии</label>
                                         {!! Form::select('vacancy_type', $vacancy_types, null, [
-                                            'class' => 'selectpicker form-control',
-                                            'data-live-search' => 'true',
-                                            'title' => 'Любой',
-                                            'multiple' => 'multiple',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
+                                            'data-live-search' => 'true',
+                                            'data-placeholder' => 'Любой',
+                                            'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_vacancy_type',
                                         ]) !!}
@@ -79,11 +70,11 @@
                                     <div class="col-md-2">
                                         <label for="region">Сфера работы</label>
                                         {!! Form::select('job_type', $job_types, null, [
-                                            'class' => 'selectpicker form-control',
-                                            'data-live-search' => 'true',
-                                            'title' => 'Любой',
-                                            'multiple' => 'multiple',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
+                                            'data-live-search' => 'true',
+                                            'data-placeholder' => 'Любой',
+                                            'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_job_type',
                                         ]) !!}
@@ -92,11 +83,11 @@
                                     <div class="col-md-2">
                                         <label for="region">График работы</label>
                                         {!! Form::select('schedule', $schedules, null, [
-                                            'class' => 'selectpicker form-control',
-                                            'data-live-search' => 'true',
-                                            'title' => 'Любой',
-                                            'multiple' => 'multiple',
+                                            'class' => 'form-control select2',
                                             'data-width' => '100%',
+                                            'data-live-search' => 'true',
+                                            'data-placeholder' => 'Любой',
+                                            'multiple' => 'multiple',
                                             'data-size' => '6',
                                             'id' => 'kt_datatable_search_schedule',
                                         ]) !!}
@@ -105,13 +96,13 @@
                                         <div class="col-md-2">
                                             <label for="region">Компании</label>
                                             {!! Form::select('company', $companies, null, [
-                                                'class' => 'selectpicker form-control',
-                                                'data-live-search' => 'true',
-                                                'title' => 'Любой',
+                                                'class' => 'form-control select2',
                                                 'data-width' => '100%',
+                                                'data-live-search' => 'true',
+                                                'data-placeholder' => 'Любой',
+                                                'multiple' => 'multiple',
                                                 'data-size' => '6',
                                                 'id' => 'kt_datatable_search_company',
-                                                'multiple' => 'multiple',
                                             ]) !!}
                                         </div>
                                     @endif
@@ -178,6 +169,10 @@
 
 @section('scripts')
     <script>
+        $('.select2').select2({
+            'allowClear': true
+        });
+
         let table = $('#dataTable').DataTable({
             buttons: [{
                     extend: 'print',
@@ -230,7 +225,8 @@
                                 location.reload();
                             },
                             error: function(xhr, status, error) {
-                                console.log('Произошла ошибка при обновлении статуса: ' + error);
+                                console.log('Произошла ошибка при обновлении статуса: ' +
+                                    error);
                             }
 
                         });

@@ -60,6 +60,7 @@ class HomeController extends Controller
 
     public function chat(Request $request)
     {
+        dump($request);
         $title = 'Чаты';
 
         $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
@@ -84,6 +85,7 @@ class HomeController extends Controller
 
     public function message(Request $request)
     {
+        dd($request);
         $message = Message::create($request->all());
 
         return redirect()->back();

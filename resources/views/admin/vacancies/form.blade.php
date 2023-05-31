@@ -14,8 +14,8 @@
             {!! Form::number('salary_from', null, [
                 'class' => 'form-control salary-input ' . $errors->first('salary_from', 'is-invalid') . '',
                 'min' => 0,
-                'onkeypress' => "return event.charCode >= 48",
-                'placeholder' => 'От'
+                'onkeypress' => 'return event.charCode >= 48',
+                'placeholder' => 'От',
             ]) !!}
             @if ($errors->has('salary_from'))
                 <div class="invalid-feedback">{{ $errors->first('salary_from') }}</div>
@@ -25,8 +25,8 @@
             {!! Form::number('salary_to', null, [
                 'class' => 'form-control salary-input ' . $errors->first('salary_to', 'is-invalid') . '',
                 'min' => 0,
-                'onkeypress' => "return event.charCode >= 48",
-                'placeholder' => 'До'
+                'onkeypress' => 'return event.charCode >= 48',
+                'placeholder' => 'До',
             ]) !!}
             @if ($errors->has('salary_to'))
                 <div class="invalid-feedback">{{ $errors->first('salary_to') }}</div>
@@ -113,6 +113,20 @@
             @if ($errors->has('address'))
                 <div class="invalid-feedback">{{ $errors->first('address') }}</div>
             @endif
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Метро:</label>
+        <div class="col-lg-4">
+            {!! Form::select('metro[]', $metros, null, [
+                'class' => 'selectpicker',
+                'title' => 'Выбрать',
+                'data-width' => '100%',
+                'data-live-search' => 'true',
+                'data-size' => '6',
+                'multiple' => 'multiple',
+                'id' => 'data_metro'
+            ]) !!}
         </div>
     </div>
     <div class="form-group row d-none">

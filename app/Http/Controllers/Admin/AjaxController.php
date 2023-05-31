@@ -14,7 +14,7 @@ class AjaxController extends Controller
 {
     public function dadataUser(Request $request)
     {
-        $dadata = DaDataAddress::prompt($request->key, 5, Language::RU, ["country_iso_code" => "*"]);
+        $dadata = DaDataAddress::prompt($request->key, 1, Language::RU, ["country_iso_code" => "*"]);
         return json_encode($dadata);
     }
 
