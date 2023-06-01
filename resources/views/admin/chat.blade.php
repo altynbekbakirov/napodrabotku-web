@@ -116,7 +116,7 @@
                             <!--begin::Scroll-->
                             <div class="scroll scroll-pull" data-mobile-height="350">
                                 <!--begin::Messages-->
-                                <div class="messages">
+                                <div class="messages" style="overflow-y: scroll; height: 470px">
 
                                     @if ($selected_chat && $selected_chat->messages)
                                         @foreach ($selected_chat->messages as $message)
@@ -190,19 +190,16 @@
                             @if ($selected_chat && $selected_chat->messages)
                                 {{-- @php dd($selected_chat); @endphp --}}
                                 {!! Form::open([
-                                    'route' => ['admin.chat.message', $selected_chat],
-                                    'enctype' => 'multipart/form-data',
-                                    'class' => 'form',
+                                    'route' => ['admin.chat.message', $selected_chat]
                                 ]) !!}
                                 <input type="hidden" name="chat_id" value="{{ $selected_chat->id }}">
                                 <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
-                                <input type="hidden" name="vacancy_id" value="{{ $selected_chat->vacancy_id }}">
                                 <!--begin::Compose-->
                                 <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message"></textarea>
                                 <div class="d-flex align-items-center justify-content-between mt-5">
                                     <div class="ml-auto">
-                                        <button type="submit"
-                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6">Отправить</button>
+                                        <input type="submit"
+                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6" value="Отправить">
                                     </div>
                                 </div>
                                 <!--begin::Compose-->
@@ -221,8 +218,4 @@
     </div>
     <!--end::Entry-->
 
-@endsection
-
-@section('scripts')
-    <script src="{{ asset('assets/js/pages/custom/chat/chat.js') }}"></script>
 @endsection

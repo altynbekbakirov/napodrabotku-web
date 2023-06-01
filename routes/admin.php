@@ -15,8 +15,8 @@ Route::middleware('auth')->group( function () {
     Route::name('admin.profile')->get('/profile', ['uses' => 'HomeController@profile']);
     Route::name('admin.account')->get('/account', ['uses' => 'HomeController@account']);
     Route::name('admin.chat')->get('/chat', ['uses' => 'HomeController@chat']);
-    Route::name('admin.chat.delete')->get('/chat/{chat}/delete', ['uses' => 'HomeController@chat']);
-    Route::name('admin.chat.message')->post('/chat/{chat}', ['uses' => 'HomeController@message']);
+    Route::name('admin.chat.delete')->get('/chat/{chat}/delete', ['uses' => 'HomeController@destroy']);
+    Route::name('admin.chat.message')->post('/chat/{chat}/message', ['uses' => 'HomeController@message']);
 
     // Resources
     Route::resources([

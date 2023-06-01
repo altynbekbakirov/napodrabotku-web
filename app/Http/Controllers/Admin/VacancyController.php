@@ -159,13 +159,13 @@ class VacancyController extends Controller
                 ->addColumn('status', function ($row) {
                     switch ($row->status) {
                         case 'active':
-                            $status = '<span style="color:blue;"><strong>Активно</strong></span>';
+                            $status = '<strong style="color:blue;">Активно </strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
                             break;
                         case 'archived':
-                            $status = '<span style="color:#D3D3D3;"><strong>В архиве</strong></span>';
+                            $status = '<strong style="color:#D3D3D3;">В архиве</strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
                             break;
                         case 'deleted':
-                            $status = '<span style="color:red;"><strong>Удалено</strong></span>';
+                            $status = '<strong style="color:red;">Удалено</strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
                             break;
                         default:
                             $status = '<span style="color:#90EE90;"><strong>Не опубликовано</strong></span>';
@@ -445,6 +445,7 @@ class VacancyController extends Controller
         foreach ($request->vacancies as $value) {
             $vacancy = Vacancy::where('id', $value)->first();
             $vacancy->status = $request->status_type;
+            $vacancy->status_update_at = date("Y-m-d H:i:s");
             $vacancy->save();
         }
         return 'success';

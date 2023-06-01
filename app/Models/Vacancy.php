@@ -51,7 +51,9 @@ class Vacancy extends Model
         'recommendation_letter_type_id',
         'is_product_lab_vacancy',
         'vacancy_link',
-        'deadline'
+        'deadline',
+        'status',
+        'status_update_at'
     ];
 
     protected $searchable = [

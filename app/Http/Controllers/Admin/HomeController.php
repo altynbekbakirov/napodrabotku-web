@@ -23,7 +23,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        if(auth()->user()->type == 'COMPANY'){
+        if (auth()->user()->type == 'COMPANY') {
             return redirect()->route('vacancies.index');
         }
         $title = 'Главная';
@@ -60,7 +60,6 @@ class HomeController extends Controller
 
     public function chat(Request $request)
     {
-        dump($request);
         $title = 'Чаты';
 
         $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
@@ -68,27 +67,48 @@ class HomeController extends Controller
         $chat_id = $request->id;
         $selected_chat = null;
 
-        if($chat_id){
+        if ($chat_id) {
             $selected_chat = Chat::findOrFail($chat_id);
             $messages = Message::chat($chat_id)->get();
 
-        if($messages){
-            foreach ($messages as $message){
-                $message->read = true;
-                $message->save();
+            if ($messages) {
+                foreach ($messages as $message) {
+                    $message->read = true;
+                    $message->save();
+                }
             }
-        }
         }
 
         return view('admin.chat', compact('title', 'chats', 'selected_chat'));
     }
 
+    public function destroy($chat)
+    {
+        $title = 'Чаты';
+        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
+        $selected_chat = null;
+
+        $chat_delete = Chat::where('id', $chat)->first();
+        $chat_delete->delete();
+
+        return redirect()->route('admin.chat');
+    }
+
     public function message(Request $request)
     {
-        dd($request);
-        $message = Message::create($request->all());
 
-        return redirect()->back();
+        $title = 'Чаты';
+        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
+        $selected_chat = Chat::where('id', $request->chat_id)->first();
+
+        $message = new Message();
+        $message->user_id = $request->user_id;
+        $message->chat_id = $request->chat_id;
+        $message->message = $request->new_message;
+        $message->read = 0;
+        $message->save();
+
+        return view('admin.chat', compact('title', 'chats', 'selected_chat'));
     }
 
 
@@ -97,4 +117,3 @@ class HomeController extends Controller
         return abort(404);
     }
 }
-
