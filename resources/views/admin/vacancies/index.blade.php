@@ -197,9 +197,16 @@
 			<'row'<'col-sm-12'tr>>
 			<'row'<'col-sm-12 col-md-3'i><'col-sm-12 col-md-2 status_change'><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
             initComplete: function() {
-                $('div.status_change').html(
-                    "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='archived'>Убрать в архив</option><option value='active'>Опубликовать</option><option value='deleted'>Удалить</option></select>"
-                );
+                @if (auth()->user()->type == 'ADMIN')
+                    $('div.status_change').html(
+                        "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='active'>Опубликовать</option><option value='denied'>Отклонить</option><option value='archived'>Убрать в архив</option><option value='deleted'>Удалить</option></select>"
+                    );
+                @else
+                    $('div.status_change').html(
+                        "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='active'>Опубликовать</option><option value='archived'>Убрать в архив</option><option value='deleted'>Удалить</option></select>"
+                    );
+                @endif
+
                 $("select[name=status_select_change]").on('change', function() {
                     var vacancies = [];
                     var status_type = $(this).val();
@@ -233,10 +240,78 @@
                     }
                 });
 
-                $('input[name="checkbox-product"]').on('change', function() {
-                    if ($(this).is(':checked')) {
+                $('.btn-publish').on('click', function() {
+                    var vacancies = [];
+                    vacancies.push($(this).attr('data-product-id'));
 
+                    if (!$.isEmptyObject(vacancies)) {
+                        $.ajax({
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            },
+                            cache: false,
+                            type: 'POST',
+                            url: `/admin/vacancies/update_status`,
+                            data: {
+                                'status_type': 'active',
+                                'vacancies': vacancies,
+                            },
+                            success: function(result) {
+                                location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Произошла ошибка при обновлении статуса: ' +
+                                    error);
+                            }
+
+                        });
+                    }
+                });
+
+                $('.btn-denied').on('click', function() {
+                    var vacancies = [];
+                    vacancies.push($(this).attr('data-product-id'));
+
+                    if (!$.isEmptyObject(vacancies)) {
+                        $.ajax({
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            },
+                            cache: false,
+                            type: 'POST',
+                            url: `/admin/vacancies/update_status`,
+                            data: {
+                                'status_type': 'denied',
+                                'vacancies': vacancies,
+                            },
+                            success: function(result) {
+                                location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Произошла ошибка при обновлении статуса: ' +
+                                    error);
+                            }
+
+                        });
+                    }
+                });
+
+                $('input[name=checkbox-all]').on("change", function() {
+                    if (this.checked) {
+                        $(':checkbox').each(function() {
+                            if (!$(this).attr('disabled')) {
+                                this.checked = true;
+                            }
+                        });
                     } else {
+                        $(':checkbox').each(function() {
+                            this.checked = false;
+                        });
+                    }
+                });
+
+                $('input[name="checkbox-product"]').on('change', function() {
+                    if ($(this).is(':checked')) {} else {
                         $('input[name="checkbox-all"').prop('checked', false);
                     }
                 });
@@ -323,17 +398,7 @@
             table.draw();
         });
 
-        $('input[name=checkbox-all]').on("change", function() {
-            if (this.checked) {
-                $(':checkbox').each(function() {
-                    this.checked = true;
-                });
-            } else {
-                $(':checkbox').each(function() {
-                    this.checked = false;
-                });
-            }
-        });
+
 
         $("select[name=region]").on("change", function() {
             table.draw();

@@ -43,6 +43,7 @@ class VacancyController extends Controller
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
             'not_published' => '<button type="button" class="btn btn-lg btn-light" status_id="not_published">He опубликовано <span class="label label-primary">0</span></button>&nbsp;',
+            'denied' => '<button type="button" class="btn btn-lg btn-light" status_id="not_published">Отклонено <span class="label label-primary">0</span></button>&nbsp;',
             'active' => '<button type="button" class="btn btn-lg btn-light" status_id="active">Активно <span class="label label-primary">0</span></button>&nbsp;',
             'archived' => '<button type="button" class="btn btn-lg btn-light" status_id="archived">В архиве <span class="label label-primary">0</span></button>&nbsp;',
             'deleted' => '<button type="button" class="btn btn-lg btn-light" status_id="deleted">Удалено <span class="label label-primary">0</span></button>&nbsp;',
@@ -51,6 +52,9 @@ class VacancyController extends Controller
         foreach ($statuses as $key => $value) {
             if ($value === 'not_published') {
                 $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="not_published">He опубликовано <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'denied') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="denied">Отклонено <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'active') {
                 $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="active">Активно <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
@@ -106,7 +110,15 @@ class VacancyController extends Controller
 
             return datatables()->of($data)
                 ->addColumn('check_box', function ($row) {
-                    return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
+                    if (auth()->user()->type == 'ADMIN') {
+                        return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
+                    } else {
+                        if ($row->status == 'not_published' || $row->status == 'denied') {
+                            return '<input type="checkbox" name="checkbox-product" disabled="disabled" product_data_id="' . $row->id . '" />';
+                        } else {
+                            return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
+                        }
+                    }
                 })
                 ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
@@ -159,16 +171,34 @@ class VacancyController extends Controller
                 ->addColumn('status', function ($row) {
                     switch ($row->status) {
                         case 'active':
-                            $status = '<strong style="color:blue;">Активно </strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            if (auth()->user()->type == 'ADMIN') {
+                                $status = '<span class="label label-primary label-inline label-lg"><strong>Опубликовано</strong> </span><br/><span style="color:grey; font-size:12px;">с ' . date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            } else {
+                                $status = '<span class="label label-primary label-inline label-lg"><strong>Активно</strong> </span><br/><span style="color:grey; font-size:12px;">с ' . date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            }
                             break;
                         case 'archived':
-                            $status = '<strong style="color:#D3D3D3;">В архиве</strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            $status = '<span class="label label-inline label-lg"><strong>В архиве</strong></span><br/><span style="color:grey; font-size:12px;">с ' . date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
                             break;
                         case 'deleted':
-                            $status = '<strong style="color:red;">Удалено</strong><br/><span style="color:grey; font-size:12px;">с '. date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            $status = '<span class="label label-danger label-inline label-lg">Удалено</span><br/><span style="color:grey; font-size:12px;">с ' . date('d.m.Y', strtotime($row->status_update_at)) . '</span>';
+                            break;
+                        case 'denied':
+                            $status = '<span class="label label-warning label-inline label-lg"><strong>Отклонено</strong></span>';
+                            break;
+                        case 'not_published':
+                            if (auth()->user()->type == 'ADMIN') {
+                                $status = '
+                                <p class="label label-info label-inline label-lg"><strong>Требуется проверка</strong></p><br/><br/>
+                                <button type="button" class="btn btn-light-success btn-sm btn-publish" data-product-id=" ' . $row->id . '">Опубликовать</button>&nbsp;&nbsp;
+                                <button type="button" class="btn btn-light-danger btn-sm btn-denied" data-product-id=" ' . $row->id . '">Отклонить</button>
+                                </p>';
+                            } else {
+                                $status = '<span class="label label-info label-inline label-lg"><strong>На модерации</strong></span>';
+                            }
                             break;
                         default:
-                            $status = '<span style="color:#90EE90;"><strong>Не опубликовано</strong></span>';
+                            $status = '<span class="label label-info label-inline label-lg"><strong>На модерации</strong></span>';
                     }
                     return $status;
                 })
