@@ -65,8 +65,9 @@
                             <div class="text-center flex-grow-1">
                                 @if ($selected_chat)
                                     {{ $selected_chat->user->getFullName() }}
-                                    <span
-                                        class="text-muted">({{ $selected_chat->vacancy ? $selected_chat->vacancy->name : '' }})</span>
+                                    <a href="#" id="modalVacancy" data-vacancy-id='{{ $selected_chat->vacancy->id }}'
+                                        class="text-muted" data-toggle="modal"
+                                        data-target="#exampleModalScrollable">({{ $selected_chat->vacancy ? $selected_chat->vacancy->name : '' }})</a>
                                 @endif
                             </div>
                             <div class="text-right flex-grow-1">
@@ -116,7 +117,7 @@
                             <!--begin::Scroll-->
                             <div class="scroll scroll-pull" data-mobile-height="350">
                                 <!--begin::Messages-->
-                                <div class="messages" style="overflow-y: scroll; height: 470px">
+                                <div class="messages" id="messages" style="overflow-y: scroll; height: 470px">
 
                                     @if ($selected_chat && $selected_chat->messages)
                                         @foreach ($selected_chat->messages as $message)
@@ -190,7 +191,7 @@
                             @if ($selected_chat && $selected_chat->messages)
                                 {{-- @php dd($selected_chat); @endphp --}}
                                 {!! Form::open([
-                                    'route' => ['admin.chat.message', $selected_chat]
+                                    'route' => ['admin.chat.message', $selected_chat],
                                 ]) !!}
                                 <input type="hidden" name="chat_id" value="{{ $selected_chat->id }}">
                                 <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
@@ -199,7 +200,8 @@
                                 <div class="d-flex align-items-center justify-content-between mt-5">
                                     <div class="ml-auto">
                                         <input type="submit"
-                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6" value="Отправить">
+                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6"
+                                            value="Отправить">
                                     </div>
                                 </div>
                                 <!--begin::Compose-->
@@ -218,4 +220,143 @@
     </div>
     <!--end::Entry-->
 
+    <div class="modal fade" id="exampleModalScrollable" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-body">
+
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Название:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 vacancy_name"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Зарплата:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 vacancy_salary"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Компания:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 vacancy_company_name"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Описание:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 vacancy_description"></p>
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-10"></div>
+
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Вид
+                                занятости:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->busyness->name_ru }}</p> --}}
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Тип
+                                вакансии:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->vacancytype->name_ru }}</p> --}}
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Сфера
+                                работы:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->jobtype->name_ru }}</p> --}}
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">График
+                                работы:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->schedule->name_ru }}</p> --}}
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-10"></div>
+
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Дата
+                                добавления:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 vacancy_created"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            // Scroll to down on adding new message
+            var objDiv = document.getElementById("messages");
+            objDiv.scrollTop = objDiv.scrollHeight;
+
+            $('#modalVacancy').on('click', function() {
+                $('.modal-title').text($(this).text());
+                var vacancy_id = $(this).attr('data-vacancy-id');
+
+                if (!$.isEmptyObject(vacancy_id)) {
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        cache: false,
+                        type: 'POST',
+                        url: `/admin/vacancies/get_vacancy`,
+                        data: {
+                            'id': vacancy_id
+                        },
+                        success: function(result) {
+                            console.log(result);
+                            $('p.vacancy_name').text(result['name']);
+                            $('p.vacancy_salary').text(result['salary_from'] + ' - ' + result['salary_to']);
+                            $('p.vacancy_company_name').text(result['company_name']);
+                            $('p.vacancy_description').html(result['description']);
+                            $('p.vacancy_created').html(result['created_at']);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log('Произошла ошибка при обновлении статуса: ' +
+                                error);
+                        }
+                    });
+                }
+
+            });
+        });
+    </script>
 @endsection

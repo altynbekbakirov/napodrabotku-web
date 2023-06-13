@@ -96,17 +96,19 @@ class HomeController extends Controller
 
     public function message(Request $request)
     {
-
         $title = 'Чаты';
         $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
         $selected_chat = Chat::where('id', $request->chat_id)->first();
 
-        $message = new Message();
-        $message->user_id = $request->user_id;
-        $message->chat_id = $request->chat_id;
-        $message->message = $request->new_message;
-        $message->read = 0;
-        $message->save();
+        if ($request->new_message) {
+
+            $message = new Message();
+            $message->user_id = $request->user_id;
+            $message->chat_id = $request->chat_id;
+            $message->message = $request->new_message;
+            $message->read = 0;
+            $message->save();
+        }
 
         return view('admin.chat', compact('title', 'chats', 'selected_chat'));
     }

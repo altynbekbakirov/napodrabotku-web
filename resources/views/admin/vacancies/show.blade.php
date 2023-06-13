@@ -45,7 +45,7 @@
                         <div class="form-group row align-items-center">
                             <label class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Описание:</label>
                             <div class="col-lg-9 col-xl-6">
-                                <p class="font-weight-bold mb-0">{{$vacancy->description}}</p>
+                                <p class="font-weight-bold mb-0">{!! $vacancy->description !!}</p>
                             </div>
                         </div>
 

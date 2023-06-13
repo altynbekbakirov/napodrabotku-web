@@ -50,6 +50,7 @@ Route::middleware('auth')->group( function () {
     Route::name('user_cv.get_user')->post('user_cv/vacancy/citizen', ['uses' => 'UserCvController@get_user']);
     Route::name('vacancies.get_regions')->get('vacancies/districs/{regions}', ['uses' => 'VacancyController@get_regions']);
     Route::name('vacancies.update_status')->post('vacancies/update_status', ['uses' => 'VacancyController@update_status']);
+    Route::name('vacancies.get_vacancy')->post('vacancies/get_vacancy', ['uses' => 'VacancyController@get_vacancy']);
 
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);

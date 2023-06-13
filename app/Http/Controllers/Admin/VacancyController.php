@@ -156,6 +156,9 @@ class VacancyController extends Controller
                         </span>
                     </a>';
                 })
+                ->addColumn('name', function ($row) {
+                    return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>' : '-';
+                })
                 ->addColumn('company_name', function ($row) {
                     return $row->company ? $row->company->name : '-';
                 })
@@ -202,7 +205,7 @@ class VacancyController extends Controller
                     }
                     return $status;
                 })
-                ->rawColumns(['check_box', 'acts', 'status'])
+                ->rawColumns(['check_box', 'name', 'acts', 'status'])
                 ->make(true);
         }
 
@@ -235,14 +238,13 @@ class VacancyController extends Controller
     {
         $this->validate($request, [
             'name' => ['required'],
-            'salary_from' => ['required'],
-            'salary_to' => ['nullable', 'gt:salary_from'],
+            'salary_from' => ['required_without:salary_to'],
+            'salary_to' => ['required_without:salary_from'],
             'currency' => ['required'],
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
             'address' => ['required', 'min:3', 'max:255'],
-            // 'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -278,7 +280,7 @@ class VacancyController extends Controller
         $metros = [];
 
         $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
-        if ($dadata['suggestions']) {
+        if ($dadata['suggestions'][0]['data']['metro']) {
             $metros = Arr::pluck($dadata['suggestions'][0]['data']['metro'], 'name', 'name');
         }
 
@@ -289,14 +291,13 @@ class VacancyController extends Controller
     {
         $this->validate($request, [
             'name' => ['required'],
-            'salary_from' => ['required'],
-            'salary_to' => ['nullable', 'gt:salary_from'],
+            'salary_from' => ['required_without:salary_to'],
+            'salary_to' => ['required_without:salary_from'],
             'currency' => ['required'],
             'period' => ['required'],
             'company_id' => ['required'],
             'description' => ['required'],
             'address' => ['required', 'min:3', 'max:255'],
-            // 'region' => ['required'],
             'busyness_id' => ['required'],
             'vacancy_type_id' => ['required'],
             'job_type_id' => ['required'],
@@ -305,6 +306,7 @@ class VacancyController extends Controller
             'pay_period' => ['required'],
         ]);
         $vacancy->update($request->except('region', 'district'));
+        $vacancy->status = 'not_published';
         $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $vacancy->save();
@@ -479,5 +481,11 @@ class VacancyController extends Controller
             $vacancy->save();
         }
         return 'success';
+    }
+
+    public function get_vacancy(Request $request) {
+        $vacancy = Vacancy::where('id', $request->id)->first();
+        $vacancy->company_name = User::where('id', $vacancy->company_id)->first() ? User::where('id', $vacancy->company_id)->first()->name : null;
+        return $vacancy;
     }
 }
