@@ -115,13 +115,16 @@
                 type: 'number',
                 selector: false,
                 textAlign: 'center',
-            }, {
-                field: 'name',
-                title: 'Название (на кыргызском)',
-            }, {
+            },
+            {
                 field: 'name_ru',
                 title: 'Название (на русском)',
-            }, {
+            },
+            {
+                field: 'name',
+                title: 'Название (на кыргызском)',
+            },
+            {
                 field: 'acts',
                 title: 'Actions',
                 sortable: false,

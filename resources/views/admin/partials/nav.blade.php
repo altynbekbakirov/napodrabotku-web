@@ -95,7 +95,10 @@
             @endif
             <li class="menu-item">
                 <a href="{{ route('vacancies.index') }}" class="menu-link">
-                    <span class="menu-text">Вакансии</span>
+                    <span class="menu-text">Вакансии</span>&nbsp;
+                    @if (auth()->user()->type == 'ADMIN' && $user_vacancy_count)
+                        <span class="label label-danger label-inline font-weight-bold">{{ $user_vacancy_count }}</span>
+                    @endif
                 </a>
             </li>
             @if (auth()->user()->type == 'COMPANY')
@@ -103,7 +106,8 @@
                     <a href="{{ route('user_cv.index') }}" class="menu-link">
                         <span class="menu-text">Отклики</span>&nbsp;
                         @if ($user_vacancy_feedbacks)
-                            <span class="label label-warning label-inline font-weight-bold">{{$user_vacancy_feedbacks}}</span>
+                            <span
+                                class="label label-warning label-inline font-weight-bold">{{ $user_vacancy_feedbacks }}</span>
                         @endif
                     </a>
                 </li>

@@ -101,7 +101,7 @@
     </div>
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Адрес: <span style="color: red">*</span></label>
-        <div class="col-lg-4">
+        <div class="col-lg-5">
             {!! Form::text('address', null, ['class' => 'form-control ' . $errors->first('address', 'is-invalid')]) !!}
             <div id="suggestions" class="position-relative">
                 <ul class="dropdown-menu w-100">
@@ -117,7 +117,7 @@
     </div>
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Метро:</label>
-        <div class="col-lg-4">
+        <div class="col-lg-5">
             {!! Form::select('metro[]', $metros, null, [
                 'class' => 'selectpicker',
                 'title' => 'Выбрать',

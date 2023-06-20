@@ -98,6 +98,8 @@
                                     let index = $(this).attr('data-index');
                                     let item = data.suggestions[index];
 
+                                    console.log(item);
+
                                     $('input[name=address]').val(item.value);
                                     $('input[name=region]').val(item.data
                                         .region_with_type);
@@ -118,9 +120,9 @@
                                     metroTag.empty();
                                     metroTag.selectpicker('refresh');
                                     $.each(item.data.metro, function(key, value) {
-                                        metroTag.append($("<option></option>")
-                                            .attr("value", value['name'])
-                                            .text(value['name']));
+                                        metroTag.append($(
+                                            `<option value='${value['name']}-${value['line']}'>${value['name']} (${value['line']})</option>`
+                                        ));
                                     });
                                     metroTag.selectpicker('refresh');
                                 });
@@ -150,7 +152,8 @@
                     selector: '#kt-tinymce-app',
                     invalid_elements: 'a',
                     menubar: false,
-                    toolbar: ['undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent',
+                    toolbar: [
+                        'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent',
                     ],
                     plugins: 'advlist lists charmap print preview code',
                     init_instance_callback: function(editor) {
@@ -158,12 +161,13 @@
                             var someText = e.target.innerHTML.toLowerCase();
                             let isFounded = badwords.some(ai => someText.includes(ai));
                             if (isFounded == true) {
-                                alert("Описание содержит нецензурные слова, пожалуйста, удалите их, прежде чем продолжить: " +
-                                    someText);
-                                return false;
-                            }
-                            if (someText.includes('href')) {
-                                console.log(someText);
+                                for (i = 0; i < badwords.length; ++i) {
+                                    if (someText.toLowerCase().indexOf(badwords[i]) >= 0) {
+                                        alert("Описание содержит запрещенные слова, пожалуйста, удалите их, прежде чем продолжить: " +
+                                            badwords[i]);
+                                        return false;
+                                    }
+                                }
                             }
                         });
                     }
@@ -299,7 +303,15 @@
             'хитрожопый',
             'хрен моржовый',
             'шлюха',
-            'шлюшидзе'
+            'шлюшидзе',
+            'www.',
+            'http://',
+            'https://',
+            '.ru',
+            '.com',
+            '.kg',
+            '.net',
+            '.by'
         ];
 
         jQuery(function() {
@@ -311,12 +323,17 @@
 
                 let isFounded = badwords.some(ai => tiny_content.toLowerCase().includes(ai));
                 if (isFounded == true) {
-                    alert("Описание содержит нецензурные слова, пожалуйста, удалите их, прежде чем продолжить: " +
-                        tiny_content);
-                    return false;
+                    for (i = 0; i < badwords.length; ++i) {
+                        if (tiny_content.toLowerCase().indexOf(badwords[i]) >= 0) {
+                            alert("Описание содержит запрещенные слова, пожалуйста, удалите их, прежде чем продолжить: " +
+                                badwords[i]);
+                            return false;
+                        }
+                    }
                 }
             });
         });
+
 
         // Initialization
         jQuery(document).ready(function() {

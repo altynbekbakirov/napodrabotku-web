@@ -31,7 +31,6 @@ class SkillsetController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => ['required'],
             'name_ru' => ['required'],
         ]);
         $skillset = Skillset::create($request->all());
@@ -50,7 +49,6 @@ class SkillsetController extends Controller
     public function update(Request $request, Skillset $skillset)
     {
         $this->validate($request, [
-            'name' => ['required'],
             'name_ru' => ['required'],
         ]);
         $skillset->update($request->all());

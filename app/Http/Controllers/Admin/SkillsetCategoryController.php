@@ -30,10 +30,9 @@ class SkillsetCategoryController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => ['required'],
             'name_ru' => ['required'],
         ]);
-        $skillset_сategories = SkillsetCategory::create($request->all());
+        SkillsetCategory::create($request->all());
 
         return redirect()->route('skillset_categories.index');
     }
@@ -49,7 +48,6 @@ class SkillsetCategoryController extends Controller
     public function update(Request $request, SkillsetCategory $skillset_category)
     {
         $this->validate($request, [
-            'name' => ['required'],
             'name_ru' => ['required'],
         ]);
         $skillset_category->update($request->all());

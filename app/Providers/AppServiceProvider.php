@@ -37,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unread_messages', Message::where('user_id', '<>', auth()->user()->id)->where('read', false)->count());
                 $vacancy_ids = Vacancy::where('company_id',  auth()->user()->id)->pluck('id')->toArray();
                 $view->with('user_vacancy_feedbacks', UserVacancy::whereIn('vacancy_id', $vacancy_ids)->where('type', 'SUBMITTED')->where('status', 'not_processed')->count());
+            } else if (auth()->user() && auth()->user()->type == 'ADMIN') {
+                $view->with('user_vacancy_count', Vacancy::where('status', 'not_published')->count());
             }
         });
     }

@@ -17,7 +17,7 @@ class CurrencyController extends Controller
     public function create()
     {
         $currency = new Currency();
-        $title = 'Сферы работ';
+        $title = 'Валюты';
 
         return view('admin.currencies.create', compact('currency', 'title'));
     }
@@ -25,23 +25,25 @@ class CurrencyController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
+            'code' => ['required'],
             'name' => ['required'],
             'name_ru' => ['required'],
         ]);
-        $currency = Currency::create($request->all());
+        Currency::create($request->all());
 
         return redirect()->route('currencies.index');
     }
 
     public function edit(Currency $currency)
     {
-        $title = 'Сферы работ';
+        $title = 'Валюты';
         return view('admin.currencies.edit', compact('currency', 'title'));
     }
 
     public function update(Request $request, Currency $currency)
     {
         $this->validate($request, [
+            'code' => ['required'],
             'name' => ['required'],
             'name_ru' => ['required'],
         ]);

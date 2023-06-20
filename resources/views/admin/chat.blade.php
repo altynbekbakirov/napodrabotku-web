@@ -37,7 +37,7 @@
                                                 </div>
                                             </div>
                                             <div class="d-flex flex-column align-items-end">
-                                                <span class="text-muted font-weight-bold font-size-sm">35 mins</span>
+                                                {{-- <span class="text-muted font-weight-bold font-size-sm">35 mins</span> --}}
                                                 @if ($chat->messages->where('user_id', '<>', auth()->user()->id)->where('read', false)->count() > 0)
                                                     <span class="label label-sm label-success">
                                                         {{ $chat->messages->where('user_id', '<>', auth()->user()->id)->where('read', false)->count() }}
@@ -189,7 +189,6 @@
                         <!--begin::Footer-->
                         <div class="card-footer align-items-center">
                             @if ($selected_chat && $selected_chat->messages)
-                                {{-- @php dd($selected_chat); @endphp --}}
                                 {!! Form::open([
                                     'route' => ['admin.chat.message', $selected_chat],
                                 ]) !!}
@@ -198,6 +197,36 @@
                                 <!--begin::Compose-->
                                 <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message"></textarea>
                                 <div class="d-flex align-items-center justify-content-between mt-5">
+                                    <div class="btn-group dropdown w-25">
+                                        <button type="button" class="btn btn-success dropdown-toggle"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Быстрый набор
+                                        </button>
+
+                                        <div class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+                                            @if ($words)
+                                                <div class="dropdown-menu-menu">
+                                                    @foreach ($words as $word)
+                                                    <div class="d-flex flex-col justify-content-center align-items-center">
+                                                        <a class="dropdown-item" href="#">{{ $word->word }}</a>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-icon dropdown-item-button"><i
+                                                                class="flaticon2-delete"></i></button>&nbsp;
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            <div class="dropdown-divider"></div>
+                                            <div class="d-flex flex-col justify-content-center align-items-center">
+                                                <input type="text" id="new_quick_word" class="form-control w-75"
+                                                    placeholder="Добавить" />&nbsp;&nbsp;
+                                                <button type="button" id="new_quick_button"
+                                                    class="btn btn-sm btn-icon btn-light-info"><i
+                                                        class="flaticon2-add"></i></button>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                     <div class="ml-auto">
                                         <input type="submit"
                                             class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6"
@@ -269,7 +298,7 @@
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Вид
                                 занятости:</label>
                             <div class="col-lg-9 col-xl-6">
-                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->busyness->name_ru }}</p> --}}
+                                <p class="font-weight-bold mb-0 busyness_name"></p>
                             </div>
                         </div>
                         <div class="form-group row align-items-center">
@@ -277,7 +306,7 @@
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Тип
                                 вакансии:</label>
                             <div class="col-lg-9 col-xl-6">
-                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->vacancytype->name_ru }}</p> --}}
+                                <p class="font-weight-bold mb-0 vacancy_type_name"></p>
                             </div>
                         </div>
                         <div class="form-group row align-items-center">
@@ -285,7 +314,7 @@
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Сфера
                                 работы:</label>
                             <div class="col-lg-9 col-xl-6">
-                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->jobtype->name_ru }}</p> --}}
+                                <p class="font-weight-bold mb-0 type_name"></p>
                             </div>
                         </div>
                         <div class="form-group row align-items-center">
@@ -293,7 +322,7 @@
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">График
                                 работы:</label>
                             <div class="col-lg-9 col-xl-6">
-                                {{-- <p class="font-weight-bold mb-0">{{ $vacancy->schedule->name_ru }}</p> --}}
+                                <p class="font-weight-bold mb-0 schedule_name"></p>
                             </div>
                         </div>
 
@@ -326,6 +355,23 @@
             var objDiv = document.getElementById("messages");
             objDiv.scrollTop = objDiv.scrollHeight;
 
+            $.date = function(dateObject) {
+                var d = new Date(dateObject);
+                var day = d.getDate();
+                var month = d.getMonth() + 1;
+                var year = d.getFullYear();
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                if (month < 10) {
+                    month = "0" + month;
+                }
+                var date = day + "." + month + "." + year;
+
+                return date;
+            };
+
+            // Show vacancy in modal form
             $('#modalVacancy').on('click', function() {
                 $('.modal-title').text($(this).text());
                 var vacancy_id = $(this).attr('data-vacancy-id');
@@ -342,12 +388,16 @@
                             'id': vacancy_id
                         },
                         success: function(result) {
-                            console.log(result);
                             $('p.vacancy_name').text(result['name']);
-                            $('p.vacancy_salary').text(result['salary_from'] + ' - ' + result['salary_to']);
+                            $('p.vacancy_salary').text(result['salary_from'] + ' - ' + result[
+                                'salary_to']);
                             $('p.vacancy_company_name').text(result['company_name']);
                             $('p.vacancy_description').html(result['description']);
-                            $('p.vacancy_created').html(result['created_at']);
+                            $('p.vacancy_created').text($.date(result['created_at']));
+                            $('p.type_name').html(result['type_name']);
+                            $('p.vacancy_type_name').html(result['vacancy_type_name']);
+                            $('p.busyness_name').html(result['busyness_name']);
+                            $('p.schedule_name').html(result['schedule_name']);
                         },
                         error: function(xhr, status, error) {
                             console.log('Произошла ошибка при обновлении статуса: ' +
@@ -357,6 +407,153 @@
                 }
 
             });
+
+            // Form submit
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                var message = $('textarea[name=new_message]');
+                var chat_id = $('input[name=chat_id]').val();
+                var user_id = $('input[name=user_id]').val();
+
+                if (jQuery.trim(message.val()).length > 0) {
+
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        cache: false,
+                        type: 'POST',
+                        url: `/admin/chat/${chat_id}/ajax_message`,
+                        data: {
+                            'user_id': user_id,
+                            'chat_id': chat_id,
+                            'new_message': $('textarea[name=new_message]').val(),
+                        },
+                        success: function(result) {
+                            result['created_at'] = moment(result['created_at']).format(
+                                'DD-MM-YYYY HH:mm');
+
+                            $('#messages').append(`<div class="d-flex flex-column mb-5 align-items-end">
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <span
+                                                                class="text-muted font-size-sm">${result['created_at']}</span>
+                                                            <a href="#"
+                                                                class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Вы</a>
+                                                        </div>
+                                                        @if (auth()->user()->avatar)
+                                                            <div class="symbol symbol-circle symbol-40 ml-3">
+                                                                <img alt="Pic"
+                                                                    src="{{ asset(auth()->user()->avatar) }}" />
+                                                            </div>
+                                                        @else
+                                                            <div class="symbol symbol-circle symbol-40 ml-3">
+                                                                <img alt="Pic"
+                                                                    src="{{ asset('assets/media/users/default.jpg') }}" />
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <div
+                                                        class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                                        ${result['message']}
+                                                    </div>
+                                                </div>`);
+
+                            objDiv.scrollTop = objDiv.scrollHeight;
+                        },
+                        error: function(xhr, status, error) {
+                            console.log('Произошла ошибка при обновлении статуса: ' +
+                                error);
+                        }
+
+                    });
+
+                    message.val('');
+
+                }
+            });
+
+            // Add quick word to textarea
+            $('.dropdown-menu-menu').on('click', 'a', function(e) {
+                e.stopPropagation();
+
+                var text_area = $('textarea[name=new_message]');
+                if ($('textarea[name=new_message]').val().length > 0) {
+                    text_area.val($('textarea[name=new_message]').val() + ' ' + $(this).text());
+                } else {
+                    text_area.val($(this).text());
+                }
+            });
+
+
+            // Delete quick word
+            $('.dropdown-menu-menu').on('click', 'button', function(e) {
+                e.stopPropagation();
+                var user_id = $('input[name=user_id]').val();
+                var parent_element = $(this).parent();
+
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    cache: false,
+                    type: 'POST',
+                    url: `/admin/chat/delete_quick_word`,
+                    data: {
+                        'user_id': user_id,
+                        'word': $(this).parent().find('a').html(),
+                    },
+                    success: function(result) {
+                        parent_element.remove();
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Произошла ошибка при обновлении статуса: ' +
+                            error);
+                    }
+
+                });
+
+            });
+
+            /// Add new quick word
+            $('#new_quick_button').on('click', function(e) {
+                e.stopPropagation();
+
+                if ($('#new_quick_word').val().length > 0) {
+
+                    var user_id = $('input[name=user_id]').val();
+
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        cache: false,
+                        type: 'POST',
+                        url: `/admin/chat/add_quick_word`,
+                        data: {
+                            'user_id': user_id,
+                            'word': $('#new_quick_word').val(),
+                        },
+                        success: function(result) {
+                            if (result != 'Failed') {
+                                $('.dropdown-menu-menu').append(
+                                    '<div class="d-flex flex-col justify-content-center align-items-center"><a class="dropdown-item" href="#">' +
+                                    $('#new_quick_word').val() +
+                                    '</a><button type="button" class="btn btn-sm btn-icon dropdown-item-button"><i class="flaticon2-delete"></i></button>&nbsp;</div>'
+                                );
+                            }
+                            $('#new_quick_word').val('');
+                        },
+                        error: function(xhr, status, error) {
+                            console.log('Произошла ошибка при обновлении статуса: ' +
+                                error);
+                        }
+
+                    });
+
+                }
+            });
+
         });
     </script>
 @endsection

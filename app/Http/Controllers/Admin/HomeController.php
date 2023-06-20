@@ -9,6 +9,7 @@ use App\Charts\SexChart;
 use App\Charts\UserChart;
 use App\Charts\YearChart;
 use App\Models\Chat;
+use App\Models\QuickWord;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -45,9 +46,31 @@ class HomeController extends Controller
         return view('admin.menus.index');
     }
 
-    public function profile()
+    public function profile(Request $request)
     {
         $title = 'Профиль';
+
+
+
+        // if ($request->file('image')) {
+
+        //     if (auth()->user()->avatar) @unlink(auth()->user()->avatar);
+        //     $file = $request->file('image');
+
+        //     $dir  = 'assets/media/users/';
+        //     if (!file_exists($dir)) {
+        //         mkdir($dir, 0777, true);
+        //     }
+
+        //     $name = Str::slug(auth()->user()->name, '-') . '.' . $file->getClientOriginalExtension();
+
+        //     Image::make($file)->fit(400, 400)->save($dir . $name, 75);
+
+        //     $user->avatar = $dir . $name;
+        // }
+
+        // $user->save();
+
         return view('admin.profile', compact('title'));
     }
 
@@ -66,10 +89,12 @@ class HomeController extends Controller
 
         $chat_id = $request->id;
         $selected_chat = null;
+        $words = [];
 
         if ($chat_id) {
             $selected_chat = Chat::findOrFail($chat_id);
             $messages = Message::chat($chat_id)->get();
+            $words = QuickWord::where('user_id', auth()->user()->id)->get();
 
             if ($messages) {
                 foreach ($messages as $message) {
@@ -79,7 +104,7 @@ class HomeController extends Controller
             }
         }
 
-        return view('admin.chat', compact('title', 'chats', 'selected_chat'));
+        return view('admin.chat', compact('title', 'chats', 'selected_chat','words'));
     }
 
     public function destroy($chat)
@@ -111,6 +136,52 @@ class HomeController extends Controller
         }
 
         return view('admin.chat', compact('title', 'chats', 'selected_chat'));
+    }
+
+    public function ajax_message(Request $request)
+    {
+
+        if ($request->new_message) {
+            $message = new Message();
+            $message->user_id = $request->user_id;
+            $message->chat_id = $request->chat_id;
+            $message->message = $request->new_message;
+            $message->read = 0;
+            $message->save();
+
+            return $message;
+        }
+
+        return 'Failed';
+    }
+
+    public function add_quick_word(Request $request)
+    {
+        if ($request->word && $request->user_id) {
+            $words = QuickWord::where('user_id', $request->user_id)->where('word', $request->word)->get();
+            if (count($words) == 0) {
+                $word = new QuickWord();
+                $word->word = $request->word;
+                $word->user_id = $request->user_id;
+                $word->save();
+                return $word;
+            } else {
+                return 'Failed';
+            }
+        }
+        return 'Failed';
+    }
+
+    public function delete_quick_word(Request $request)
+    {
+        if ($request->word && $request->user_id) {
+            $words = QuickWord::where('user_id', $request->user_id)->where('word', $request->word)->get();
+            foreach ($words as $word) {
+                $word->delete();
+            }
+            return 'Ok';
+        }
+        return 'Failed';
     }
 
 

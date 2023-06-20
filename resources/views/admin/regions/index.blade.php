@@ -113,13 +113,13 @@
                 width: 30,
                 type: 'number',
                 selector: false,
-            }, {
-                field: 'nameKg',
-                title: 'Название (на кыргызском)',
-            }, {
+            },{
                 field: 'nameRu',
                 title: 'Название (на русском)',
             }, {
+                field: 'nameKg',
+                title: 'Название (на кыргызском)',
+            },  {
                 field: 'acts',
                 title: 'Actions',
                 sortable: false,

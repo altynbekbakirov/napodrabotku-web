@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyType;
 use App\Models\Currency;
+use Mail;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use MoveMoveIo\DaData\Enums\Language;
@@ -257,6 +258,8 @@ class VacancyController extends Controller
         $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $vacancy->save();
 
+        // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
+
         return redirect()->route('vacancies.index');
     }
 
@@ -279,9 +282,16 @@ class VacancyController extends Controller
         $vacancy->district = District::find($vacancy->district) ? District::find($vacancy->district)->nameRu : '';
         $metros = [];
 
-        $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
-        if ($dadata['suggestions'][0]['data']['metro']) {
-            $metros = Arr::pluck($dadata['suggestions'][0]['data']['metro'], 'name', 'name');
+        if ($vacancy->address) {
+            $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
+            if ($dadata['suggestions'][0]['data']['metro']) {
+                foreach ($dadata['suggestions'][0]['data']['metro'] as $item) {
+                    $metros[$item['name'] . '-' . $item['line']] = $item['name'] . ' (' . $item['line'] . ')';
+                }
+            }
+            // if ($dadata['suggestions'][0]['data']['metro']) {
+            //     $metros = Arr::pluck($dadata['suggestions'][0]['data']['metro'], 'name', 'line');
+            // }
         }
 
         return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'metros'));
@@ -310,6 +320,23 @@ class VacancyController extends Controller
         $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $vacancy->save();
+
+        // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
+
+        $html = '<a href="http://188.246.185.182/admin/vacancies"> ' . $vacancy->name . '</a>';
+
+        Mail::raw('This is the content of mail body', function ($message) {
+            $message->from('service@napodrabotku.com', 'napodrabotku.ru');
+            $message->to('altynbek.bakirov@gmail.com');
+            $message->subject('Вакансия для обработки');
+        });
+
+        // Mail::send([], [], function ($message) use ($html) {
+        //     $message->to('altynbek.bakirov@gmail.com')
+        //         ->subject('Вакансия для обработки')
+        //         ->from('service@napodrabotku.com')
+        //         ->setBody($html, 'text/html');
+        // });
 
         return redirect()->route('vacancies.index');
     }
@@ -483,9 +510,15 @@ class VacancyController extends Controller
         return 'success';
     }
 
-    public function get_vacancy(Request $request) {
+    public function get_vacancy(Request $request)
+    {
         $vacancy = Vacancy::where('id', $request->id)->first();
+        $vacancy->created_at = date('d.m.Y', strtotime($vacancy->created_at));
         $vacancy->company_name = User::where('id', $vacancy->company_id)->first() ? User::where('id', $vacancy->company_id)->first()->name : null;
+        $vacancy->type_name = JobType::where('id', $vacancy->job_type_id)->first() ? JobType::where('id', $vacancy->job_type_id)->first()->name_ru : null;
+        $vacancy->vacancy_type_name = VacancyType::where('id', $vacancy->vacancy_type_id)->first() ? VacancyType::where('id', $vacancy->vacancy_type_id)->first()->name_ru : null;
+        $vacancy->busyness_name = Busyness::where('id', $vacancy->busyness_id)->first() ? Busyness::where('id', $vacancy->busyness_id)->first()->name_ru : null;
+        $vacancy->schedule_name = Schedule::where('id', $vacancy->schedule_id)->first() ? Schedule::where('id', $vacancy->schedule_id)->first()->name_ru : null;
         return $vacancy;
     }
 }

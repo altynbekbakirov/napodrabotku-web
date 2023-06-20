@@ -115,12 +115,12 @@
                 type: 'number',
                 selector: false,
             }, {
-                field: 'name',
-                title: 'Название (на кыргызском)',
-            }, {
                 field: 'name_ru',
                 title: 'Название (на русском)',
-            }, {
+            },{
+                field: 'name',
+                title: 'Название (на кыргызском)',
+            },  {
                 field: 'acts',
                 title: 'Actions',
                 sortable: false,

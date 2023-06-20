@@ -1,19 +1,19 @@
 <div class="card-body">
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Название (на кыргызском):</label>
+        <label class="col-lg-3 col-form-label">Название (на русском): <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::text('name', null, ['class' => 'form-control']) !!}
-            @if ($errors->has('name'))
-                <div class="invalid-feedback">{{ $errors->first('name') }}</div>
+            {!! Form::text('name_ru', null, ['class' => 'form-control '  . $errors->first('name_ru', 'is-invalid')]) !!}
+            @if ($errors->has('name_ru'))
+                <div class="invalid-feedback">{{ $errors->first('name_ru') }}</div>
             @endif
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Название (на русском):</label>
+        <label class="col-lg-3 col-form-label">Название (на кыргызском): </label>
         <div class="col-lg-4">
-            {!! Form::text('name_ru', null, ['class' => 'form-control']) !!}
-            @if ($errors->has('name_ru'))
-                <div class="invalid-feedback">{{ $errors->first('name_ru') }}</div>
+            {!! Form::text('name', null, ['class' => 'form-control']) !!}
+            @if ($errors->has('name'))
+                <div class="invalid-feedback">{{ $errors->first('name') }}</div>
             @endif
         </div>
     </div>

@@ -240,7 +240,7 @@
                     }
                 });
 
-                $('.btn-publish').on('click', function() {
+                $(document).on('click', '.btn-publish', function() {
                     var vacancies = [];
                     vacancies.push($(this).attr('data-product-id'));
 
@@ -268,7 +268,7 @@
                     }
                 });
 
-                $('.btn-denied').on('click', function() {
+                $(document).on('click', '.btn-denied', function() {
                     var vacancies = [];
                     vacancies.push($(this).attr('data-product-id'));
 

@@ -17,6 +17,9 @@ Route::middleware('auth')->group( function () {
     Route::name('admin.chat')->get('/chat', ['uses' => 'HomeController@chat']);
     Route::name('admin.chat.delete')->get('/chat/{chat}/delete', ['uses' => 'HomeController@destroy']);
     Route::name('admin.chat.message')->post('/chat/{chat}/message', ['uses' => 'HomeController@message']);
+    Route::name('admin.chat.ajax_message')->post('/chat/{chat}/ajax_message', ['uses' => 'HomeController@ajax_message']);
+    Route::name('admin.chat.add_quick_word')->post('/chat/add_quick_word', ['uses' => 'HomeController@add_quick_word']);
+    Route::name('admin.chat.delete_quick_word')->post('/chat/delete_quick_word', ['uses' => 'HomeController@delete_quick_word']);
 
     // Resources
     Route::resources([
@@ -54,6 +57,7 @@ Route::middleware('auth')->group( function () {
 
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);
+    Route::name('users.avatar_remove')->post('users/avatar_remove', ['uses' => 'UserController@avatar_remove']);
     Route::name('vacancy_types.delete')->get('vacancy_types/delete/{vacancy_type}', ['uses' => 'VacancyTypeController@destroy']);
     Route::name('busynesses.delete')->get('busynesses/delete/{busyness}', ['uses' => 'BusynessController@destroy']);
     Route::name('schedules.delete')->get('schedules/delete/{busyness}', ['uses' => 'ScheduleController@destroy']);

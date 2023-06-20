@@ -128,6 +128,9 @@ class UserController extends Controller
                         </span>
                     </a>';
                 })
+                ->addColumn('created_at', function ($row) {
+                    return date('d.m.Y H:i:s', strtotime($row->created_at));
+                })
                 ->addColumn('region', function ($row) {
                     return $row->region && Region::find($row->region) ? Region::find($row->region)->nameRu : '-';
                 })
@@ -173,18 +176,40 @@ class UserController extends Controller
         $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
         $request->replace($requestData);
 
-        $this->validate($request, [
-            'name'  => ['required', 'min:3', 'max:255'],
-            'lastname' => ['required', 'min:3', 'max:255'],
-            'email' => ['required', 'email', 'unique:users'],
-            'gender' => ['required'],
-            'citizen' => ['required'],
-            'password' => ['required', 'min:5'],
-            'phone_number' => ['required', 'unique:users'],
-            'address' => ['required', 'min:3', 'max:255'],
-            'region' => ['required'],
-            'birth_date' => ['required'],
-        ]);
+        if ($request->type == 'ADMIN') {
+            $this->validate($request, [
+                'name'  => ['required', 'min:3', 'max:255'],
+                'email' => ['required', 'email', 'unique:users'],
+                'password' => ['required', 'min:5']
+            ]);
+        } else if ($request->type == 'COMPANY') {
+            $this->validate($request, [
+                'name'  => ['required', 'min:3', 'max:255'],
+                'email' => ['required', 'email', 'unique:users'],
+                'gender' => ['required'],
+                'citizen' => ['required'],
+                'password' => ['required', 'min:5'],
+                'phone_number' => ['required', 'unique:users'],
+                'address' => ['required', 'min:3', 'max:255'],
+                'region' => ['required'],
+                'birth_date' => ['required'],
+            ]);
+        }
+         else {
+            $this->validate($request, [
+                'name'  => ['required', 'min:3', 'max:255'],
+                'lastname' => ['required', 'min:3', 'max:255'],
+                'email' => ['required', 'email', 'unique:users'],
+                'gender' => ['required'],
+                'citizen' => ['required'],
+                'password' => ['required', 'min:5'],
+                'phone_number' => ['required', 'unique:users'],
+                'address' => ['required', 'min:3', 'max:255'],
+                'region' => ['required'],
+                'birth_date' => ['required'],
+            ]);
+        }
+
         $request->login = $request->email;
         $user = User::create($request->except('password', 'avatar', 'avatar_remove', 'region', 'district'));
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
@@ -193,19 +218,16 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
         }
         $user->birth_date = date("Y-m-d", strtotime($request->birth_date));
+
         if ($request->file('image')) {
 
             $file = $request->file('image');
-
             $dir  = 'assets/media/users/';
             if (!file_exists($dir)) {
                 mkdir($dir, 0777, true);
             }
-
             $name = Str::slug($user->name, '-') . '.' . $file->getClientOriginalExtension();
-
             Image::make($file)->fit(400, 400)->save($dir . $name, 75);
-
             $user->avatar = $dir . $name;
         }
 
@@ -265,14 +287,19 @@ class UserController extends Controller
         $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
         $request->replace($requestData);
 
-        if ($user->login != $request->login) {
+
+        if ($user->type == 'ADMIN') {
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
-                'lastname' => ['required', 'min:3', 'max:255'],
+                'email' => ['required', 'email'],
+            ]);
+        } else if ($request->type == 'COMPANY') {
+            $this->validate($request, [
+                'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],
                 'gender' => ['required'],
                 'citizen' => ['required'],
-                'phone_number' => ['required', 'unique:users,phone_number,'.$user->id],
+                'phone_number' => ['required', 'unique:users,phone_number,' . $user->id],
                 'address' => ['required', 'min:3', 'max:255'],
                 'region' => ['required'],
                 'birth_date' => ['required'],
@@ -285,14 +312,14 @@ class UserController extends Controller
                 'email' => ['required', 'email'],
                 'gender' => ['required'],
                 'citizen' => ['required'],
-                // 'password' => ['required', 'min:5'],
-                'phone_number' => ['required', 'unique:users,phone_number,'.$user->id],
+                'phone_number' => ['required', 'unique:users,phone_number,' . $user->id],
                 'address' => ['required', 'min:3', 'max:255'],
                 'region' => ['required'],
                 'birth_date' => ['required'],
                 'vacancy_type' => ['nullable'],
             ]);
         }
+
         $user->update($request->except('password', 'image', 'image_remove', 'region', 'district'));
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
@@ -301,6 +328,7 @@ class UserController extends Controller
         if ($request->password) {
             $user->password = Hash::make($request->password);
         }
+
 
         if ($request->file('image')) {
 
@@ -325,6 +353,15 @@ class UserController extends Controller
             return redirect()->route('admin.profile');
         }
         return redirect()->route('users.show', $user);
+    }
+
+    public function avatar_remove(Request $request)
+    {
+        $user = User::where('id', $request->user_id)->first();
+        if ($user->avatar) @unlink($user->avatar);
+        $user->avatar = null;
+        $user->save();
+        return response()->json('Avatar removed successfully');
     }
 
     public function destroy(User $user)
