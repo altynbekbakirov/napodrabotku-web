@@ -8,12 +8,12 @@
             @endif
         </div>
     </div>
-    <div class="form-group row">
+    {{-- <div class="form-group row">
         <label class="col-lg-3 col-form-label">Страна вакансии:</label>
         <div class="col-lg-4">
             {!! Form::text('vacancy_country', null, ['class' => 'form-control', 'readonly' => 'true',]) !!}
         </div>
-    </div>
+    </div> --}}
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Регион вакансии:</label>
         <div class="col-lg-4">
@@ -32,13 +32,13 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Гражданство соискателя: </label>
         <div class="col-lg-4">
-            {!! Form::text('user_citizen', null, ['class' => 'form-control', 'readonly' => 'true',]) !!}
+            {!! Form::select('user_citizen', $citizenship, null, ['class' => 'selectpicker '.$errors->first('user_citizen', 'is-invalid').'', 'title' => 'Выбрать', 'data-width' => '100%', 'data-live-search' => 'true', 'data-size' => '6']) !!}
         </div>
     </div>
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Возраст соискателя: </label>
         <div class="col-lg-4">
-            {!! Form::text('user_age', null, ['class' => 'form-control', 'readonly' => 'true',]) !!}
+            {!! Form::text('user_age', null, ['class' => 'form-control', ]) !!}
         </div>
     </div>
     <div class="form-group row">

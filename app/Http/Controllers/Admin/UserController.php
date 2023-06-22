@@ -288,7 +288,7 @@ class UserController extends Controller
         $request->replace($requestData);
 
 
-        if ($user->type == 'ADMIN') {
+        if ($request->type == 'ADMIN') {
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],

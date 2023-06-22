@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use App\Models\Busyness;
 use App\Models\JobType;
 use App\Models\Region;
@@ -218,6 +219,7 @@ class UserCvController extends Controller
         $title = 'Добавить отклик';
         $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
         $users = User::where('type', '=', 'USER')->pluck('name', 'id')->toArray();
+        $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancy = new UserVacancy();
         $statuses = [
             'not_processed' => 'He обработан',
@@ -230,7 +232,7 @@ class UserCvController extends Controller
 
         $user_cv = new UserCV();
 
-        return view('admin.user_cv.create', compact('title', 'vacancy', 'vacancies', 'users', 'statuses'));
+        return view('admin.user_cv.create', compact('title', 'vacancy', 'vacancies', 'users', 'statuses', 'citizenship'));
     }
 
     public function store(Request $request, UserVacancy $userVacancy)
@@ -240,6 +242,20 @@ class UserCvController extends Controller
             'user_id' => ['required'],
             'status_id' => ['required'],
         ]);
+
+        $user = User::where('id', $request->user_id)->first();
+        if ($request->user_citizen) {
+            $user->citizen = $request->user_citizen;
+        }
+
+        $current_birthdate = Carbon::now();
+        $birth_date = Carbon::parse($user->birth_date);
+        $diff = $birth_date->diffInYears($current_birthdate);
+
+        if ($request->user_age && $diff != $request->user_age) {
+            $user->birth_date =  $current_birthdate->subYears($request->user_age);
+        }
+        $user->save();
 
         $userVacancy->user_id = $request->user_id;
         $userVacancy->vacancy_id = $request->vacancy_id;
@@ -372,11 +388,16 @@ class UserCvController extends Controller
     public function get_user(Request $request)
     {
         $user = User::where('id', $request->id)->first();
-        $citizen = Country::find($user->citizen);
-        $birthdate = new DateTime($user->birth_date);
-        $current_date = new DateTime('today');
-        $age = $birthdate->diff($current_date)->y;
-        $citizen->age = $age;
+        $citizen = $user->citizen ? Country::find($user->citizen) : new Country();
+
+        if ($user->birth_date) {
+            $birthdate = new DateTime($user->birth_date);
+            $current_date = new DateTime('today');
+            $age = $birthdate->diff($current_date)->y;
+            $citizen->age = $age;
+        } else {
+            $citizen->age = 0;
+        }
         return json_encode($citizen);
     }
 }

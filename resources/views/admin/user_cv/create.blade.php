@@ -40,7 +40,7 @@
                 success: function(data) {
                     if (data) {
                         $('input[name=vacancy_region]').val(data.nameRu);
-                        $('input[name=vacancy_country]').val(data.countryName);
+                        // $('input[name=vacancy_country]').val(data.countryName);
                     }
                 }
 
@@ -64,7 +64,8 @@
                 success: function(data) {
                     if (data) {
                         console.log(data);
-                        $('input[name=user_citizen]').val(data.nameRu);
+                        $('input[name=user_age]').val('');
+                        $('select[name=user_citizen]').val(data.id).change();
                         $('input[name=user_age]').val(data.age);
                     }
                 }

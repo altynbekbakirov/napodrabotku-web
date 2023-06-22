@@ -197,10 +197,10 @@
                                 <!--begin::Compose-->
                                 <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message"></textarea>
                                 <div class="d-flex align-items-center justify-content-between mt-5">
-                                    <div class="btn-group dropdown w-25">
-                                        <button type="button" class="btn btn-success dropdown-toggle"
+                                    <div class="dropdown dropdown-inline w-75">
+                                        <button type="button" class="btn btn-light-grey btn-icon btn-sm"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Быстрый набор
+                                            <i class="flaticon2-pen"></i>
                                         </button>
 
                                         <div class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
@@ -210,19 +210,19 @@
                                                     <div class="d-flex flex-col justify-content-center align-items-center">
                                                         <a class="dropdown-item" href="#">{{ $word->word }}</a>
                                                         <button type="button"
-                                                            class="btn btn-sm btn-icon dropdown-item-button"><i
-                                                                class="flaticon2-delete"></i></button>&nbsp;
+                                                            class="btn btn-light-grey btn-icon btn-sm"><i
+                                                                class="flaticon-delete"></i></button>&nbsp;
                                                     </div>
                                                     @endforeach
                                                 </div>
                                             @endif
                                             <div class="dropdown-divider"></div>
                                             <div class="d-flex flex-col justify-content-center align-items-center">
-                                                <input type="text" id="new_quick_word" class="form-control w-75"
+                                                &nbsp;&nbsp;<input type="text" id="new_quick_word" class="form-control w-80"
                                                     placeholder="Добавить" />&nbsp;&nbsp;
                                                 <button type="button" id="new_quick_button"
-                                                    class="btn btn-sm btn-icon btn-light-info"><i
-                                                        class="flaticon2-add"></i></button>
+                                                    class="btn btn-light-grey btn-icon btn-sm"><i
+                                                        class="flaticon2-add"></i></button>&nbsp;&nbsp;
                                             </div>
                                         </div>
 
@@ -389,8 +389,9 @@
                         },
                         success: function(result) {
                             $('p.vacancy_name').text(result['name']);
-                            $('p.vacancy_salary').text(result['salary_from'] + ' - ' + result[
-                                'salary_to']);
+                            var salary_from = result['salary_from'].length != 0 ? result['salary_from'] : 0;
+                            var salary_to = result['salary_to'].length != 0 ? result['salary_to'] : 0;
+                            $('p.vacancy_salary').text(salary_from + ' - ' + salary_to);
                             $('p.vacancy_company_name').text(result['company_name']);
                             $('p.vacancy_description').html(result['description']);
                             $('p.vacancy_created').text($.date(result['created_at']));
@@ -539,7 +540,7 @@
                                 $('.dropdown-menu-menu').append(
                                     '<div class="d-flex flex-col justify-content-center align-items-center"><a class="dropdown-item" href="#">' +
                                     $('#new_quick_word').val() +
-                                    '</a><button type="button" class="btn btn-sm btn-icon dropdown-item-button"><i class="flaticon2-delete"></i></button>&nbsp;</div>'
+                                    '</a><button type="button" class="btn btn-light-grey btn-icon btn-sm"><i class="flaticon-delete"></i></button>&nbsp;</div>'
                                 );
                             }
                             $('#new_quick_word').val('');

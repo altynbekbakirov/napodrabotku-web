@@ -156,21 +156,21 @@
                         'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent',
                     ],
                     plugins: 'advlist lists charmap print preview code',
-                    init_instance_callback: function(editor) {
-                        editor.on('input', function(e) {
-                            var someText = e.target.innerHTML.toLowerCase();
-                            let isFounded = badwords.some(ai => someText.includes(ai));
-                            if (isFounded == true) {
-                                for (i = 0; i < badwords.length; ++i) {
-                                    if (someText.toLowerCase().indexOf(badwords[i]) >= 0) {
-                                        alert("Описание содержит запрещенные слова, пожалуйста, удалите их, прежде чем продолжить: " +
-                                            badwords[i]);
-                                        return false;
-                                    }
-                                }
-                            }
-                        });
-                    }
+                    // init_instance_callback: function(editor) {
+                    //     editor.on('input', function(e) {
+                    //         var someText = e.target.innerHTML.toLowerCase();
+                    //         let isFounded = badwords.some(ai => someText.includes(ai));
+                    //         if (isFounded == true) {
+                    //             for (i = 0; i < badwords.length; ++i) {
+                    //                 if (someText.toLowerCase().indexOf(badwords[i]) >= 0) {
+                    //                     alert("Описание содержит запрещенные слова, пожалуйста, удалите их, прежде чем продолжить: " +
+                    //                         badwords[i]);
+                    //                     return false;
+                    //                 }
+                    //             }
+                    //         }
+                    //     });
+                    // }
                 });
             }
 
