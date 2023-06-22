@@ -256,6 +256,21 @@ class VacancyController extends Controller
         $vacancy = Vacancy::create($request->except('region', 'district'));
         $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+
+        if ($request->salary) {
+            $salary = $request->salary;
+        } else {
+            if ($request->salary_from) {
+                if ($request->salary_to) {
+                    $salary = $request->salary_from . '-' . $request->salary_to;
+                } else {
+                    $salary = $request->salary_from;
+                }
+            } else {
+                $salary = '';
+            }
+        }
+        $vacancy->salary = $salary;
         $vacancy->save();
 
         // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
@@ -319,6 +334,22 @@ class VacancyController extends Controller
         $vacancy->status = 'not_published';
         $vacancy->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $vacancy->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+
+        if ($request->salary) {
+            $salary = $request->salary;
+        } else {
+            if ($request->salary_from) {
+                if ($request->salary_to) {
+                    $salary = $request->salary_from . '-' . $request->salary_to;
+                } else {
+                    $salary = $request->salary_from;
+                }
+            } else {
+                $salary = '';
+            }
+        }
+        $vacancy->salary = $salary;
+
         $vacancy->save();
 
         // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
