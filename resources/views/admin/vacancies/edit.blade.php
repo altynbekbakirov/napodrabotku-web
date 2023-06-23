@@ -120,9 +120,41 @@
                                     metroTag.empty();
                                     metroTag.selectpicker('refresh');
                                     $.each(item.data.metro, function(key, value) {
-                                        metroTag.append($(
-                                            `<option value='${value['name']}-${value['line']}'>${value['name']} (${value['line']})</option>`
-                                        ));
+                                        var url =
+                                            "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/metro";
+
+                                        $.ajax({
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "Accept": "application/json",
+                                                "Authorization": "Token " +
+                                                    "d06b572efe686359a407652e5f66ef079ea649dc"
+                                            },
+                                            url: url,
+                                            type: 'POST',
+                                            data: JSON.stringify({
+                                                query: value['name'],
+                                                "filters": [{
+                                                    "city": item.data.city
+                                                }]
+                                            }),
+                                            dataType: 'json',
+                                            success: function(dataMetro) {
+                                                if(dataMetro.suggestions){
+                                                    for (let i = 0; i < dataMetro.suggestions.length; i++) {
+                                                        if(dataMetro.suggestions[i].data.line_name == value['line']){
+                                                            metroTag.append($(
+                                                                `<option data-content="<span class='badge' style='color: #ffffff; background-color: #${dataMetro.suggestions[i].data.color}'>${dataMetro.suggestions[i].data.name} (${dataMetro.suggestions[i].data.line_name})</span>" value='${dataMetro.suggestions[i].data.name}-${dataMetro.suggestions[i].data.line_name}'>
+                                                                    ${dataMetro.suggestions[i].data.name} (${dataMetro.suggestions[i].data.line_name})
+                                                                </option>`
+                                                            ));
+                                                        }
+                                                    }
+                                                    metroTag.selectpicker('refresh');
+                                                }
+                                            }
+                                        });
+
                                     });
                                     metroTag.selectpicker('refresh');
                                 });

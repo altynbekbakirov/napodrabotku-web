@@ -297,16 +297,23 @@ class VacancyController extends Controller
         $vacancy->district = District::find($vacancy->district) ? District::find($vacancy->district)->nameRu : '';
         $metros = [];
 
-        if ($vacancy->address) {
+        if ($vacancy->address && $vacancy->metro) {
             $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
             if ($dadata['suggestions'][0]['data']['metro']) {
                 foreach ($dadata['suggestions'][0]['data']['metro'] as $item) {
-                    $metros[$item['name'] . '-' . $item['line']] = $item['name'] . ' (' . $item['line'] . ')';
+                    $token = "d06b572efe686359a407652e5f66ef079ea649dc";
+                    $dadataMetro = new \Dadata\DadataClient($token, null);
+                    $result = $dadataMetro->suggest("metro", $item['name']);
+                    foreach ($result as $row) {
+                        $selected = in_array($row['data']['name'] . '-' . $row['data']['line_name'], $vacancy->metro) ? 'selected' : '';
+                        if ($row['data']['line_name'] == $item['line']) {
+                            $metros[] = '<option ' . $selected . ' data-content="<span class=\'badge\' style=\'color: #ffffff; background-color: #' . $row['data']['color'] . '\'>' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')</span>" value="' . $row['data']['name'] . '-' . $row['data']['line_name'] . '">
+                            ' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')
+                            </option>';
+                        }
+                    }
                 }
             }
-            // if ($dadata['suggestions'][0]['data']['metro']) {
-            //     $metros = Arr::pluck($dadata['suggestions'][0]['data']['metro'], 'name', 'line');
-            // }
         }
 
         return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'metros'));

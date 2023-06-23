@@ -27,6 +27,7 @@
                     @endif
                 </div>
                 <span class="form-text text-muted">Допустимые разрешения: png, jpg, jpeg.</span>
+                <span class="form-text text-muted">Рекомендуемый размер файла: 400x400</span>
             </div>
         </div>
         @if ($user->type != 'COMPANY')
