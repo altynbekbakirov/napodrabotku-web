@@ -41,6 +41,7 @@ Route::middleware('auth')->group( function () {
         'user_cv' => 'UserCvController',
         'chats' => 'ChatController',
         'currencies' => 'CurrencyController',
+        'invitations' => 'InvitationController',
     ]);
 
     // EXPORT
