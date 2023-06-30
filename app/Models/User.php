@@ -71,6 +71,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'is_product_lab_user',
         'lat',
         'long',
+        'invitation_enabled',
+        'invitation_count',
     ];
 
     protected $casts = [

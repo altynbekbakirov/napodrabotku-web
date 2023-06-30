@@ -101,6 +101,7 @@ Route::middleware('auth')->group( function () {
         Route::name('skillset_categories.api')->get('skillset_categories', ['uses' => 'SkillsetCategoryController@api']);
 
         Route::name('vacancies.api')->get('vacancies', ['uses' => 'VacancyController@api']);
+        Route::name('invitations.api')->get('invitations', ['uses' => 'InvitationController@api']);
         Route::name('user_cv.api')->get('user_cv', ['uses' => 'UserCvController@api']);
         Route::name('chats.api')->get('chats', ['uses' => 'ChatController@api']);
         Route::name('currencies.api')->get('currencies', ['uses' => 'CurrencyController@api']);

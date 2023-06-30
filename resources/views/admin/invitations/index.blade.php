@@ -1,52 +1,114 @@
 @extends('admin.layouts.app')
 
 @section('content')
-
     @include('admin.partials.subheader')
 
     <div class="d-flex flex-column-fluid">
         <!--begin::Container-->
-        <div class="container">
+        <div class="container-fluid">
             <!--begin::Card-->
             <div class="card card-custom">
                 <div class="card-body">
-                    <!--begin::Search Form-->
-                    <div class="mb-7">
-                        <div class="row align-items-center">
-                            <div class="col-lg-9 col-xl-8">
-                                <div class="row align-items-center">
-                                    <div class="col-md-4 my-2 my-md-0">
-                                        <div class="input-icon">
-                                            <input type="text" class="form-control" placeholder="Поиск..." id="kt_datatable_search_query" />
-                                            <span>
-                                                <i class="la la-search"></i>
-                                            </span>
+                    <!--begin: Search Form-->
+                    <div class="row mt-7">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <div class="col-md-2 my-2 my-md-0">
+                                    <div class="input-icon">
+                                        <input type="text" class="form-control" placeholder="Поиск..."
+                                            id="kt_datatable_search_query" />
+                                        <span>
+                                            <i class="la la-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::text('period', null, [
+                                        'class' => 'datepicker form-control',
+                                        'data-width' => '100%',
+                                        'readonly' => 'true',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('vacancy', $vacancies, null, [
+                                        'class' => 'selectpicker',
+                                        'placeholder' => 'Выберите вакансию',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'data-live-search' => 'true',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('region', $regions, null, [
+                                        'class' => 'selectpicker',
+                                        'placeholder' => 'Регион вакансии',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'data-live-search' => 'true',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('district', $districts, null, [
+                                        'class' => 'selectpicker',
+                                        'placeholder' => 'Город проживания',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'data-live-search' => 'true',
+                                    ]) !!}
+                                </div>
+                                <div class="col-md-2 my-2 my-md-0">
+                                    {!! Form::select('citizend', $citizens, null, [
+                                        'class' => 'selectpicker form-control',
+                                        'placeholder' => 'Гражданство',
+                                        'data-width' => '100%',
+                                        'data-size' => '6',
+                                        'data-live-search' => 'true',
+                                    ]) !!}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-10">
+                                    @foreach ($stats as $status)
+                                        {!! $status !!}
+                                    @endforeach
+                                </div>
+                                <div class="col-md-2 mt-lg-0 text-right">
+                                    <div class="card">
+                                        <div class="card-body"
+                                            style="display: flex;
+                                        align-items: center;">
+                                            <div class="h3">
+                                                Количество открытий контактов: </div>
+                                            &nbsp;&nbsp;&nbsp;
+                                            <div class="display-2 font-weight-boldest">
+                                                {{ auth()->user()->invitation_count }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-xl-4 mt-5 mt-lg-0 text-right">
-                                <a href="{{route('regions.create')}}" class="btn btn-primary font-weight-bold">
-                                    <span class="svg-icon svg-icon-md">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Flatten.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <circle fill="#000000" cx="9" cy="15" r="6" />
-                                                <path d="M8.8012943,7.00241953 C9.83837775,5.20768121 11.7781543,4 14,4 C17.3137085,4 20,6.6862915 20,10 C20,12.2218457 18.7923188,14.1616223 16.9975805,15.1987057 C16.9991904,15.1326658 17,15.0664274 17,15 C17,10.581722 13.418278,7 9,7 C8.93357256,7 8.86733422,7.00080962 8.8012943,7.00241953 Z" fill="#000000" opacity="0.3" />
-                                            </g>
-                                        </svg>
-                                        <!--end::Svg Icon-->
-                                    </span>
-                                    Добавить
-                                </a>
-                            </div>
                         </div>
                     </div>
-                    <!--end::Search Form-->
                     <!--end: Search Form-->
                     <!--begin: Datatable-->
-                    <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable"></div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" name="checkbox-all" id="checkbox-all" /></th>
+                                    <th>Дата добавления</th>
+                                    <th>Соискатель</th>
+                                    <th>Телефон</th>
+                                    <th>Гражданство соискателя</th>
+                                    <th>Возраст соискателя</th>
+                                    <th>Город проживания</th>
+                                    <th>Интересуемые вакансии</th>
+                                    <th>Предлагаемая вакансия</th>
+                                    <th width='150px'>Статус</th>
+                                    <th width='120px'>&nbsp;</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
                     <!--end: Datatable-->
                 </div>
             </div>
@@ -54,94 +116,175 @@
         </div>
         <!--end::Container-->
     </div>
-
 @endsection
 
 @section('scripts')
-
     <script>
-        var datatable = $('#kt_datatable').KTDatatable({
-            // datasource definition
-            data: {
-                type: 'remote',
-                source: {
-                    read: {
-                        method: 'GET',
-                        url: '{{route("regions.api")}}',
-                        params: {
-                            type: '{{request()->type}}'
-                        },
-                        // sample custom headers
-                        // headers: {'x-my-custom-header': 'some value', 'x-test-header': 'the value'},
-                        map: function(raw) {
-                            // sample data mapping
-                            var dataSet = raw;
-                            if (typeof raw.data !== 'undefined') {
-                                dataSet = raw.data;
+        let table = $('#dataTable').DataTable({
+            buttons: [
+
+            ],
+            dom: `<'row'<'col-sm-6 text-left'><'col-sm-6 text-right'B>>
+			<'row'<'col-sm-12'tr>>
+			<'row'<'col-sm-12 col-md-3'i><'col-sm-12 col-md-2 status_change'><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
+            initComplete: function() {
+                $('div.status_change').html(
+                    "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='invited'>Пригласить</option><option value='deleted'>Удалить</option></select>"
+                );
+
+                $('input[name=checkbox-all]').on("change", function() {
+                    if (this.checked) {
+                        $(':checkbox').each(function() {
+                            if (!$(this).attr('disabled')) {
+                                this.checked = true;
                             }
-                            return dataSet;
-                        },
-                    },
-                },
-                pageSize: 10,
-                serverPaging: true,
-                serverFiltering: true,
-                serverSorting: true,
+                        });
+                    } else {
+                        $(':checkbox').each(function() {
+                            this.checked = false;
+                        });
+                    }
+                });
+
+                $('input[name="checkbox-product"]').on('change', function() {
+                    if ($(this).is(':checked')) {} else {
+                        $('input[name="checkbox-all"').prop('checked', false);
+                    }
+                });
             },
-
-            // layout definition
-            layout: {
-                scroll: false,
-                footer: false,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route('invitations.index') }}',
+                data: function(d) {
+                    d.search = $('#kt_datatable_search_query').val();
+                    d.vacancy_id = $('select[name=vacancy]').val();
+                    d.citizen_id = $('select[name=citizend]').val();
+                    d.region_id = $('select[name=region]').val();
+                    d.period_id = $('input[name=period]').val();
+                    d.district_id = $('select[name=district]').val();
+                }
             },
-
-            // column sorting
-            sortable: true,
-
-            pagination: true,
-
-            search: {
-                input: $('#kt_datatable_search_query'),
-                key: 'generalSearch'
-            },
-
-            // columns definition
             columns: [{
-                field: 'order',
-                title: '#',
-                sortable: 'asc',
-                width: 30,
-                type: 'number',
-                selector: false,
-            }, {
-                field: 'nameKg',
-                title: 'Название (на кыргызском)',
-            }, {
-                field: 'nameRu',
-                title: 'Название (на русском)',
-            }, {
-                field: 'acts',
-                title: 'Actions',
-                sortable: false,
-                autoHide: false,
-                textAlign: 'right',
-                template: function(row) {
-                    return row.actions;
+                    data: 'check_box',
+                    "sortable": false
                 },
-            }],
-
+                {
+                    data: 'date'
+                },
+                {
+                    data: 'user_name'
+                },
+                {
+                    data: 'phone'
+                },
+                {
+                    data: 'citizen'
+                },
+                {
+                    data: 'birth_date'
+                },
+                {
+                    data: 'city'
+                },
+                {
+                    data: 'name'
+                },
+                {
+                    data: 'recommended'
+                },
+                {
+                    data: 'status'
+                },
+                {
+                    data: 'acts'
+                },
+            ],
+            order: [
+                [0, "asc"]
+            ],
+            pageLength: 25,
+            language: {
+                "url": "{{ asset('js/russian.json') }}"
+            }
         });
 
-        $('#kt_datatable_search_status').on('change', function() {
-            datatable.search($(this).val().toLowerCase(), 'Status');
+        $('#kt_datatable_search_query').keyup(function() {
+            table.draw();
         });
 
-        $('#kt_datatable_search_type').on('change', function() {
-            datatable.search($(this).val().toLowerCase(), 'Type');
+        var start = moment().subtract(29, 'days');
+        var end = moment();
+
+        $('.datepicker').daterangepicker({
+            buttonClasses: ' btn',
+            applyClass: 'btn-primary',
+            cancelClass: 'btn-secondary',
+            startDate: start,
+            endDate: end,
+            ranges: {
+                '7 дней': [moment().subtract(6, 'days'), moment()],
+                '30 дней': [moment().subtract(29, 'days'), moment()],
+                'Год': [moment().subtract(1, 'year'), moment()]
+            },
+            locale: {
+                format: 'DD.MM.YYYY',
+                cancelLabel: 'Очистить',
+                applyLabel: 'Применить',
+                customRangeLabel: 'Другие даты'
+            }
+        }, function(start, end, label) {
+            $('.datepicker').val(start.format('DD.MM.YYYY') + ' / ' + end.format('DD.MM.YYYY'));
         });
 
-        $('#kt_datatable_search_status, #kt_datatable_search_type').selectpicker();
+
+        $('#dataTable').on('change', '.select_status', function(e) {
+            var value = $(this).val();
+            var selectedOption = $(this).find('option:selected');
+            var customAttrValue = selectedOption.attr('data-vacancy-id');
+            $.ajax({
+                url: `/admin/user_cv/${customAttrValue}/${value}`,
+                type: 'GET',
+                success: function(result) {
+                    table.draw();
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log('Произошла ошибка при обновлении статуса: ' + error);
+                }
+            });
+        });
+
+        $('#dataTable').on('click', '#show_phone', function(e) {
+            var value = $(this).attr('data-phone');
+            $(this).text(value);
+        });
+
+        $("select[name=vacancy]").on("change", function() {
+            table.draw();
+        });
+
+        $("select[name=citizend]").on("change", function() {
+            table.draw();
+        });
+
+        $("select[name=region]").on("change", function() {
+            table.draw();
+        });
+
+        $("input[name=period]").on("change", function() {
+            table.draw();
+        });
+
+        $("select[name=district]").on("change", function() {
+            table.draw();
+        });
+
+
+        $("button").on("click", function(e) {
+            $("button").removeClass("btn-success").removeClass("btn-light").addClass("btn-light");
+            $(this).removeClass('btn-light').addClass('btn-success');
+            table.draw();
+        });
     </script>
-
 @endsection
-

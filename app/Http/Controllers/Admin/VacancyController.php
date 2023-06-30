@@ -273,7 +273,7 @@ class VacancyController extends Controller
         $vacancy->salary = $salary;
         $vacancy->save();
 
-        // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
+        // Mail::to('admin@napodrabotku.ru')->send('Salam');
 
         return redirect()->route('vacancies.index');
     }
@@ -359,22 +359,22 @@ class VacancyController extends Controller
 
         $vacancy->save();
 
-        // Mail::to('altynbek.bakirov@gmail.com')->send('Salam');
+        // Mail::to('admin@napodrabotku.ru')->send('Salam');
 
         $html = '<a href="http://188.246.185.182/admin/vacancies"> ' . $vacancy->name . '</a>';
 
-        Mail::raw('This is the content of mail body', function ($message) {
-            $message->from('service@napodrabotku.com', 'napodrabotku.ru');
-            $message->to('altynbek.bakirov@gmail.com');
-            $message->subject('Вакансия для обработки');
-        });
-
-        // Mail::send([], [], function ($message) use ($html) {
-        //     $message->to('altynbek.bakirov@gmail.com')
-        //         ->subject('Вакансия для обработки')
-        //         ->from('service@napodrabotku.com')
-        //         ->setBody($html, 'text/html');
+        // Mail::raw('This is the content of mail body', function ($message) {
+        //     $message->from('service@napodrabotku.com', 'napodrabotku.ru');
+        //     $message->to('admin@napodrabotku.ru');
+        //     $message->subject('Вакансия для обработки');
         // });
+
+        Mail::send([], [], function ($message) use ($html) {
+            $message->to('admin@napodrabotku.ru')
+                ->subject('Вакансия для обработки')
+                ->from('service@napodrabotku.com')
+                ->setBody($html, 'text/html');
+        });
 
         return redirect()->route('vacancies.index');
     }

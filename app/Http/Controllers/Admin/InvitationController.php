@@ -3,23 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use App\Models\Busyness;
-use App\Models\Country;
-use App\Models\District;
 use App\Models\JobType;
 use App\Models\Region;
+use App\Models\District;
 use App\Models\Schedule;
-use App\Models\Chat;
 use App\Models\User;
+use App\Models\UserCourse;
+use App\Models\UserCV;
+use App\Models\UserEducation;
+use App\Models\UserExperience;
+use App\Models\UserVacancy;
 use App\Models\Vacancy;
 use App\Models\VacancyType;
-use App\Models\Currency;
-use Mail;
+use App\Models\Country;
+use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
-use MoveMoveIo\DaData\Enums\Language;
-use MoveMoveIo\DaData\Facades\DaDataAddress;
-use Illuminate\Support\Arr;
+use DateTime;
 
 class InvitationController extends Controller
 {
@@ -27,8 +30,164 @@ class InvitationController extends Controller
     {
         $title = 'Приглашения';
 
-        
-        return view('admin.invitations.index', compact('title'));
+        $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
+        $vacancies_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
+        $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
+        $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
+        $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
+        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->where('type', 'SUBMITTED')->pluck('status')->toArray();
+        $statuses_count = array_count_values($statuses);
+        $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
+        $citizen_ids = User::whereIn('id', $user_ids)->pluck('citizen')->toArray();
+        $citizens = Country::whereIn('id', $citizen_ids)->pluck('nameRu', 'id')->toArray();
+        $district_ids = User::whereIn('id', $user_ids)->pluck('district')->toArray();
+        $districts = District::whereIn('id', $district_ids)->pluck('nameRu', 'id')->toArray();
+
+        $stats = [
+            'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
+            'invited' => '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
+            'added' => '<button type="button" class="btn btn-lg btn-light" status_id="processing">Добавленные <span class="label label-primary">0</span></button>&nbsp;',
+        ];
+
+        foreach ($statuses as $key => $value) {
+            if ($value === 'invited') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'added') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="processing">Добавленные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+        }
+
+        if (request()->ajax()) {
+
+            if (request()->country_id && request()->region_id) {
+                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else if (request()->country_id) {
+                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $company_vacancies = Vacancy::whereIn('region', $ids)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else if (request()->region_id) {
+                $company_vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            } else {
+                $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
+            }
+
+            if (request()->vacancy_id && request()->status_id && request()->status_id != 'all') {
+                $data = UserVacancy::where('vacancy_id', request()->vacancy_id)->where('status', request()->status_id);
+            } else if (request()->vacancy_id) {
+                $data = UserVacancy::where('vacancy_id', request()->vacancy_id);
+            } else if (request()->status_id && request()->status_id != 'all') {
+                $data = UserVacancy::where('status', request()->status_id);
+            } else {
+                $data = UserVacancy::query();
+            }
+
+            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("user_vacancy.type", 'SUBMITTED')->orderBy('user_vacancy.id', 'desc');
+
+            if (request()->search) {
+                $data = $data->search(request()->search);
+            }
+
+            if (request()->citizen_id) {
+                $data = $data->with(['usersList']);
+                $user_citizen = request()->citizen_id;
+                $data = $data->where(function ($query) use ($user_citizen) {
+                    $query->whereHas('usersList', function ($q) use ($user_citizen) {
+                        $q->where('citizen', $user_citizen);
+                    });
+                });
+            }
+
+            if (request()->district_id) {
+                $data = $data->with(['usersList']);
+                $user_district = request()->district_id;
+                $data = $data->where(function ($query) use ($user_district) {
+                    $query->whereHas('usersList', function ($q) use ($user_district) {
+                        $q->where('district', $user_district);
+                    });
+                });
+            }
+
+            if (request()->period_id) {
+                $dates = explode('-', request()->period_id);
+                $dates[0] = trim($dates[0]);
+                $dates[1] = trim($dates[1]);
+                $data = $data->whereRaw(
+                    "(created_at >= ? AND created_at <= ?)",
+                    [
+                        date('Y-m-d', strtotime($dates[0])) . " 00:00:00",
+                        date('Y-m-d', strtotime($dates[1])) . " 23:59:59"
+                    ]
+                );
+            }
+
+            return datatables()->of($data)
+                ->addColumn('check_box', function ($row) {
+                    return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
+
+                })
+                ->addIndexColumn()
+                ->addColumn('acts', function ($row) {
+                    $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy->id)->first();
+                    if ($chat) {
+                        $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
+                        if (count($msgs) > 0) {
+                            return '<a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
+                                Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span></a>';
+                        } else {
+                            return '
+                            <a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                                Перейти в чат
+                            </a>';
+                        }
+                    } else {
+                        return '';
+                    }
+                })
+                ->addColumn('date', function ($row) {
+                    return date('d.m.Y H:i', strtotime($row->created_at));
+                })
+                ->addColumn('name', function ($row) {
+                    return $row->vacancy->name;
+                })
+                ->addColumn('recommended', function ($row) {
+                    $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
+                    $options = '';
+                    foreach ($vacancies as $value => $label) {
+                        $selected = $row->id == $value ? 'selected' : '';
+                        $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
+                    }
+                    return '<select class="select_recommended form-control">' . $options . '</select>';
+                })
+                ->addColumn('citizen', function ($row) {
+                    return Country::where('id', $row->user->citizen)->first()->nameRu;
+                })
+                ->addColumn('user_name', function ($row) {
+                    return $row->user->name . ' ' . $row->user->lastname;
+                })
+                ->addColumn('phone', function ($row) {
+                    return '<a href="#" id="show_phone" data-phone="' . $row->user->phone_number . '" class="text-link mr-2" title="Показать">Показать</a>';
+                })
+                ->addColumn('city', function ($row) {
+                    $city = District::where('id', $row->user->district)->first();
+                    return $city ? $city->nameRu : '-';
+                })
+                ->addColumn('birth_date', function ($row) {
+                    $birthdate = new DateTime($row->user->birth_date);
+                    $current_date = new DateTime('today');
+                    $age = $birthdate->diff($current_date)->y;
+                    return $age . ' лет';
+                })
+                ->addColumn('status', function ($row) {
+                    return '<a href="#" class="btn btn-primary font-weight-bold mr-2" title="Пригласить">
+                    Пригласить
+                            </a>';
+                })
+                ->rawColumns(['check_box', 'acts', 'status', 'phone', 'recommended'])
+                ->make(true);
+        }
+
+        return view('admin.invitations.index', compact('title', 'vacancies', 'regions', 'districts', 'citizens', "user_ids", "statuses_count", "stats"));
     }
 
     public function create()
@@ -88,7 +247,7 @@ class InvitationController extends Controller
     public function edit(Vacancy $vacancy)
     {
         $title = 'Приглашения';
-        
+
 
         return view('admin.invitations.edit', compact('title'));
     }
@@ -275,7 +434,7 @@ class InvitationController extends Controller
 
         $result = array('meta' => $meta, 'data' => $resultPaginated->all());
         return json_encode($result);
-    }   
+    }
 
-    
+
 }

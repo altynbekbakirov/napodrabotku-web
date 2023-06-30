@@ -186,13 +186,8 @@ class UserController extends Controller
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email', 'unique:users'],
-                'gender' => ['required'],
-                'citizen' => ['required'],
                 'password' => ['required', 'min:5'],
                 'phone_number' => ['required', 'unique:users'],
-                'address' => ['required', 'min:3', 'max:255'],
-                'region' => ['required'],
-                'birth_date' => ['required'],
             ]);
         }
          else {
@@ -261,7 +256,14 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $title = 'Соискатели';
+        if ($user->type == 'ADMIN') {
+        $title = 'Администратор';
+        } else if ($user->type == 'COMPANY') {
+            $title = 'Работотадатель';
+        } else {
+            $title = 'Соискатели';
+        }
+
         $types = [
             'USER' => 'Соискатель',
             'COMPANY' => 'Работодатель',
@@ -297,13 +299,7 @@ class UserController extends Controller
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],
-                'gender' => ['required'],
-                'citizen' => ['required'],
                 'phone_number' => ['required', 'unique:users,phone_number,' . $user->id],
-                'address' => ['required', 'min:3', 'max:255'],
-                'region' => ['required'],
-                'birth_date' => ['required'],
-                'vacancy_type' => ['nullable'],
             ]);
         } else {
             $this->validate($request, [
