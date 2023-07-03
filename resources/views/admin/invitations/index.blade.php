@@ -77,10 +77,10 @@
                                         <div class="card-body"
                                             style="display: flex;
                                         align-items: center;">
-                                            <div class="h3">
+                                            <div class="h4">
                                                 Количество открытий контактов: </div>
                                             &nbsp;&nbsp;&nbsp;
-                                            <div class="display-2 font-weight-boldest">
+                                            <div class="display-3 font-weight-boldest">
                                                 {{ auth()->user()->invitation_count }}</div>
                                         </div>
                                     </div>
@@ -163,6 +163,7 @@
                     d.region_id = $('select[name=region]').val();
                     d.period_id = $('input[name=period]').val();
                     d.district_id = $('select[name=district]').val();
+                    d.status_id = $("button.btn-success").attr('status_id');
                 }
             },
             columns: [{

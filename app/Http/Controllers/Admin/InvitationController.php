@@ -35,7 +35,7 @@ class InvitationController extends Controller
         $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
-        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->where('type', 'SUBMITTED')->pluck('status')->toArray();
+        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->where('type', 'LIKED')->pluck('type')->toArray();
         $statuses_count = array_count_values($statuses);
         $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
         $citizen_ids = User::whereIn('id', $user_ids)->pluck('citizen')->toArray();
@@ -45,16 +45,16 @@ class InvitationController extends Controller
 
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
-            'invited' => '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
-            'added' => '<button type="button" class="btn btn-lg btn-light" status_id="processing">Добавленные <span class="label label-primary">0</span></button>&nbsp;',
+            'invited' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
+            'added' => '<button type="button" class="btn btn-lg btn-light" status_id="ADDED">Добавленные <span class="label label-primary">0</span></button>&nbsp;',
         ];
 
         foreach ($statuses as $key => $value) {
-            if ($value === 'invited') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="not_processed">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            if ($value === 'INVITED') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
-            if ($value === 'added') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="processing">Добавленные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            if ($value === 'ADDED') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="ADDED">Добавленные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
         }
 
@@ -72,17 +72,18 @@ class InvitationController extends Controller
                 $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
             }
 
-            if (request()->vacancy_id && request()->status_id && request()->status_id != 'all') {
-                $data = UserVacancy::where('vacancy_id', request()->vacancy_id)->where('status', request()->status_id);
-            } else if (request()->vacancy_id) {
-                $data = UserVacancy::where('vacancy_id', request()->vacancy_id);
+            if (request()->status_id && request()->status_id != 'all') {
+                $data = UserVacancy::where('vacancy_id', request()->vacancy_id)->where('type', request()->status_id);
             } else if (request()->status_id && request()->status_id != 'all') {
-                $data = UserVacancy::where('status', request()->status_id);
+                $data = UserVacancy::where('type', request()->status_id);
             } else {
                 $data = UserVacancy::query();
-            }
+            }        
 
-            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("user_vacancy.type", 'SUBMITTED')->orderBy('user_vacancy.id', 'desc');
+            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("user_vacancy.type", 'LIKED')->orderBy('user_vacancy.id', 'desc');
+
+            // dd($data);
+
 
             if (request()->search) {
                 $data = $data->search(request()->search);

@@ -68,6 +68,14 @@
             }
         });
 
+        $('#invitation_enabled').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('input[name=invitation_count]').prop('disabled', false).focus();
+            } else {
+                $('input[name=invitation_count]').prop('disabled', true);
+            }
+        });
+
         let timer;
         let timeout = 2000;
         let suggestionsDiv = $('#suggestions');

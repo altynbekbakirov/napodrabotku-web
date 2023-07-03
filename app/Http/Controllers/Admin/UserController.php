@@ -209,6 +209,9 @@ class UserController extends Controller
         $user = User::create($request->except('password', 'avatar', 'avatar_remove', 'region', 'district'));
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+        $user->invitation_enabled = $request->invitation_enabled;
+        $user->invitation_count = $request->invitation_count;
+        
         if ($request->password) {
             $user->password = Hash::make($request->password);
         }
@@ -320,6 +323,8 @@ class UserController extends Controller
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $user->birth_date = date("Y-m-d", strtotime($request->birth_date));
+        $user->invitation_enabled = $request->invitation_enabled;
+        $user->invitation_count = $request->invitation_count;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);
