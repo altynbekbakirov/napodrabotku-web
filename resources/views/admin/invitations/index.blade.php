@@ -81,7 +81,7 @@
                                                 Количество открытий контактов: </div>
                                             &nbsp;&nbsp;&nbsp;
                                             <div class="display-3 font-weight-boldest">
-                                                {{ auth()->user()->invitation_count }}</div>
+                                                {{ auth()->user()->invitation_count - $total_invited }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@
 			<'row'<'col-sm-12 col-md-3'i><'col-sm-12 col-md-2 status_change'><'col-sm-12 col-md-7 dataTables_pager'lp>>`,
             initComplete: function() {
                 $('div.status_change').html(
-                    "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='invited'>Пригласить</option><option value='deleted'>Удалить</option></select>"
+                    "<select class='form-control' name='status_select_change'><option value='' disabled selected>ДЕЙСТВИЯ</option><option value='INVITED'>Пригласить</option><option value='DELETED'>Удалить</option></select>"
                 );
 
                 $('input[name=checkbox-all]').on("change", function() {
@@ -149,6 +149,45 @@
                 $('input[name="checkbox-product"]').on('change', function() {
                     if ($(this).is(':checked')) {} else {
                         $('input[name="checkbox-all"').prop('checked', false);
+                    }
+                });
+
+                $("select[name=status_select_change]").on('change', function() {
+                    var options = [];
+                    var vacancies = [];
+                    var status_type = $(this).val();
+
+                    $('input[name="checkbox-product"]').each(function() {
+                        if ($(this).is(':checked')) {
+                            options.push($(this).attr('product_data_id'));
+                            var vacancy_id = $(this).parent().parent().find('select').val();
+                            vacancies.push(vacancy_id);
+                        }
+                    });
+
+                    if (!$.isEmptyObject(options)) {
+                        $.ajax({
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            },
+                            cache: false,
+                            type: 'POST',
+                            url: `/admin/user_company/invite_all`,
+                            data: {
+                                'status_type': status_type,
+                                'options': options,
+                                'vacancies': vacancies,
+                            },
+                            success: function(result) {
+                                location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Произошла ошибка при обновлении статуса: ' +
+                                    error);
+                                    location.reload();
+                            }
+
+                        });
                     }
                 });
             },
@@ -239,22 +278,34 @@
         });
 
 
-        $('#dataTable').on('change', '.select_status', function(e) {
-            var value = $(this).val();
-            var selectedOption = $(this).find('option:selected');
-            var customAttrValue = selectedOption.attr('data-vacancy-id');
-            $.ajax({
-                url: `/admin/user_cv/${customAttrValue}/${value}`,
-                type: 'GET',
-                success: function(result) {
-                    table.draw();
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    console.log('Произошла ошибка при обновлении статуса: ' + error);
-                }
-            });
+        $('#dataTable').on('click', '.btn-invite', function(e) {
+            var id = $(this).attr('data-user-id');
+            var vacancy_id = $(this).parent().parent().find('select').val();
+
+            if (!$.isEmptyObject(vacancy_id)) {
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    cache: false,
+                    type: 'POST',
+                    url: `/admin/user_company/invite`,
+                    data: {
+                        'id': id,
+                        'vacancy_id': vacancy_id
+                    },
+                    success: function(result) {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Произошла ошибка при обновлении статуса: ' +
+                            error);
+                    }
+
+                });
+            }
         });
+
 
         $('#dataTable').on('click', '#show_phone', function(e) {
             var value = $(this).attr('data-phone');

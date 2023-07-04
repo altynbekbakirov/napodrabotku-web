@@ -14,7 +14,9 @@ class UserCompany extends Model
     protected $fillable = [
         'id',
         'user_id',
+        'company_id',
         'vacancy_id',
+        'vacancy_date', 
         'type',
     ];
 
@@ -23,6 +25,11 @@ class UserCompany extends Model
             'users.name' => 10,
             'users.lastname' => 10,
             'users.surname' => 10,
+            'vacancies.name' => 10,
+        ],
+        'joins' => [
+            'users' => ['user_company.user_id','users.id'],
+            'vacancies' => ['user_company.vacancy_id','vacancies.id'],
         ],
     ];
 

@@ -547,7 +547,7 @@ class VacancyController extends Controller
         foreach ($request->vacancies as $value) {
             $vacancy = Vacancy::where('id', $value)->first();
             $vacancy->status = $request->status_type;
-            $vacancy->status_update_at = date("Y-m-d H:i:s");
+            $vacancy->status_update_at = date("Y-m-d H:i:s"); 
             $vacancy->save();
         }
         return 'success';

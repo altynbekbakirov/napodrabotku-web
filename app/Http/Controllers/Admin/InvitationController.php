@@ -43,11 +43,12 @@ class InvitationController extends Controller
         $citizens = Country::whereIn('id', $citizen_ids)->pluck('nameRu', 'id')->toArray();
         $district_ids = User::whereIn('id', $user_ids)->pluck('district')->toArray();
         $districts = District::whereIn('id', $district_ids)->pluck('nameRu', 'id')->toArray();
+        $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('type', 'INVITED')->get()->count();
 
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
-            'INVITED' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
-            'LIKED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Отобранные <span class="label label-primary">0</span></button>&nbsp;',
+            'LIKED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
+            'INVITED' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">0</span></button>&nbsp;',
         ];
 
         foreach ($statuses as $key => $value) {
@@ -60,29 +61,27 @@ class InvitationController extends Controller
         }
 
         if (request()->ajax()) {
-
-            if (request()->country_id && request()->region_id) {
-                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
-                $company_vacancies = Vacancy::whereIn('region', $ids)->where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
-            } else if (request()->country_id) {
-                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
-                $company_vacancies = Vacancy::whereIn('region', $ids)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
-            } else if (request()->region_id) {
-                $company_vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
-            } else {
-                $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
-            }
+            
 
             if (request()->status_id && request()->status_id != 'all') {
                 $data = UserCompany::where('type', request()->status_id);
             } else {
                 $data = UserCompany::query();
-            }        
+            }
 
             $data = $data->whereIn("user_company.type", ['LIKED', 'INVITED'])->orderBy('user_company.id', 'desc');
 
             if (request()->search) {
                 $data = $data->search(request()->search);
+            }
+
+            if (request()->vacancy_id) {                
+                $data = $data->where("user_company.vacancy_id", request()->vacancy_id);
+            }
+
+            if (request()->region_id) {         
+                $vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();       
+                $data = $data->whereIn("user_company.vacancy_id", $vacancies);
             }
 
             if (request()->citizen_id) {
@@ -123,7 +122,6 @@ class InvitationController extends Controller
                     return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
 
                 })
-                ->addIndexColumn()
                 ->addColumn('acts', function ($row) {
                     $chat = Chat::where('user_id', $row->user->id)->first();
                     if ($chat) {
@@ -148,19 +146,26 @@ class InvitationController extends Controller
                     $vacancy_ids = UserVacancy::where('user_id', $row->user->id)->where('type', 'LIKED')->pluck('vacancy_id')->toArray();
                     $vacancies = Vacancy::whereIn('id', $vacancy_ids)->pluck('name')->toArray();
                     $options = '';
-                    foreach($vacancies as $value => $label) {
+                    foreach ($vacancies as $value => $label) {
                         $options .= $label . ', ';
                     }
-                    return substr($options, 0, -2);
+                    return $options ? substr($options, 0, -2) : '';
                 })
                 ->addColumn('recommended', function ($row) {
-                    $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
-                    $options = '';
-                    foreach ($vacancies as $value => $label) {
-                        $selected = $row->id == $value ? 'selected' : '';
-                        $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
+                    if ($row->vacancy_id && $row->vacancy_date) {
+                        $vacancy = Vacancy::where('id', $row->vacancy_id)->first();
+                        return $vacancy->name;
+                    } else {
+                        $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
+                        $options = '';
+                        $options .= '<option value="" disabled selected>Выберите вакансию</option>';
+                        foreach ($vacancies as $value => $label) {
+                            $selected = $row->id == $value ? 'selected' : '';
+                            $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
+                        }
+                        return '<select class="select_recommended form-control">' . $options . '</select>';
                     }
-                    return '<select class="select_recommended form-control">' . $options . '</select>';
+
                 })
                 ->addColumn('citizen', function ($row) {
                     return Country::where('id', $row->user->citizen)->first()->nameRu;
@@ -182,15 +187,19 @@ class InvitationController extends Controller
                     return $age . ' лет';
                 })
                 ->addColumn('status', function ($row) {
-                    return '<a href="#" class="btn btn-primary font-weight-bold mr-2" title="Пригласить">
+                    if ($row->vacancy_id && $row->vacancy_date) {
+                        return 'Отправлено <br />' . date('d.m.Y H:s', strtotime($row->vacancy_date));
+                    } else {
+                        return '<a href="#" data-user-id="' . $row->id . '" class="btn btn-primary font-weight-bold mr-2 btn-invite" title="Пригласить">
                     Пригласить
                             </a>';
+                    }
                 })
                 ->rawColumns(['check_box', 'acts', 'status', 'phone', 'recommended'])
                 ->make(true);
         }
 
-        return view('admin.invitations.index', compact('title', 'vacancies', 'regions', 'districts', 'citizens', "user_ids", "statuses_count", "stats"));
+        return view('admin.invitations.index', compact('title', 'vacancies', 'regions', 'districts', 'citizens', "user_ids", "statuses_count", "stats", 'total_invited'));
     }
 
     public function create()
@@ -439,5 +448,37 @@ class InvitationController extends Controller
         return json_encode($result);
     }
 
+    public function invite(Request $request)
+    {
+        $user_company = UserCompany::where('id', $request->id)->first();
+        $user_company->vacancy_id = $request->vacancy_id;
+        $user_company->vacancy_date = date("Y-m-d H:i:s");
+        $user_company->type = 'LIKED';
+        $user_company->save();
+        return 'success';
+    }
+
+    public function invite_all(Request $request)
+    {
+        if ($request->status_type === 'LIKED') {
+            for ($i = 0; $i < count($request->options); $i++) {
+                if ($request->vacancies[$i]) {
+                    $user_company = UserCompany::where('id', $request->options[$i])->first();
+                    $user_company->vacancy_id = $request->vacancies[$i];
+                    $user_company->vacancy_date = date("Y-m-d H:i:s");
+                    $user_company->type = $request->status_type;
+                    $user_company->save();
+                }
+            }
+        }
+        if ($request->status_type === 'DELETED') {
+            for ($i = 0; $i < count($request->options); $i++) {
+                $user_company = UserCompany::where('id', $request->options[$i])->first();
+                $user_company->delete();
+            }
+        }
+
+        return $request;
+    }
 
 }
