@@ -99,7 +99,8 @@ class AuthController extends Controller
                     'user_type' => $user->value('type'),
                     'lat' => $user->value('lat'),
                     'long' => $user->value('long'),
-                    'token' => $user->value('password')
+                    'token' => $user->value('password'),
+                    'active' => $user->value('active')
                 ]);
 
             }
@@ -128,6 +129,7 @@ class AuthController extends Controller
                 'email' => $user->value('email'),
                 'lat' => $user->value('lat'),
                 'long' => $user->value('long'),
+                'active' => $user->value('active')
             ]);
         }
     }

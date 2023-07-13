@@ -14,8 +14,10 @@ class CurrencyController extends Controller
         foreach (Currency::all() as $item){
             array_push($result, [
                 'id'=> $item->id,
-                'name'=> $item->getName($request->lang)
+                'name'=> $item->getName($request->lang),
+                'code'=> $item->code,
             ]);
+
         }
 
         return $result;

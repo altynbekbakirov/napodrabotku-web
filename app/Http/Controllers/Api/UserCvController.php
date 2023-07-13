@@ -94,12 +94,12 @@ class UserCvController extends Controller
         $user_cv = new UserCV();
 
         if ($user) {
-            if(!$request->is_product_lab_user) {
-                $this->validate($request, [
-                    'job_title' => ['required'],
-                    'experience_year' => ['required'],
-                ]);
-            }
+//            if(!$request->is_product_lab_user) {
+//                $this->validate($request, [
+//                    'job_title' => ['required'],
+//                    'experience_year' => ['required'],
+//                ]);
+//            }
 
             if ($request->user_cv_id) {
                 $user_cv = UserCV::findOrFail($request->user_cv_id);

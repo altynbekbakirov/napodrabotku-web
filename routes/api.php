@@ -30,6 +30,7 @@ Route::group([
     Route::get('user_vacancy/{type}', ['uses' => 'VacancyController@getVacanciesByType']);
     Route::get('num_of/{type}', ['uses' => 'VacancyController@getNumberOfLikedVacancies']);
     Route::get('company_vacancy', ['uses' => 'VacancyController@getVacanciesByCompany']);
+    Route::get('company_active_vacancy', ['uses' => 'VacancyController@getActiveVacanciesByCompany']);
     Route::get('company_inactive_vacancy', ['uses' => 'VacancyController@getInactiveVacanciesByCompany']);
     Route::get('num_of_active_vacancies', ['uses' => 'VacancyController@getActiveVacanciesNumber']);
     Route::get('num_of_inactive_vacancies', ['uses' => 'VacancyController@getInactiveVacanciesNumber']);
@@ -45,6 +46,7 @@ Route::group([
     Route::post('users/validate_code', ['uses' => 'ForgotPasswordController@validateCode']);
     Route::post('users/reset_password', ['uses' => 'ForgotPasswordController@resetPassword']);
     Route::post('users/reset_settings', ['uses' => 'UserController@resetSettings']);
+    Route::post('users/reset_disliked_vacancies', ['uses' => 'UserController@resetDislikedVacancies']);
     Route::post('users/company_image', ['uses' => 'UserController@avatar']);
     Route::post('company/submitted_users/{company_id}', ['uses' => 'UserController@getCompanySubmittedUserCvs']);
     Route::post('users/full_info/{user_id}', ['uses' => 'UserController@getUserFullInfo']);
@@ -81,6 +83,7 @@ Route::group([
     Route::post('user/course/delete/{user_cv_course}', ['uses' => 'UserCvCourseController@delete']);
 
     Route::get('chats', ['uses' => 'ChatController@index']);
+    Route::get('unread_messages', ['uses' => 'ChatController@unreadMessages']);
     Route::post('chats/delete', ['uses' => 'ChatController@destroyChat']);
 
     Route::get('messages/{receiver_id}/{vacancy_id}', ['uses' => 'ChatController@messages']);
@@ -95,4 +98,13 @@ Route::group([
     Route::get('opportunity_duration', ['uses' => 'ReferenceController@opportunity_durations']);
     Route::get('recommendation_letter_type', ['uses' => 'ReferenceController@recommendation_letter_types']);
     Route::get('job_sphere', ['uses' => 'ReferenceController@job_spheres']);
+
+    // New
+    Route::post('user_company', ['uses' => 'UserController@userCompany']);
+    Route::post('user_company/delete', ['uses' => 'UserController@userCompanyDelete']);
+    Route::get('user_company/num_of/{type}', ['uses' => 'UserController@userCompanyNumberOfLiked']);
+    Route::post('user_company/liked_users/{company_id}', ['uses' => 'UserController@userCompanyLikedUsers']);
+    Route::get('user_company/{type}', ['uses' => 'UserController@getUsersByType']);
+
+    Route::post('change_status', ['uses' => 'UserController@changeStatus']);
 });

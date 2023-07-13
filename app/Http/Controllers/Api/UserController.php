@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Chat;
 use App\Models\Department;
 use App\Models\District;
 use App\Models\EducationType;
@@ -12,6 +13,7 @@ use App\Models\Region;
 use App\Models\Country;
 use App\Models\SocialOrientation;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Models\UserCourse;
 use App\Models\UserCV;
 use App\Models\UserEducation;
@@ -23,6 +25,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -30,10 +33,29 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $model = User::query()->get();
-        return response()->json($model);
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        $lang = $request->lang;
+
+        if($user) {
+            $liked_users = UserCompany::where("company_id", $user->id)->whereIn('type', ['LIKED', 'INVITED'])->orderBy('id', 'desc')->pluck('user_id')->toArray();
+            $users = User::where('type', 'USER')->whereNotIn('id', $liked_users)->get();
+        } else {
+            $users = User::where('type', 'USER')->get();
+        }
+
+        foreach ($users as $user){
+            $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
+            $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
+            $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+            $user->status_text = $user->getStatusPlain();
+            $user->status = $user->active;
+            $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+        }
+
+        return response()->json($users);
     }
 
     public function show(Request $request)
@@ -399,7 +421,7 @@ class UserController extends Controller
                     mkdir($dir, 0777, true);
                 }
 
-                $name = Str::slug($user->name, '-').'.'.$file->getClientOriginalExtension();
+                $name = Str::slug($user->name, '-').'-'.$user->id.'.'.$file->getClientOriginalExtension();
 
                 Image::make($file)->fit(400, 400)->save($dir.$name, 75);
 
@@ -530,6 +552,18 @@ class UserController extends Controller
 
             $user_vacancies = UserVacancy::where('user_id', $user->id)->where('type', '<>', 'SUBMITTED')->delete();
 
+            return response()->json('OK');
+        }
+        return response()->json('user id does not exist');
+    }
+
+    public function resetDislikedVacancies(Request $request)
+    {
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+
+        if ($user) {
+            $user_vacancies = UserVacancy::where('user_id', $user->id)->where('type', 'DISLIKED')->delete();
             return response()->json('OK');
         }
         return response()->json('user id does not exist');
@@ -789,6 +823,163 @@ class UserController extends Controller
                     'status' => 400,
                 ]);
             }
+        } else {
+            return response()->json([
+                'id' => null,
+                'token' => null,
+                'message' => 'User does not exist',
+                'status' => 400,
+            ]);
+        }
+    }
+
+    public function userCompany(Request $request)
+    {
+        $type = $request->type;
+        $token = $request->header('Authorization');
+        $user_id = $request->user_id;
+
+        $company = User::where("password", $token)->firstOrFail();
+
+        if($company){
+            $existing_user_company = UserCompany::where("user_id", $user_id)
+                ->where("company_id", $company->id)
+                ->first();
+            if($existing_user_company) {
+                $existing_user_company ->update([
+                    'type' => $type,
+                ]);
+                $existing_user_company->save();
+            } else {
+                $user_company = new UserCompany;
+                $user_company->user_id = $user_id;
+                $user_company->company_id = $company->id;
+                $user_company->type = $type;
+                $user_company->save();
+            }
+            return 'OK';
+        }
+        else{
+            return "token is not valid";
+        }
+
+    }
+
+    public function userCompanyDelete(Request $request)
+    {
+        $type = $request->type;
+        $token = $request->header('Authorization');
+        $user_id = $request->user_id;
+
+        $company = User::where("password", $token)->firstOrFail();
+
+        if($company){
+            $existing_user_company = UserCompany::where("user_id", $user_id)
+                ->where("company_id", $company->id)
+                ->where("type", "LIKED")
+                ->first();
+            if($existing_user_company) {
+                $existing_user_company ->update([
+                    'type' => $type,
+                ]);
+                $existing_user_company->save();
+            } else{
+                return "no such user_company";
+            }
+            return 'OK';
+        } else{
+            return "token is not valid";
+        }
+
+    }
+
+    protected function userCompanyLikedUsers(Request $request, $company_id)
+    {
+        $lang = 'ru';
+
+        if($company_id){
+            $liked_users = UserCompany::where("company_id", $company_id)->where("type", 'LIKED')->orderBy('id', 'desc')->pluck('user_id')->toArray();
+            $users = User::where('type', 'USER')->whereIn('id', $liked_users)->get();
+
+            foreach ($users as $user){
+                $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
+                $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
+                $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+                $user->status_text = $user->getStatusPlain();
+                $user->status = $user->active;
+                $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+            }
+
+            return response()->json($users);
+        }
+        else{
+            return 'company id doesnt exist';
+        }
+    }
+
+    public function getUsersByType(Request $request, $type)
+    {
+        $lang = $request->lang;
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        if($user){
+            $type = $request->type;
+
+            if($type == 'ALL'){
+                $result1 = UserCompany::whereIn('type', ['INVITED', 'SUBMITTED'])
+                    ->where('company_id', $user->id)
+                    ->pluck('user_id')->toArray();
+
+                $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
+                $result2 = UserVacancy::whereIn('type', ['INVITED', 'SUBMITTED'])
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->pluck('user_id')->toArray();
+
+                $result = Arr::collapse([$result1, $result2]);
+
+            } elseif($type == 'INVITED') {
+                $result = UserCompany::where("type", $type)
+                    ->where('company_id', $user->id)
+                    ->pluck('user_id')->toArray();
+            } else {
+                $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
+                $result = UserVacancy::where('type', $type)
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->pluck('user_id')->toArray();
+            }
+
+            $users = User::wherein('id', $result)->get();
+
+            foreach ($users as $user){
+                $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
+                $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
+                $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+                $user->status_text = $user->getStatusPlain();
+                $user->status = $user->active;
+                $user->description = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolorem magni nesciunt qui rerum ullam. A ab doloremque nam omnis ut?';
+                $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+            }
+
+            return response()->json($users);
+        }
+        else{
+            return 'FALSE';
+        }
+
+    }
+
+    public function changeStatus(Request $request)
+    {
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        $status = $request->status;
+
+        if($user) {
+            $user->active = $status;
+            $user->save();
+            return response()->json([
+                'message' => 'OK'
+            ], 200);
         } else {
             return response()->json([
                 'id' => null,

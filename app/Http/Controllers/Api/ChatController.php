@@ -29,7 +29,12 @@ class ChatController extends Controller
 
         if($this->user->type == 'USER') {
 
-            $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->get();
+            $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
+                Message::select('created_at')
+                    ->whereColumn('chat_id', 'chats.id')
+                    ->orderByDesc('created_at')
+                    ->limit(1)
+            )->get();
 
             foreach ($chats as $chat) {
                 $result[] = [
@@ -56,6 +61,29 @@ class ChatController extends Controller
                     'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
                     'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
                 ];
+            }
+        }
+
+        return json_encode($result);
+    }
+
+    public function unreadMessages()
+    {
+        $result = 0;
+
+        if($this->user->type == 'USER') {
+
+            $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->with('messages')->get();
+
+            foreach ($chats as $chat) {
+                $result += $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count();
+            }
+
+        } else {
+            $chats = Chat::where('company_id', $this->user->id)->where('deleted', false)->with('messages')->get();
+
+            foreach ($chats as $chat) {
+                $result += $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count();
             }
         }
 
@@ -92,7 +120,7 @@ class ChatController extends Controller
             }
         }
 
-        $messages = Message::chat($chat->id)->get();
+        $messages = Message::chat($chat->id)->orderBy('created_at', 'asc')->get();
 
         if($messages){
             foreach ($messages as $message){
