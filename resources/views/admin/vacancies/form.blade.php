@@ -2,7 +2,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название вакансии: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::text('name', null, ['class' => 'form-control ' . $errors->first('name', 'is-invalid') . '']) !!}
+            {!! Form::text('name', null, ['maxlength' => 50, 'class' => 'form-control ' . $errors->first('name', 'is-invalid') . '']) !!}
             @if ($errors->has('name'))
                 <div class="invalid-feedback">{{ $errors->first('name') }}</div>
             @endif

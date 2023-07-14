@@ -29,14 +29,13 @@ class UserCvController extends Controller
     {
 
         $vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('name', 'id')->toArray();
-        $vacancies_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
         $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
         $countries = Country::whereIn('id', $regions_countries)->pluck('nameRu', 'id')->toArray();
-        $statuses = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->where('type', 'SUBMITTED')->pluck('status')->toArray();
+        $statuses = UserVacancy::whereIn('vacancy_id', array_keys($vacancies))->pluck('status')->toArray();
         $statuses_count = array_count_values($statuses);
-        $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
+        $user_ids = UserVacancy::whereIn('vacancy_id', array_keys($vacancies))->pluck('user_id')->toArray();
         $sexes = User::whereIn('id', $user_ids)->pluck('gender')->toArray();
 
         foreach ($sexes as $key => $value) {
@@ -107,7 +106,7 @@ class UserCvController extends Controller
                 $data = UserVacancy::query();
             }
 
-            $data = $data->whereIn("vacancy_id", $company_vacancies)->where("user_vacancy.type", 'SUBMITTED')->orderBy('user_vacancy.id', 'desc');
+            $data = $data->whereIn("vacancy_id", $company_vacancies)->whereIn("user_vacancy.type", ['SUBMITTED', 'INVITED'])->orderBy('user_vacancy.id', 'desc');
             // $currentDateTime = date('Y-m-d H:i:s');
             // $from = date('Y-m-d', strtotime('-29 day', strtotime($currentDateTime)));
             // $data = $data->whereBetween('created_at', [$from, $currentDateTime]);
@@ -169,6 +168,10 @@ class UserCvController extends Controller
                     return date('d.m.Y H:i', strtotime($row->created_at));
                 })
                 ->addColumn('name', function ($row) {
+                    if (strlen($row->vacancy->name) > 50) {
+                        $row->vacancy->name = substr($row->vacancy->name, 0, 50);
+                    }
+                    
                     $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' . $row->vacancy->name . '</a>';
                     return $actions;
                 })
@@ -183,7 +186,7 @@ class UserCvController extends Controller
                     return Country::where('id', $row->user->citizen)->first()->nameRu;
                 })
                 ->addColumn('user_name', function ($row) {
-                    return $row->user->name . ' <a href="https://wa.me/' . preg_replace("/[^0-9\-]/", "", $row->user->phone_number) . '" class="text-link mr-2" title="Редактировать">' . $row->user->phone_number . '</a>';
+                    return $row->user->name . ' ' . $row->user->lastname . '<br /> <a href="https://wa.me/' . preg_replace("/[^0-9\-]/", "", $row->user->phone_number) . '" class="text-link mr-2" title="Редактировать">' . $row->user->phone_number . '</a>';
                 })
                 ->addColumn('birth_date', function ($row) {
                     $birthdate = new DateTime($row->user->birth_date);
