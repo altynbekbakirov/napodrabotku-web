@@ -168,6 +168,22 @@ class Vacancy extends Model
         return date('H:i', strtotime($this->created_at));
     }
 
+    public function getStatusPlain()
+    {
+        if($this->status == 'not_published'){
+            $status = 'На модерации';
+        } elseif ($this->status == 'active') {
+            $status = 'Активно';
+        } elseif ($this->status == 'denied') {
+            $status = 'Отклонено';
+        } elseif ($this->status == 'archived') {
+            $status = 'В архиве';
+        } else {
+            $status = 'Удалено';
+        }
+        return $status;
+    }
+
     //    Scopes
     public function scopePublished($query)
     {

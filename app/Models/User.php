@@ -77,6 +77,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'salary_to',
         'currency',
         'period',
+        'invitation_enabled',
+        'invitation_count',
     ];
 
     protected $casts = [

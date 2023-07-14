@@ -166,7 +166,7 @@ class UserCvController extends Controller
                     }
                 })
                 ->addColumn('date', function ($row) {
-                    return date('d-m-Y H:i', strtotime($row->created_at));
+                    return date('d.m.Y H:i', strtotime($row->created_at));
                 })
                 ->addColumn('name', function ($row) {
                     $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' . $row->vacancy->name . '</a>';

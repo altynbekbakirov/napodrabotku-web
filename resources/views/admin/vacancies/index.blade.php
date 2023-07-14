@@ -331,7 +331,8 @@
                     d.status_id = $("button.btn-success").attr('status_id');
                 }
             },
-            columns: [{
+            columns: [
+                {
                     data: 'check_box',
                     "sortable": false
                 },

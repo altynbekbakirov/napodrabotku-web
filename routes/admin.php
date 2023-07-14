@@ -41,6 +41,7 @@ Route::middleware('auth')->group( function () {
         'user_cv' => 'UserCvController',
         'chats' => 'ChatController',
         'currencies' => 'CurrencyController',
+        'invitations' => 'InvitationController',
     ]);
 
     // EXPORT
@@ -54,6 +55,8 @@ Route::middleware('auth')->group( function () {
     Route::name('vacancies.get_regions')->get('vacancies/districs/{regions}', ['uses' => 'VacancyController@get_regions']);
     Route::name('vacancies.update_status')->post('vacancies/update_status', ['uses' => 'VacancyController@update_status']);
     Route::name('vacancies.get_vacancy')->post('vacancies/get_vacancy', ['uses' => 'VacancyController@get_vacancy']);
+    Route::name('user_company.invite')->post('user_company/invite', ['uses' => 'InvitationController@invite']);
+    Route::name('user_company.invite_all')->post('user_company/invite_all', ['uses' => 'InvitationController@invite_all']);
 
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);
@@ -100,6 +103,7 @@ Route::middleware('auth')->group( function () {
         Route::name('skillset_categories.api')->get('skillset_categories', ['uses' => 'SkillsetCategoryController@api']);
 
         Route::name('vacancies.api')->get('vacancies', ['uses' => 'VacancyController@api']);
+        Route::name('invitations.api')->get('invitations', ['uses' => 'InvitationController@api']);
         Route::name('user_cv.api')->get('user_cv', ['uses' => 'UserCvController@api']);
         Route::name('chats.api')->get('chats', ['uses' => 'ChatController@api']);
         Route::name('currencies.api')->get('currencies', ['uses' => 'CurrencyController@api']);

@@ -186,13 +186,8 @@ class UserController extends Controller
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email', 'unique:users'],
-                'gender' => ['required'],
-                'citizen' => ['required'],
                 'password' => ['required', 'min:5'],
                 'phone_number' => ['required', 'unique:users'],
-                'address' => ['required', 'min:3', 'max:255'],
-                'region' => ['required'],
-                'birth_date' => ['required'],
             ]);
         }
          else {
@@ -214,6 +209,9 @@ class UserController extends Controller
         $user = User::create($request->except('password', 'avatar', 'avatar_remove', 'region', 'district'));
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+        $user->invitation_enabled = $request->invitation_enabled;
+        $user->invitation_count = $request->invitation_count;
+        
         if ($request->password) {
             $user->password = Hash::make($request->password);
         }
@@ -261,7 +259,14 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $title = 'Соискатели';
+        if ($user->type == 'ADMIN') {
+        $title = 'Администратор';
+        } else if ($user->type == 'COMPANY') {
+            $title = 'Работотадатель';
+        } else {
+            $title = 'Соискатели';
+        }
+
         $types = [
             'USER' => 'Соискатель',
             'COMPANY' => 'Работодатель',
@@ -297,13 +302,7 @@ class UserController extends Controller
             $this->validate($request, [
                 'name'  => ['required', 'min:3', 'max:255'],
                 'email' => ['required', 'email'],
-                'gender' => ['required'],
-                'citizen' => ['required'],
                 'phone_number' => ['required', 'unique:users,phone_number,' . $user->id],
-                'address' => ['required', 'min:3', 'max:255'],
-                'region' => ['required'],
-                'birth_date' => ['required'],
-                'vacancy_type' => ['nullable'],
             ]);
         } else {
             $this->validate($request, [
@@ -324,6 +323,8 @@ class UserController extends Controller
         $user->region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
         $user->district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
         $user->birth_date = date("Y-m-d", strtotime($request->birth_date));
+        $user->invitation_enabled = $request->invitation_enabled;
+        $user->invitation_count = $request->invitation_count;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);

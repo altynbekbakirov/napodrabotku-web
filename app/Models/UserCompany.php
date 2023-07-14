@@ -18,6 +18,9 @@ class UserCompany extends Model
         'company_id',
         'type',
         'status',
+        'vacancy_id',
+        'vacancy_date',
+        'type',
     ];
 
     protected $searchable = [
@@ -25,9 +28,11 @@ class UserCompany extends Model
             'users.name' => 10,
             'users.lastname' => 10,
             'users.surname' => 10,
+            'vacancies.name' => 10,
         ],
         'joins' => [
-            'users' => ['user_vacancy.user_id','users.id'],
+            'users' => ['user_company.user_id','users.id'],
+            'vacancies' => ['user_company.vacancy_id','vacancies.id'],
         ],
     ];
 

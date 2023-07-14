@@ -111,6 +111,13 @@
                         @endif
                     </a>
                 </li>
+                @if (auth()->user()->invitation_enabled == 1)
+                <li class="menu-item">
+                    <a href="{{ route('invitations.index') }}" class="menu-link">
+                        <span class="menu-text">Приглашения</span>&nbsp;                        
+                    </a>
+                </li>
+                @endif
                 <li class="menu-item">
                     <a href="{{ route('admin.chat') }}" class="menu-link">
                         <span class="menu-text">Чат</span>&nbsp;
