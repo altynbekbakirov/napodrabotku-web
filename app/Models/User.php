@@ -79,6 +79,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'period',
         'invitation_enabled',
         'invitation_count',
+        'schedules',
+        'vacancy_types',
     ];
 
     protected $casts = [
@@ -86,7 +88,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'filter_activity' => 'array',
         'filter_type' => 'array',
         'filter_busyness' => 'array',
-        'filter_schedule' => 'array',
+        'schedules' => 'array',
+        'vacancy_types ' => 'array',
     ];
 
     protected $appends = ['age'];
@@ -136,6 +139,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function getCreatedTime()
     {
         return date('H:i', strtotime($this->created_at));
+    }
+
+    public function getAge()
+    {
+        return Carbon::parse($this->attributes['birth_date'])->age;
     }
 
 

@@ -142,7 +142,7 @@ class VacancyController extends Controller
         }
 
         $vacancies = Vacancy::whereNotIn('id', $banned_ones)
-            ->where('is_active', true)
+//            ->where('is_active', true)
             ->where('status', 'active')
             ->whereDate('created_at', '>', $specificDate);
 
@@ -272,6 +272,8 @@ class VacancyController extends Controller
                         'experience' => $request->experience,
                         'pay_period' => $request->pay_period,
                         'is_active' => true,
+                        'lonq' => $request->latitude,
+                        'lat' => $request->longitude,
                     ]);
                 }
 
@@ -303,6 +305,8 @@ class VacancyController extends Controller
                     'pay_period' => $request->pay_period,
                     'is_active' => true,
                     'created_at' => date('Y-m-d H:i:s'),
+                    'lonq' => $request->latitude,
+                    'lat' => $request->longitude,
                 ]);
             }
             return response()->json([

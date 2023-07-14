@@ -53,6 +53,7 @@ class UserController extends Controller
             $user->status_text = $user->getStatusPlain();
             $user->status = $user->active;
             $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+            $user->age = $user->birth_date ? $user->getAge() : '';
         }
 
         return response()->json($users);
@@ -436,6 +437,7 @@ class UserController extends Controller
 
             $user ->update([
                 'name' => $request->name,
+                'lastname' => $request->lastname,
                 'email' => $request->email,
                 'birth_date' => $request->birth_date,
                 'address' => $request->address,
@@ -450,6 +452,7 @@ class UserController extends Controller
                 'job_sphere' => $job_sphere ? $job_sphere->id : 0,
                 'department' => $department ? $department->id : 0,
                 'social_orientation' => $social_orientation ? $social_orientation->id : 0,
+                'description' => $request->description,
             ]);
 
             try {
@@ -956,7 +959,6 @@ class UserController extends Controller
                 $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
                 $user->status_text = $user->getStatusPlain();
                 $user->status = $user->active;
-                $user->description = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolorem magni nesciunt qui rerum ullam. A ab doloremque nam omnis ut?';
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
             }
 
@@ -988,6 +990,74 @@ class UserController extends Controller
                 'status' => 400,
             ]);
         }
+    }
+
+    public function changeSchedules(Request $request)
+    {
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        $schedules = $request->schedules;
+
+        if($user) {
+            $user->schedules = $schedules;
+            $user->save();
+            return response()->json([
+                'message' => 'OK'
+            ], 200);
+        } else {
+            return response()->json([
+                'id' => null,
+                'token' => null,
+                'message' => 'User does not exist',
+                'status' => 400,
+            ]);
+        }
+    }
+
+    public function changeVacancyTypes(Request $request)
+    {
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        $vacancy_types = $request->vacancy_types;
+
+        if($user) {
+            $user->vacancy_types = $vacancy_types;
+            $user->save();
+            return response()->json([
+                'message' => 'OK'
+            ], 200);
+        } else {
+            return response()->json([
+                'id' => null,
+                'token' => null,
+                'message' => 'User does not exist',
+                'status' => 400,
+            ]);
+        }
+    }
+
+    public function getSchedules(Request $request, $id)
+    {
+        $result = [];
+
+        $user = User::findOrFail($id);
+        if($user) {
+            $result = $user->schedules ?? [];
+        }
+
+        return $result;
+    }
+
+    public function getVacancyTypes(Request $request, $id)
+    {
+        $result = [];
+
+        $user = User::findOrFail($id);
+        if($user) {
+            $result = $user->vacancy_types ?? [];
+        }
+
+        return $result;
     }
 
 }

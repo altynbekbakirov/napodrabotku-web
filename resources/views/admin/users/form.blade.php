@@ -86,6 +86,7 @@
                     @endif
                 </div>
             </div>
+        </div>
     @endif
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
@@ -288,7 +289,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
         <div class="col-lg-4">
-            @if($user->invitation_enabled == 0) 
+            @if($user->invitation_enabled == 0)
             {!! Form::number('invitation_count', null, [
                 'class' => 'form-control',
                 'min' => 0,
@@ -296,7 +297,7 @@
                 'placeholder' => '0',
                 'disabled' => true,
             ]) !!}
-            @else 
+            @else
             {!! Form::number('invitation_count', null, [
                 'class' => 'form-control',
                 'min' => 0,

@@ -107,4 +107,8 @@ Route::group([
     Route::get('user_company/{type}', ['uses' => 'UserController@getUsersByType']);
 
     Route::post('change_status', ['uses' => 'UserController@changeStatus']);
+    Route::post('change_schedules', ['uses' => 'UserController@changeSchedules']);
+    Route::post('change_vacancy_types', ['uses' => 'UserController@changeVacancyTypes']);
+    Route::get('users/schedules/{user}', ['uses' => 'UserController@getSchedules']);
+    Route::get('users/vacancy_types/{user}', ['uses' => 'UserController@getVacancyTypes']);
 });
