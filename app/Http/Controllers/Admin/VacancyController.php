@@ -34,6 +34,7 @@ class VacancyController extends Controller
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $companies = User::where('type', 'COMPANY')->pluck('name', 'id')->toArray();
+
         if (auth()->user()->type == 'COMPANY') {
             $statuses = Vacancy::where('company_id', auth()->user()->id)->pluck('status')->toArray();
         } else {
@@ -68,12 +69,14 @@ class VacancyController extends Controller
             }
         }
 
+        if (auth()->user()->type == 'COMPANY') {
+            $data = Vacancy::where('company_id', auth()->user()->id);
+        } else {
+            $data = Vacancy::query();
+        }
+
+
         if (request()->ajax()) {
-            if (auth()->user()->type == 'COMPANY') {
-                $data = Vacancy::where('company_id', auth()->user()->id);
-            } else {
-                $data = Vacancy::query();
-            }
 
             if (request()->status_id && request()->status_id != 'all') {
                 $data = $data->where('status', request()->status_id);
@@ -158,7 +161,11 @@ class VacancyController extends Controller
                     </a>';
                 })
                 ->addColumn('name', function ($row) {
-                    return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>' : '-';
+                    if (strlen($row->name) > 50) {
+                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . substr($row->name, 0, 50) . '</a>' : '-';
+                    } else {
+                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>' : '-';
+                    }
                 })
                 ->addColumn('company_name', function ($row) {
                     return $row->company ? $row->company->name : '-';
@@ -547,7 +554,7 @@ class VacancyController extends Controller
         foreach ($request->vacancies as $value) {
             $vacancy = Vacancy::where('id', $value)->first();
             $vacancy->status = $request->status_type;
-            $vacancy->status_update_at = date("Y-m-d H:i:s"); 
+            $vacancy->status_update_at = date("Y-m-d H:i:s");
             $vacancy->save();
         }
         return 'success';

@@ -52,16 +52,16 @@ class InvitationController extends Controller
         ];
 
         foreach ($statuses as $key => $value) {
-            if ($value === 'INVITED') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
-            }
             if ($value === 'LIKED') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Отобранные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'INVITED') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
         }
 
         if (request()->ajax()) {
-            
+
 
             if (request()->status_id && request()->status_id != 'all') {
                 $data = UserCompany::where('type', request()->status_id);
@@ -75,12 +75,12 @@ class InvitationController extends Controller
                 $data = $data->search(request()->search);
             }
 
-            if (request()->vacancy_id) {                
+            if (request()->vacancy_id) {
                 $data = $data->where("user_company.vacancy_id", request()->vacancy_id);
             }
 
-            if (request()->region_id) {         
-                $vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();       
+            if (request()->region_id) {
+                $vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
                 $data = $data->whereIn("user_company.vacancy_id", $vacancies);
             }
 
@@ -123,7 +123,7 @@ class InvitationController extends Controller
 
                 })
                 ->addColumn('acts', function ($row) {
-                    $chat = Chat::where('user_id', $row->user->id)->first();
+                    $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy_id)->first();
                     if ($chat) {
                         $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
                         if (count($msgs) > 0) {
@@ -161,7 +161,11 @@ class InvitationController extends Controller
                         $options .= '<option value="" disabled selected>Выберите вакансию</option>';
                         foreach ($vacancies as $value => $label) {
                             $selected = $row->id == $value ? 'selected' : '';
-                            $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
+                            if (strlen($label) > 50) {
+                                $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . substr($label, 0, 50) . '</option>';
+                            } else {
+                                $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
+                            }
                         }
                         return '<select class="select_recommended form-control">' . $options . '</select>';
                     }
@@ -174,7 +178,11 @@ class InvitationController extends Controller
                     return $row->user->name . ' ' . $row->user->lastname;
                 })
                 ->addColumn('phone', function ($row) {
-                    return '<a href="#" id="show_phone" data-phone="' . $row->user->phone_number . '" class="text-link mr-2" title="Показать">Показать</a>';
+                    if ($row->show_phone === 0 ) {
+                        return '<a href="#" data-id = " ' . $row->id . '"data-phone="' . $row->user->phone_number . '" class="text-link mr-2 show_phone" title="Показать">Показать</a>';
+                    } else {
+                        return '<a href="#" class="text-link mr-2" title="Показать"> ' . $row->user->phone_number . '</a>';
+                    }
                 })
                 ->addColumn('city', function ($row) {
                     $city = District::where('id', $row->user->district)->first();
@@ -453,14 +461,14 @@ class InvitationController extends Controller
         $user_company = UserCompany::where('id', $request->id)->first();
         $user_company->vacancy_id = $request->vacancy_id;
         $user_company->vacancy_date = date("Y-m-d H:i:s");
-        $user_company->type = 'LIKED';
+        $user_company->type = 'INVITED';
         $user_company->save();
         return 'success';
     }
 
     public function invite_all(Request $request)
     {
-        if ($request->status_type === 'LIKED') {
+        if ($request->status_type === 'INVITED') {
             for ($i = 0; $i < count($request->options); $i++) {
                 if ($request->vacancies[$i]) {
                     $user_company = UserCompany::where('id', $request->options[$i])->first();
@@ -479,6 +487,14 @@ class InvitationController extends Controller
         }
 
         return $request;
+    }
+
+    public function show_phone(Request $request)
+    {
+        $user_company = UserCompany::where('id', $request->id)->first();
+        $user_company->show_phone = 1;
+        $user_company->save();
+        return 'success';
     }
 
 }

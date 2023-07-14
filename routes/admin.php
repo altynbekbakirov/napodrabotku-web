@@ -57,6 +57,7 @@ Route::middleware('auth')->group( function () {
     Route::name('vacancies.get_vacancy')->post('vacancies/get_vacancy', ['uses' => 'VacancyController@get_vacancy']);
     Route::name('user_company.invite')->post('user_company/invite', ['uses' => 'InvitationController@invite']);
     Route::name('user_company.invite_all')->post('user_company/invite_all', ['uses' => 'InvitationController@invite_all']);
+    Route::name('user_company.show_phone')->post('user_company/show_phone', ['uses' => 'InvitationController@show_phone']);
 
     // DELETE ROUTES
     Route::name('users.delete')->get('users/delete/{user}', ['uses' => 'UserController@destroy']);

@@ -184,7 +184,7 @@
                             error: function(xhr, status, error) {
                                 console.log('Произошла ошибка при обновлении статуса: ' +
                                     error);
-                                    location.reload();
+                                location.reload();
                             }
 
                         });
@@ -307,9 +307,32 @@
         });
 
 
-        $('#dataTable').on('click', '#show_phone', function(e) {
+        $('#dataTable').on('click', '.show_phone', function(e) {
             var value = $(this).attr('data-phone');
+            var id = $(this).attr('data-id');
             $(this).text(value);
+
+            if (!$.isEmptyObject(id)) {
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    cache: false,
+                    type: 'POST',
+                    url: `/admin/user_company/show_phone`,
+                    data: {
+                        'id': id,
+                    },
+                    success: function(result) {
+                        console.log(result);
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Произошла ошибка при обновлении статуса: ' +
+                            error);
+                    }
+
+                });
+            }
         });
 
         $("select[name=vacancy]").on("change", function() {

@@ -16,6 +16,7 @@ class UserCompany extends Model
         'user_id',
         'company_id',
         'vacancy_id',
+        'show_phone',
         'vacancy_date', 
         'type',
     ];
