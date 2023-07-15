@@ -41,6 +41,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'surname',
         'citizen',
         'vacancy_type',
+        'vacancy_types',
         'birth_date',
         'phone_number',
         'address',
@@ -73,6 +74,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'long',
         'invitation_enabled',
         'invitation_count',
+        'vacancy_status'
     ];
 
     protected $casts = [

@@ -250,7 +250,7 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
-                {!! Form::select('vacancy_type', $vacancy_types, null, [
+                {!! Form::select('vacancy_type', $vacancytypes, null, [
                     'class' => 'selectpicker form-control',
                     'placeholder' => 'Любой',
                     'data-width' => '100%',
@@ -258,8 +258,6 @@
                 ]) !!}
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Вид занятости:</label>
             <div class="col-lg-4">
@@ -271,42 +269,56 @@
                 ]) !!}
             </div>
         </div>
-    @endif
-    @if ($user->type == 'COMPANY')
-    <div class="form-group row align-items-center">
-        <label class="col-lg-3 col-form-label">Разрешить доступ к разделу Приглашения:</label>
-        <div class="col-lg-4">
-            <div class="checkbox-inline">
-                <label class="checkbox">
-                    {!! Form::hidden('invitation_enabled', 0) !!}
-                    {!! Form::checkbox('invitation_enabled', 1, null, ['id' => 'invitation_enabled']) !!}
-                    <span></span>
-                </label>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Статус поиска:</label>
+            <div class="col-lg-4">
+                {!! Form::select('vacancy_status', [
+                    'active_searching_job' => 'Активно ищу работу',
+                    'i_can_go_out_tomorrow' => 'Могу выйти завтра',
+                    'considering_offers' => 'Рассматриваю предложения',
+                ], null, [
+                    'class' => 'selectpicker form-control',
+                    'data-width' => '100%',
+                    'data-size' => '6',
+                ]) !!}
             </div>
         </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
-        <div class="col-lg-4">
-            @if($user->invitation_enabled == 0) 
-            {!! Form::number('invitation_count', null, [
-                'class' => 'form-control',
-                'min' => 0,
-                'onkeypress' => 'return event.charCode >= 48',
-                'placeholder' => '0',
-                'disabled' => true,
-            ]) !!}
-            @else 
-            {!! Form::number('invitation_count', null, [
-                'class' => 'form-control',
-                'min' => 0,
-                'onkeypress' => 'return event.charCode >= 48',
-                'placeholder' => '0',
-                'disabled' => false,
-            ]) !!}
-            @endif
+    @endif
+    @if ($user->type == 'COMPANY')
+        <div class="form-group row align-items-center">
+            <label class="col-lg-3 col-form-label">Разрешить доступ к разделу Приглашения:</label>
+            <div class="col-lg-4">
+                <div class="checkbox-inline">
+                    <label class="checkbox">
+                        {!! Form::hidden('invitation_enabled', 0) !!}
+                        {!! Form::checkbox('invitation_enabled', 1, null, ['id' => 'invitation_enabled']) !!}
+                        <span></span>
+                    </label>
+                </div>
+            </div>
         </div>
-    </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
+            <div class="col-lg-4">
+                @if ($user->invitation_enabled == 0)
+                    {!! Form::number('invitation_count', null, [
+                        'class' => 'form-control',
+                        'min' => 0,
+                        'onkeypress' => 'return event.charCode >= 48',
+                        'placeholder' => '0',
+                        'disabled' => true,
+                    ]) !!}
+                @else
+                    {!! Form::number('invitation_count', null, [
+                        'class' => 'form-control',
+                        'min' => 0,
+                        'onkeypress' => 'return event.charCode >= 48',
+                        'placeholder' => '0',
+                        'disabled' => false,
+                    ]) !!}
+                @endif
+            </div>
+        </div>
 </div>
 @endif
 {!! Form::hidden('type', $user->type) !!}

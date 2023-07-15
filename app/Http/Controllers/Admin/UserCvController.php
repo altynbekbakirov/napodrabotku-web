@@ -33,7 +33,7 @@ class UserCvController extends Controller
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
         $countries = Country::whereIn('id', $regions_countries)->pluck('nameRu', 'id')->toArray();
-        $statuses = UserVacancy::whereIn('vacancy_id', array_keys($vacancies))->pluck('status')->toArray();
+        $statuses = UserVacancy::whereIn('vacancy_id', array_keys($vacancies))->whereIn("type", ['SUBMITTED'])->pluck('status')->toArray();
         $statuses_count = array_count_values($statuses);
         $user_ids = UserVacancy::whereIn('vacancy_id', array_keys($vacancies))->pluck('user_id')->toArray();
         $sexes = User::whereIn('id', $user_ids)->pluck('gender')->toArray();
@@ -106,19 +106,9 @@ class UserCvController extends Controller
                 $data = UserVacancy::query();
             }
 
-            $data = $data->whereIn("vacancy_id", $company_vacancies)->whereIn("user_vacancy.type", ['SUBMITTED', 'INVITED'])->orderBy('user_vacancy.id', 'desc');
-            // $currentDateTime = date('Y-m-d H:i:s');
-            // $from = date('Y-m-d', strtotime('-29 day', strtotime($currentDateTime)));
-            // $data = $data->whereBetween('created_at', [$from, $currentDateTime]);
-
+            $data = $data->whereIn("vacancy_id", $company_vacancies)->whereIn("user_vacancy.type", ['SUBMITTED'])->orderBy('user_vacancy.id', 'desc');
+            
             if (request()->search) {
-                // $data = $data->with(['usersList']);
-                // $user_name = request()->name;
-                // $data = $data->where(function ($query) use ($user_name) {
-                //     $query->whereHas('usersList', function ($q) use ($user_name) {
-                //         $q->where('name', 'LIKE', '%' . $user_name . '%');
-                //     });
-                // });
                 $data = $data->search(request()->search);
             }
 

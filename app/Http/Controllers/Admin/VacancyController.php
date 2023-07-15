@@ -162,9 +162,9 @@ class VacancyController extends Controller
                 })
                 ->addColumn('name', function ($row) {
                     if (strlen($row->name) > 50) {
-                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . substr($row->name, 0, 50) . '</a>' : '-';
+                        return '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . mb_substr($row->name, 0, 50) . '</a>';
                     } else {
-                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>' : '-';
+                        return '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>';
                     }
                 })
                 ->addColumn('company_name', function ($row) {

@@ -65,15 +65,6 @@
                                         'id' => 'kt_datatable_search_sex',
                                     ]) !!}
                                 </div>
-                                {{-- <div class="col-md-2 my-2 my-md-0">
-                                    {!! Form::select('statuses', $statuses, null, [
-                                        'class' => 'selectpicker form-control',
-                                        'placeholder' => 'Статус отклика (Всего ' . count($statuses) . ')',
-                                        'data-width' => '100%',
-                                        'data-size' => '6',
-                                        'id' => 'kt_datatable_search_status',
-                                    ]) !!}
-                                </div> --}}
                             </div>
                             <div class="form-group row">
                                 <div class="col-md-10">
@@ -217,7 +208,7 @@
             table.draw();
         });
 
-        var start = moment().subtract(29, 'days');
+        var start = moment().subtract(1, 'year');
         var end = moment();
 
         $('.datepicker').daterangepicker({

@@ -165,9 +165,9 @@ class UserController extends Controller
             'female' => 'Женский'
         ];
         $citizenship = Country::pluck('nameRu', 'id')->toArray();
-        $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
+        $vacancytypes = VacancyType::pluck('name_ru', 'id')->toArray();
         $businesses = Busyness::pluck('name_ru', 'id')->toArray();
-        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
+        return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes', 'businesses'));
     }
 
     public function store(Request $request)
@@ -252,9 +252,9 @@ class UserController extends Controller
             'male' => 'Мужской',
             'female' => 'Женский'
         ];
-        $citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
-        $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
-        return view('admin.users.show', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types'));
+        $citizenship = Country::pluck('nameRu', 'id')->toArray();
+        $vacancytypes = VacancyType::pluck('name_ru', 'id')->toArray();
+        return view('admin.users.show', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes'));
     }
 
     public function edit(User $user)
@@ -276,13 +276,15 @@ class UserController extends Controller
             'male' => 'Мужской',
             'female' => 'Женский'
         ];
-        $citizenship = $citizenship = Country::pluck('nameRu', 'id')->toArray();
-        $vacancy_types = VacancyType::pluck('name_ru', 'id')->toArray();
+        $citizenship = Country::pluck('nameRu', 'id')->toArray();
+        $vacancytypes = VacancyType::pluck('name_ru', 'id')->toArray();
         $businesses = Busyness::pluck('name_ru', 'id')->toArray();
+
         $user->region = Region::find($user->region) ? Region::find($user->region)->nameRu : '';
         $user->district = District::find($user->district) ? District::find($user->district)->nameRu : '';
         $user->birth_date = date('d-m-Y', strtotime($user->birth_date));
-        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancy_types', 'businesses'));
+
+        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes', 'businesses'));
     }
 
     public function update(Request $request, User $user)
