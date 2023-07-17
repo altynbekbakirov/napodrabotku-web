@@ -3,23 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\Country;
 use Illuminate\Http\Request;
 
-class CurrencyController extends Controller
+class CountryController extends Controller
 {
     public function index(Request $request)
     {
         $result = [];
-        foreach (Currency::all() as $item){
+        foreach (Country::all() as $item){
             array_push($result, [
                 'id'=> $item->id,
-                'name'=> $item->getName($request->lang),
-                'code'=> $item->code,
+                'name'=> $item->getName($request->lang)
             ]);
-
         }
-
         return $result;
 
     }

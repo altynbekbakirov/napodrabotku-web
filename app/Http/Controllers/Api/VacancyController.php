@@ -1,9 +1,11 @@
 <?php
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
+use App\Models\Chat;
 use App\Models\Currency;
 use App\Models\District;
 use App\Models\Region;
+use App\Models\UserCompany;
 use App\Models\UserVacancy;
 use App\Models\Vacancy;
 use App\Models\User;
@@ -140,7 +142,8 @@ class VacancyController extends Controller
         }
 
         $vacancies = Vacancy::whereNotIn('id', $banned_ones)
-            ->where('is_active', true)
+//            ->where('is_active', true)
+            ->where('status', 'active')
             ->whereDate('created_at', '>', $specificDate);
 
         $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids)
@@ -165,7 +168,7 @@ class VacancyController extends Controller
             array_push($result, [
                 'id' => $item->id,
                 'name' => $item->name,
-                'address' => $item->company->address,
+                'address' => $item->address,
                 'description' => $item->description,
                 'salary' => $item->salary,
                 'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -179,6 +182,8 @@ class VacancyController extends Controller
                 'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
                 'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
                 'district' => $item->getDistrict ? $item->getDistrict->getName($request->lang) : null,
+                'street' => $item->street,
+                'house_number' => $item->house,
                 'latitude' => $item->lat,
                 'longitude' => $item->lonq,
                 'company' => $item->company->id,
@@ -205,10 +210,22 @@ class VacancyController extends Controller
 
         $period = null;
         $salary = null;
+        $region = null;
+        $district = null;
 
         if ($user && $user->type =='COMPANY') {
             if($request->salary){
                 $salary = $request->salary;
+            } else {
+                if ($request->salary_from) {
+                    if ($request->salary_to) {
+                        $salary = $request->salary_from . '-' . $request->salary_to;
+                    } else {
+                        $salary = $request->salary_from;
+                    }
+                } else {
+                    $salary = '';
+                }
             }
             if($request->period){
                 if($request->period == 0){
@@ -225,12 +242,21 @@ class VacancyController extends Controller
                 }
             }
 
+            if($request->region){
+                $region = Region::where('nameRu', $request->region)->first() ? Region::where('nameRu', $request->region)->first()->id : null;
+            }
+            if($request->district){
+                $district = District::where('nameRu', $request->district)->first() ? District::where('nameRu', $request->district)->first()->id : null;
+            }
+
             if($request->id){
                 $vacancy = Vacancy::find($request->id);
                 if($vacancy) {
                     $vacancy->update([
                         'name' => $request->name ?? null,
                         'salary' => $salary,
+                        'salary_from' => $request->salary_from,
+                        'salary_to' => $request->salary_to,
                         'currency' => $request->currency,
                         'period' => $period,
                         'description' => $request->description,
@@ -238,14 +264,16 @@ class VacancyController extends Controller
                         'schedule_id' => $request->schedule,
                         'job_type_id' => $request->job_type,
                         'vacancy_type_id' => $request->type,
-                        'region_id' => $request->region ? $request->region : $user->region,
-                        'district_id' => $request->district ? $request->district : $user->distirct,
+                        'region' => $region ?? $user->region,
+                        'district_id' => $district ?? $user->distirct,
                         'address' => $request->address,
                         'street' => $request->street,
                         'house' => $request->house_number,
                         'experience' => $request->experience,
                         'pay_period' => $request->pay_period,
                         'is_active' => true,
+                        'lonq' => $request->latitude,
+                        'lat' => $request->longitude,
                     ]);
                 }
 
@@ -259,6 +287,8 @@ class VacancyController extends Controller
                     'name' => $request->name ?? null,
                     'company_id' => $request->company_id,
                     'salary' => $salary,
+                    'salary_from' => $request->salary_from,
+                    'salary_to' => $request->salary_to,
                     'currency' => $request->currency,
                     'period' => $period,
                     'description' => $request->description,
@@ -266,8 +296,8 @@ class VacancyController extends Controller
                     'schedule_id' => $request->schedule,
                     'job_type_id' => $request->job_type,
                     'vacancy_type_id' => $request->type,
-                    'region_id' => $request->region ? $request->region : $user->region,
-                    'district_id' => $request->district ? $request->district : $user->distirct,
+                    'region' => $region ?? $user->region,
+                    'district_id' => $district ?? $user->distirct,
                     'address' => $request->address,
                     'street' => $request->street,
                     'house' => $request->house_number,
@@ -275,6 +305,8 @@ class VacancyController extends Controller
                     'pay_period' => $request->pay_period,
                     'is_active' => true,
                     'created_at' => date('Y-m-d H:i:s'),
+                    'lonq' => $request->latitude,
+                    'lat' => $request->longitude,
                 ]);
             }
             return response()->json([
@@ -286,34 +318,93 @@ class VacancyController extends Controller
             return "token is not valid";
         }
     }
-
     public function likeOrSubmit(Request $request)
     {
-
         $type = $request->type;
         $token = $request->header('Authorization');
         $vacancy_id = $request->vacancy_id;
+        $user_id = $request->user_id;
 
         $user = User::where("password", $token)->firstOrFail();
+        $vacancy = Vacancy::findOrFail($vacancy_id);
 
         if($user){
-            $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
-                ->where("vacancy_id", $vacancy_id)
-                ->where("type", "LIKED")
-                ->first();
-            if($existing_user_vacancy) {
-                $existing_user_vacancy ->update([
-                    'type' => $type,
-                ]);
-                $existing_user_vacancy->save();
+
+            if($user_id){
+                $existing_user_company = UserCompany::where("user_id", $user_id)
+                    ->where("company_id", $user->id)
+                    ->first();
+
+                if($existing_user_company) {
+                    $existing_user_company ->update([
+                        'type' => $type,
+                    ]);
+                    $existing_user_company->save();
+                } else {
+                    $user_company = new UserCompany;
+                    $user_company->user_id = $user_id;
+                    $user_company->company_id = $user->id;
+                    $user_company->type = $type;
+                    $user_company->save();
+                }
+
+                $existing_user_vacancy = UserVacancy::where('user_id', $user_id)
+                    ->where('vacancy_id', $vacancy_id)
+                    ->where('type', '<>', 'SUBMITTED')
+                    ->first();
+
+                if($existing_user_vacancy) {
+                    $existing_user_vacancy ->update([
+                        'type' => $type,
+                    ]);
+                    $existing_user_vacancy->save();
+                } else {
+                    $user_vacancy = new UserVacancy;
+                    $user_vacancy->user_id = $user_id;
+                    $user_vacancy->vacancy_id = $vacancy_id;
+                    $user_vacancy->type = $type;
+                    $user_vacancy->save();
+
+                    // open chat
+                    $chat = Chat::where('user_id', $user_id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
+                    if(!$chat) {
+                        Chat::create([
+                            'user_id' => $user_id,
+                            'company_id' => $vacancy->company_id,
+                            'vacancy_id' => $vacancy_id
+                        ]);
+                    }
+                }
+            } else {
+                $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
+                    ->where("vacancy_id", $vacancy_id)
+                    ->where("type", "LIKED")
+                    ->first();
+
+                if($existing_user_vacancy) {
+                    $existing_user_vacancy ->update([
+                        'type' => $type,
+                    ]);
+                    $existing_user_vacancy->save();
+                } else {
+                    $user_vacancy = new UserVacancy;
+                    $user_vacancy->user_id = $user->id;
+                    $user_vacancy->vacancy_id = $vacancy_id;
+                    $user_vacancy->type = $type;
+                    $user_vacancy->save();
+
+                    // open chat
+                    $chat = Chat::where('user_id', $user->id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
+                    if(!$chat) {
+                        Chat::create([
+                            'user_id' => $user->id,
+                            'company_id' => $vacancy->company_id,
+                            'vacancy_id' => $vacancy_id
+                        ]);
+                    }
+                }
             }
-            else{
-                $user_vacancy = new UserVacancy;
-                $user_vacancy->user_id = $user->id;
-                $user_vacancy->vacancy_id = $vacancy_id;
-                $user_vacancy->type = $type;
-                $user_vacancy->save();
-            }
+
             return 'OK';
         }
         else{
@@ -321,7 +412,6 @@ class VacancyController extends Controller
         }
 
     }
-
     public function getVacanciesByType(Request $request, $type)
     {
         $token = $request->header('Authorization');
@@ -329,49 +419,52 @@ class VacancyController extends Controller
         if($user){
             $type = $request->type;
 
-            $result = UserVacancy::where("type", $type)
-                ->where("user_id", $user->id)
-                // ->where("user_id", 7876)
-                ->pluck('vacancy_id')->toArray();
+            if($type == 'ALL'){
+                $result = UserVacancy::whereIn('type', ['INVITED', 'SUBMITTED'])
+                    ->where("user_id", $user->id)
+                    // ->where("user_id", 7876)
+                    ->pluck('vacancy_id')->toArray();
+            } else {
+                $result = UserVacancy::where("type", $type)
+                    ->where("user_id", $user->id)
+                    // ->where("user_id", 7876)
+                    ->pluck('vacancy_id')->toArray();
+            }
 
             $vacancies = Vacancy::wherein('id', $result)->get();
             $result1 = [];
-                    foreach (Vacancy::whereIn('id', $result)->get() as $item){
-                        array_push($result1, [
-                            'id'=> $item->id,
-                            'name'=> $item->name,
-                            'address'=> $item->company->address,
-                            'description'=> $item->description,
-                            'salary' => $item->salary,
-                            'currency' => $item->getcurrency ? $item->getcurrency->code : '',
-                            'period' => $item->period,
-                            'company_name' => $item->company->name,
-                            'company_logo'=> $item->company->avatar,
-                            'busyness' => $item->busyness ? $item->busyness->getName($request->lang) : null,
-                            'job_type' => $item->jobtype ? $item->jobtype->getName($request->lang) : null,
-                            'schedule' => $item->schedule ? $item->schedule->getName($request->lang) : null,
-                            'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
-                            'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
-                            'district' => $item->getDistrict ? $item->getDistrict->getName($request->lang) : null,
-                            'latitude' => $item->lat,
-                            'longitude' => $item->lonq,
-                            'company' => $item->company->id,
-                            'opportunity' => $item->opportunity ? $item->opportunity->getName($request->lang) : null,
-                            'opportunity_type' => $item->opportunity_type ? $item->opportunity_type->getName($request->lang) : null,
-                            'opportunity_duration' => $item->opportunity_duration ? $item->opportunity_duration->getName($request->lang) : null,
-                            'internship_language' => $item->internship_language ? $item->internship_language->getName($request->lang) : null,
-                            'age_from' => $item->age_from,
-                            'age_to' => $item->age_to,
-                            'recommendation_letter_type' => $item->recommendation_letter_type ? $item->recommendation_letter_type->getName($request->lang) : null,
-                            'is_product_lab_vacancy' => $item->is_product_lab_vacancy,
-                            'vacancy_link' => $item->vacancy_link,
-                            'deadline' => $item->deadline
-                        ]);
-                    }
-
-
-//            $vacancies = Vacancy::where('id', 3)->get();
-//            dd($vacancies);
+            foreach ($vacancies as $item){
+                array_push($result1, [
+                    'id'=> $item->id,
+                    'name'=> $item->name,
+                    'address'=> $item->company->address,
+                    'description'=> $item->description,
+                    'salary' => $item->salary,
+                    'currency' => $item->getcurrency ? $item->getcurrency->code : '',
+                    'period' => $item->period,
+                    'company_name' => $item->company->name,
+                    'company_logo'=> $item->company->avatar,
+                    'busyness' => $item->busyness ? $item->busyness->getName($request->lang) : null,
+                    'job_type' => $item->jobtype ? $item->jobtype->getName($request->lang) : null,
+                    'schedule' => $item->schedule ? $item->schedule->getName($request->lang) : null,
+                    'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
+                    'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
+                    'district' => $item->getDistrict ? $item->getDistrict->getName($request->lang) : null,
+                    'latitude' => $item->lat,
+                    'longitude' => $item->lonq,
+                    'company' => $item->company->id,
+                    'opportunity' => $item->opportunity ? $item->opportunity->getName($request->lang) : null,
+                    'opportunity_type' => $item->opportunity_type ? $item->opportunity_type->getName($request->lang) : null,
+                    'opportunity_duration' => $item->opportunity_duration ? $item->opportunity_duration->getName($request->lang) : null,
+                    'internship_language' => $item->internship_language ? $item->internship_language->getName($request->lang) : null,
+                    'age_from' => $item->age_from,
+                    'age_to' => $item->age_to,
+                    'recommendation_letter_type' => $item->recommendation_letter_type ? $item->recommendation_letter_type->getName($request->lang) : null,
+                    'is_product_lab_vacancy' => $item->is_product_lab_vacancy,
+                    'vacancy_link' => $item->vacancy_link,
+                    'deadline' => $item->deadline
+                ]);
+            }
             return $result1;
         }
         else{
@@ -404,7 +497,7 @@ class VacancyController extends Controller
 
         if($user){
             $result1 = [];
-            $vacancies = Vacancy::where('company_id', $user->id)->where('is_active', true)->orderBy('created_at', 'desc')->take(10)->get();
+            $vacancies = Vacancy::where('company_id', $user->id)->orderBy('created_at', 'desc')->take(10)->get();
 
             foreach ($vacancies as $item) {
 
@@ -424,7 +517,7 @@ class VacancyController extends Controller
                     'id'=> $item->id,
                     'name'=> $item->name,
                     'title'=> $item->title,
-                    'address'=> $item->company->address,
+                    'address'=> $item->address ?? null,
                     'description'=> $item->description,
                     'salary' => $item->salary,
                     'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -442,16 +535,9 @@ class VacancyController extends Controller
                     'latitude' => $item->lat,
                     'longitude' => $item->lonq,
                     'company' => $item->company->id,
-                    'opportunity' => $opportunity ? $opportunity->getName($request->lang) : null,
-                    'opportunity_type' => $opportunity_type ? $opportunity_type->getName($request->lang) : null,
-                    'opportunity_duration' => $opportunity_duration ? $opportunity_duration->getName($request->lang) : null,
-                    'internship_language' => $internship_language ? $internship_language->getName($request->lang) : null,
-                    'age_from' => $item->age_from,
-                    'age_to' => $item->age_to,
-                    'recommendation_letter_type' => $recommendation_letter_type ? $recommendation_letter_type->getName($request->lang) : null,
-                    'is_product_lab_vacancy' => $item->is_product_lab_vacancy,
-                    'vacancy_link' => $item->vacancy_link,
-                    'deadline' => $item->deadline,
+                    'experience' => $item->experience,
+                    'pay_period' => $item->pay_period,
+                    'status' => $item->getStatusPlain(),
                 ]);
             }
             return $result1;
@@ -467,7 +553,7 @@ class VacancyController extends Controller
 
         if($token && $token != 'null'){
             $user = User::where("password", $token)->firstOrFail();
-            return Vacancy::where('company_id', $user->id)->where('is_active', true)->count();
+            return Vacancy::where('company_id', $user->id)->where('status', 'active')->count();
         } else {
             return Vacancy::where('is_active', true)->count();
         }
@@ -482,11 +568,51 @@ class VacancyController extends Controller
         if($user){
             $count = 0;
             foreach (Vacancy::where('company_id', $user->id)
-                         ->where('is_active', false)
+                         ->where('status', 'not_published')
                          ->get() as $item){
                 $count=$count+1;
             }
             return $count;
+        }
+        else{
+            return 'ERROR';
+        }
+
+    }
+    public function getActiveVacanciesByCompany(Request $request)
+    {
+
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+
+        if($user){
+            $result1 = [];
+            $vacancies = Vacancy::where('company_id', $user->id)
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($vacancies as $item){
+
+                array_push($result1, [
+                    'id'=> $item->id,
+                    'name'=> $item->name,
+                    'title'=> $item->title,
+                    'address'=> $item->company->address,
+                    'description'=> $item->description,
+                    'salary'=> $item->salary,
+                    'currency' => $item->getcurrency ? $item->getcurrency->code : '',
+                    'company_name' => $item->company->name,
+                    'company_logo'=> $item->company->avatar,
+                    'busyness' => $item->busyness ? $item->busyness->getName($request->lang) : null,
+                    'job_type' => $item->jobtype ? $item->jobtype->getName($request->lang) : null,
+                    'schedule' => $item->schedule ? $item->schedule->getName($request->lang) : null,
+                    'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
+                    'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
+                    'company' => $item->company->id,
+                    'status' => $item->getStatusPlain(),
+                ]);
+            }
+            return $result1;
         }
         else{
             return 'ERROR';
@@ -503,7 +629,7 @@ class VacancyController extends Controller
         if($user){
             $result1 = [];
             foreach (Vacancy::where('company_id', $user->id)
-                         ->where('is_active', false)
+                         ->where('status', 'not_published')
                          ->get() as $item){
 
                 $opportunity = Opportunity::where('id', $item->opportunity_id)->first();
@@ -519,24 +645,16 @@ class VacancyController extends Controller
                     'address'=> $item->company->address,
                     'description'=> $item->description,
                     'salary'=> $item->salary,
+                    'currency' => $item->getcurrency ? $item->getcurrency->code : '',
                     'company_name' => $item->company->name,
                     'company_logo'=> $item->company->avatar,
                     'busyness' => $item->busyness ? $item->busyness->getName($request->lang) : null,
                     'job_type' => $item->jobtype ? $item->jobtype->getName($request->lang) : null,
                     'schedule' => $item->schedule ? $item->schedule->getName($request->lang) : null,
                     'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
-                    'region' => $item->region ? $item->region->getName($request->lang) : null,
+                    'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
                     'company' => $item->company->id,
-                    'opportunity' => $opportunity ? $opportunity->getName($request->lang) : null,
-                    'opportunity_type' => $opportunity_type ? $opportunity_type->getName($request->lang) : null,
-                    'opportunity_duration' => $opportunity_duration ? $opportunity_duration->getName($request->lang) : null,
-                    'internship_language' => $internship_language ? $internship_language->getName($request->lang) : null,
-                    'age_from' => $item->age_from,
-                    'age_to' => $item->age_to,
-                    'recommendation_letter_type' => $recommendation_letter_type ? $recommendation_letter_type->getName($request->lang) : null,
-                    'is_product_lab_vacancy' => $item->is_product_lab_vacancy,
-                    'vacancy_link' => $item->vacancy_link,
-                    'deadline' => $item->deadline,
+                    'status' => $item->getStatusPlain(),
                 ]);
             }
             return $result1;
@@ -557,6 +675,10 @@ class VacancyController extends Controller
             $vacancy = Vacancy::where('id', $request->vacancy_id)
                 ->firstOrFail();
             if($vacancy){
+                $chats = Chat::where('vacancy_id', $vacancy->id)->get();
+                foreach ($chats as $chat) {
+                    $chat->delete();
+                }
                 $vacancy->delete();
                 return response()->json([
                     'status' => 200,

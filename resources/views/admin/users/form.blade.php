@@ -86,6 +86,7 @@
                     @endif
                 </div>
             </div>
+        </div>
     @endif
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
@@ -272,15 +273,20 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Статус поиска:</label>
             <div class="col-lg-4">
-                {!! Form::select('vacancy_status', [
-                    'active_searching_job' => 'Активно ищу работу',
-                    'i_can_go_out_tomorrow' => 'Могу выйти завтра',
-                    'considering_offers' => 'Рассматриваю предложения',
-                ], null, [
-                    'class' => 'selectpicker form-control',
-                    'data-width' => '100%',
-                    'data-size' => '6',
-                ]) !!}
+                {!! Form::select(
+                    'vacancy_status',
+                    [
+                        'active_searching_job' => 'Активно ищу работу',
+                        'i_can_go_out_tomorrow' => 'Могу выйти завтра',
+                        'considering_offers' => 'Рассматриваю предложения',
+                    ],
+                    null,
+                    [
+                        'class' => 'selectpicker form-control',
+                        'data-width' => '100%',
+                        'data-size' => '6',
+                    ],
+                ) !!}
             </div>
         </div>
     @endif
@@ -319,15 +325,14 @@
                 @endif
             </div>
         </div>
-</div>
-@endif
-{!! Form::hidden('type', $user->type) !!}
-<div class="card-footer">
-    <div class="row">
-        <div class="col-lg-3"></div>
-        <div class="col-lg-6">
-            <button type="submit" class="btn btn-success mr-2">Сохранить</button>
-            <button type="reset" class="btn btn-secondary" onclick="window.history.back();">Отмена</button>
+    @endif
+    {!! Form::hidden('type', $user->type) !!}
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <button type="submit" class="btn btn-success mr-2">Сохранить</button>
+                <button type="reset" class="btn btn-secondary" onclick="window.history.back();">Отмена</button>
+            </div>
         </div>
     </div>
-</div>

@@ -72,9 +72,16 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'is_product_lab_user',
         'lat',
         'long',
+        'description',
+        'salary',
+        'salary_from',
+        'salary_to',
+        'currency',
+        'period',
         'invitation_enabled',
         'invitation_count',
-        'vacancy_status'
+        'schedules',
+        'vacancy_types',
     ];
 
     protected $casts = [
@@ -82,7 +89,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'filter_activity' => 'array',
         'filter_type' => 'array',
         'filter_busyness' => 'array',
-        'filter_schedule' => 'array',
+        'schedules' => 'array',
+        'vacancy_types ' => 'array',
     ];
 
     protected $appends = ['age'];
@@ -94,19 +102,34 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function getStatus()
     {
-        if($this->active){
+        if($this->active == 1){
+            $class = 'primary';
+            $status = 'Активно ищу работу';
+        } elseif ($this->active == 2) {
             $class = 'success';
-            $status = 'активный';
+            $status = 'Могу выйти завтра';
+        } elseif ($this->active == 3) {
+            $class = 'warning';
+            $status = 'Рассматриваю предложения';
         } else {
             $class = 'dark';
-            $status = 'неактивный';
+            $status = 'Без статуса';
         }
         return '<span class="label label-inline font-weight-bold label-light-'.$class.' label-lg">'.$status.'</span>';
     }
 
-    public function cv()
+    public function getStatusPlain()
     {
-        return $this->hasOne(UserCV::class, 'user_id');
+        if($this->active == 1){
+            $status = 'Активно ищу работу';
+        } elseif ($this->active == 2) {
+            $status = 'Могу выйти завтра';
+        } elseif ($this->active == 3) {
+            $status = 'Рассматриваю предложения';
+        } else {
+            $status = 'Без статуса';
+        }
+        return $status;
     }
 
     public function getCreatedDate()
@@ -119,6 +142,35 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         return date('H:i', strtotime($this->created_at));
     }
 
+    public function getAge()
+    {
+        return Carbon::parse($this->attributes['birth_date'])->age;
+    }
+
+
+    // Relations
+    public function cv()
+    {
+        return $this->hasOne(UserCV::class, 'user_id');
+    }
+    public function getVacancyType()
+    {
+        return $this->belongsTo(VacancyType::class, 'vacancy_type');
+    }
+    public function getBusiness()
+    {
+        return $this->belongsTo(Busyness::class, 'business');
+    }
+    public function getRegion()
+    {
+        return $this->belongsTo(Region::class, 'region');
+    }
+    public function getCurrency()
+    {
+        return $this->belongsTo(Currency::class, 'currency');
+    }
+
+
     //    Scopes
     public function scopePublished($query)
     {
@@ -128,6 +180,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     {
         return $query->whereBetween('birth_date', [$from, $to]);
     }
+
 
     // Attributes
     public function getAgeAttribute()

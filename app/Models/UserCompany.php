@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +16,11 @@ class UserCompany extends Model
         'id',
         'user_id',
         'company_id',
+        'type',
+        'status',
         'vacancy_id',
         'show_phone',
-        'vacancy_date', 
+        'vacancy_date',
         'type',
     ];
 
@@ -37,6 +40,11 @@ class UserCompany extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(User::class, 'company_id');
     }
 
     public function usersList()
