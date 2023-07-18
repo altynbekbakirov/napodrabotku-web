@@ -123,7 +123,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Email: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::email('email', null, ['class' => 'form-control ' . $errors->first('email', 'is-invalid') . '']) !!}
+            {!! Form::email('email', null, [$user->id ? 'disabled' : '', 'class' => 'form-control ' . $errors->first('email', 'is-invalid') . '']) !!}
             @if ($errors->has('email'))
                 <div class="invalid-feedback">{{ $errors->first('email') }}</div>
             @endif
@@ -132,7 +132,7 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Пароль: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::password('password', ['class' => 'form-control ' . $errors->first('password', 'is-invalid') . '']) !!}
+            {!! Form::password('password', [$user->id ? 'disabled' : '', 'class' => 'form-control ' . $errors->first('password', 'is-invalid') . '']) !!}
             @if ($errors->has('password'))
                 <div class="invalid-feedback">{{ $errors->first('password') }}</div>
             @endif
@@ -145,7 +145,7 @@
                 @endif
             </label>
             <div class="col-lg-4">
-                {!! Form::text('phone_number', null, [
+                {!! Form::text('phone_number', null, [$user->id ? 'disabled' : '',
                     'class' => 'phone_number form-control ' . $errors->first('phone_number', 'is-invalid'),
                 ]) !!}
                 @if ($errors->has('phone_number'))
@@ -238,16 +238,12 @@
                 @endif
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Возраст:</label>
             <div class="col-lg-4">
                 {!! Form::text('age', null, ['class' => 'form-control', 'readonly' => 'true']) !!}
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
@@ -274,11 +270,11 @@
             <label class="col-lg-3 col-form-label">Статус поиска:</label>
             <div class="col-lg-4">
                 {!! Form::select(
-                    'vacancy_status',
+                    'active',
                     [
-                        'active_searching_job' => 'Активно ищу работу',
-                        'i_can_go_out_tomorrow' => 'Могу выйти завтра',
-                        'considering_offers' => 'Рассматриваю предложения',
+                        '0' => 'Активно ищу работу',
+                        '1' => 'Могу выйти завтра',
+                        '2' => 'Рассматриваю предложения',
                     ],
                     null,
                     [

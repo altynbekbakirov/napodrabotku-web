@@ -167,6 +167,7 @@ class UserController extends Controller
         $citizenship = Country::pluck('nameRu', 'id')->toArray();
         $vacancytypes = VacancyType::pluck('name_ru', 'id')->toArray();
         $businesses = Busyness::pluck('name_ru', 'id')->toArray();
+        
         return view('admin.users.create', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes', 'businesses'));
     }
 

@@ -102,13 +102,13 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function getStatus()
     {
-        if($this->active == 1){
+        if($this->active == 0){
             $class = 'primary';
             $status = 'Активно ищу работу';
-        } elseif ($this->active == 2) {
+        } elseif ($this->active == 1) {
             $class = 'success';
             $status = 'Могу выйти завтра';
-        } elseif ($this->active == 3) {
+        } elseif ($this->active == 2) {
             $class = 'warning';
             $status = 'Рассматриваю предложения';
         } else {
