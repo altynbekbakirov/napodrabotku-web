@@ -159,7 +159,7 @@ class UserCvController extends Controller
                 })
                 ->addColumn('name', function ($row) {
                     if (strlen($row->vacancy->name) > 50) {
-                        $row->vacancy->name = substr($row->vacancy->name, 0, 50);
+                        $row->vacancy->name = mb_substr($row->vacancy->name, 0, 50);
                     }
                     
                     $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' . $row->vacancy->name . '</a>';

@@ -192,18 +192,18 @@ class UserController extends Controller
             ]);
         }
          else {
-            $this->validate($request, [
-                'name'  => ['required', 'min:3', 'max:255'],
-                'lastname' => ['required', 'min:3', 'max:255'],
-                'email' => ['required', 'email', 'unique:users'],
-                'gender' => ['required'],
-                'citizen' => ['required'],
-                'password' => ['required', 'min:5'],
-                'phone_number' => ['required', 'unique:users'],
-                'address' => ['required', 'min:3', 'max:255'],
-                'region' => ['required'],
-                'birth_date' => ['required'],
-            ]);
+            // $this->validate($request, [
+            //     'name'  => ['required', 'min:3', 'max:255'],
+            //     'lastname' => ['required', 'min:3', 'max:255'],
+            //     'email' => ['required', 'email', 'unique:users'],
+            //     'gender' => ['required'],
+            //     'citizen' => ['required'],
+            //     'password' => ['required', 'min:5'],
+            //     'phone_number' => ['required', 'unique:users'],
+            //     'address' => ['required', 'min:3', 'max:255'],
+            //     'region' => ['required'],
+            //     'birth_date' => ['required'],
+            // ]);
         }
 
         $request->login = $request->email;

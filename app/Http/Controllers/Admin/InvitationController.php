@@ -162,7 +162,7 @@ class InvitationController extends Controller
                         foreach ($vacancies as $value => $label) {
                             $selected = $row->id == $value ? 'selected' : '';
                             if (strlen($label) > 50) {
-                                $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . substr($label, 0, 50) . '</option>';
+                                $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . mb_substr($label, 0, 50) . '</option>';
                             } else {
                                 $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
                             }
