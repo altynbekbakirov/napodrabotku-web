@@ -33,9 +33,9 @@ class AppServiceProvider extends ServiceProvider
             $view->with('locale', app()->getLocale());
 
             $view->with('main', Main::first());
-            if (auth()->user() && auth()->user()->type == 'COMPANY') {
+            if (auth()->user() && auth()->user()->type == 'COMPANY') { 
                 $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->pluck('id')->toArray();
-                $view->with('unread_messages', Message::whereIn('chat_id', $chats)->where('read', false)->count()); 
+                $view->with('unread_messages', Message::whereIn('chat_id', $chats)->where('user_id', '<>', auth()->user()->id)->where('read', false)->count()); 
                 $vacancy_ids = Vacancy::where('company_id',  auth()->user()->id)->pluck('id')->toArray();
                 $view->with('user_vacancy_feedbacks', UserVacancy::whereIn('vacancy_id', $vacancy_ids)->where('type', 'SUBMITTED')->where('status', 'not_processed')->count());
             } else if (auth()->user() && auth()->user()->type == 'ADMIN') {

@@ -89,6 +89,11 @@
                                     <span class="menu-text">Валюты</span>
                                 </a>
                             </li>
+                            <li class="menu-item" aria-haspopup="true">
+                                <a href="{{ route('words.index') }}" class="menu-link">
+                                    <span class="menu-text">Матерные слова</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
