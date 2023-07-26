@@ -1,84 +1,94 @@
 <?php
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
-use App\Models\VacancyType as VacancyType;
+use App\Models\Word;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 
-class CurrencyController extends Controller
+class WordsController extends Controller
 {
+
     public function index()
     {
-        $title = 'Валюты';
-        return view('admin.currencies.index', compact('title'));
+        $title = 'Матерные слова';
+        return view('admin.words.index', compact('title'));
     }
-
-    public function create()
+    public function create(Word $word)
     {
-        $currency = new Currency();
-        $title = 'Валюты';
+        $word = new Word();
+        $title = 'Матерные слова';
 
-        return view('admin.currencies.create', compact('currency', 'title'));
+        return view('admin.words.create', compact('word', 'title'));
     }
 
-    public function store(Request $request)
-    {
-        $this->validate($request, [
-            'code' => ['required'],
-            'name' => ['required'],
-            'name_ru' => ['required'],
-        ]);
-        Currency::create($request->all());
-
-        return redirect()->route('currencies.index');
-    }
-
-    public function edit(Currency $currency)
-    {
-        $title = 'Валюты';
-        return view('admin.currencies.edit', compact('currency', 'title'));
-    }
-
-    public function update(Request $request, Currency $currency)
+    public function store(Request $request, Word $word)
     {
         $this->validate($request, [
-            'code' => ['required'],
-            'name' => ['required'],
-            'name_ru' => ['required'],
+            'name' => ['required', 'unique:words'],
         ]);
-        $currency->update($request->all());
 
-        return redirect()->route('currencies.index');
+        Word::create($request->all());
+        return redirect()->route('words.index');
     }
 
-    public function destroy(Currency $currency)
+    public function show(Word $word)
     {
-        $currency->delete();
+        $title = 'Матерные слова';
+        return view('admin.words.show', compact('word', 'title'));
+    }
 
-        return redirect()->route('currencies.index');
+    public function edit(Word $word)
+    {
+        $title = $word->getName();
+        return view('admin.words.edit', compact('word', 'title'));
+    }
+
+    public function update(Request $request, Word $word)
+    {
+        $this->validate($request, [
+            'name' => ['required', 'unique:words'],
+        ]);
+        $word->update($request->all());
+        $word->save();
+
+        return redirect()->route('words.index');
+    }
+
+    public function destroy(Word $word)
+    {
+        $word->delete();
+        return redirect()->route('words.index');
     }
 
     public function api(Request $request)
     {
+
         $pagination = $request->pagination;
         $sort = $request->sort;
         $query = $request->input('query');
 
-        if(array_key_exists('perpage', $pagination)) { $perpage = $pagination['perpage']; }
-        else { $perpage = 5; }
+        if (array_key_exists('perpage', $pagination)) {
+            $perpage = $pagination['perpage'];
+        } else {
+            $perpage = 5;
+        }
 
-        if(array_key_exists('page', $pagination)) { $page = $pagination['page']; }
-        else { $page = 1; }
+        if (array_key_exists('page', $pagination)) {
+            $page = $pagination['page'];
+        } else {
+            $page = 1;
+        }
 
         Paginator::currentPageResolver(function () use ($page) {
             return $page;
         });
 
-        $resultPaginated = Currency::orderBy('name', 'asc');
+        $resultPaginated = Word::orderBy('name', 'asc');
 
-        if($query){
-            if(array_key_exists('generalSearch', $query)){
+        if ($query) {
+            if (array_key_exists('generalSearch', $query)) {
                 $resultPaginated = $resultPaginated->search($query['generalSearch'], null, true, true);
             }
         }
@@ -90,7 +100,7 @@ class CurrencyController extends Controller
             $row->order = ($page - 1) * $perpage + $key + 1;
 
             $row->actions = '
-                <a href="'.route('currencies.edit', $row).'" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
+                <a href="' . route('words.edit', $row) . '" class="btn btn-sm btn-clean btn-icon mr-2" title="Редактировать">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -100,7 +110,7 @@ class CurrencyController extends Controller
                         </svg>
                     </span>
                 </a>
-                <a href="'.route('currencies.delete', $row).'" class="btn btn-sm btn-clean btn-icon" title="Удалить">
+                <a href="' . route('words.delete', $row) . '" class="btn btn-sm btn-clean btn-icon" title="Удалить">
                     <span class="svg-icon svg-icon-md">
                         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -113,7 +123,6 @@ class CurrencyController extends Controller
                 </a>
             ';
         }
-
         $pages = $resultPaginated->lastPage();
         $total = $resultPaginated->total();
 
@@ -126,6 +135,26 @@ class CurrencyController extends Controller
 
         $result = array('meta' => $meta, 'data' => $resultPaginated->all());
         return json_encode($result);
+
+    }
+
+    function csvToArray($filename = '', $delimiter = ',')
+    {
+        if (!file_exists($filename) || !is_readable($filename))
+            return false;
+
+        $header = null;
+        $data = array();
+        if (($handle = fopen($filename, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+                if (!$header)
+                    $header = $row;
+                else
+                    $data[] = array_combine($header, $row);
+            }
+            fclose($handle);
+        }
+
+        return $data;
     }
 }
-

@@ -14,6 +14,7 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Cookie;
+use DateTime;
 
 //use App\Models\Question;
 
@@ -85,7 +86,7 @@ class HomeController extends Controller
     {
         $title = 'Чаты';
 
-        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->get();
+        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->orderBy('updated_at', 'desc')->get();
 
         $chat_id = $request->id;
         $selected_chat = null;
@@ -142,6 +143,11 @@ class HomeController extends Controller
     {
 
         if ($request->new_message) {
+            $current_date = date('Y-m-d H:i:s');
+            $chat = Chat::where('id', $request->chat_id)->first();
+            $chat->updated_at = $current_date; 
+            $chat->save();
+
             $message = new Message();
             $message->user_id = $request->user_id;
             $message->chat_id = $request->chat_id;
@@ -153,7 +159,7 @@ class HomeController extends Controller
         }
 
         return 'Failed';
-    }
+    } 
 
     public function add_quick_word(Request $request)
     {

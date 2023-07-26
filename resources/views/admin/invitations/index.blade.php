@@ -253,7 +253,7 @@
             table.draw();
         });
 
-        var start = moment().subtract(29, 'days');
+        var start = moment().subtract(1, 'year');
         var end = moment();
 
         $('.datepicker').daterangepicker({

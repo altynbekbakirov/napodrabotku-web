@@ -18,7 +18,7 @@ class ChatController extends Controller
         $token = $request->header('Authorization');
         $this->user = User::where("password", $token)->firstOrFail();
 
-        if(!$this->user) {
+        if (!$this->user) {
             return "token is not valid";
         }
     }
@@ -27,7 +27,7 @@ class ChatController extends Controller
     {
         $result = [];
 
-        if($this->user->type == 'USER') {
+        if ($this->user->type == 'USER') {
 
             $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
                 Message::select('created_at')
@@ -103,11 +103,12 @@ class ChatController extends Controller
 
         $vacancy = Vacancy::find($vacancy_id);
 
-        if($this->user->type == 'USER') {
+        if ($this->user->type == 'USER') {
             $chat = Chat::where('user_id', $this->user->id)->where('company_id', $receiver_id);
-            if($vacancy) $chat = $chat->where('vacancy_id', $vacancy_id);
+            if ($vacancy)
+                $chat = $chat->where('vacancy_id', $vacancy_id);
             $chat = $chat->where('deleted', false)->first();
-            if(!$chat) {
+            if (!$chat) {
                 $chat = Chat::create([
                     'user_id' => $this->user->id,
                     'company_id' => $receiver_id,
@@ -116,9 +117,10 @@ class ChatController extends Controller
             }
         } else {
             $chat = Chat::where('user_id', $receiver_id)->where('company_id', $this->user->id);
-            if($vacancy) $chat = $chat->where('vacancy_id', $vacancy_id);
+            if ($vacancy)
+                $chat = $chat->where('vacancy_id', $vacancy_id);
             $chat = $chat->where('deleted', false)->first();
-            if(!$chat) {
+            if (!$chat) {
                 $chat = Chat::create([
                     'user_id' => $receiver_id,
                     'company_id' => $this->user->id,
@@ -129,15 +131,15 @@ class ChatController extends Controller
 
         $messages = Message::chat($chat->id)->orderBy('created_at', 'asc')->get();
 
-        if($messages){
-            foreach ($messages as $message){
+        if ($messages) {
+            foreach ($messages as $message) {
                 $message->read = true;
                 $message->save();
 
                 $read = true;
                 $from = false;
 
-                if($message->user_id == $this->user->id){
+                if ($message->user_id == $this->user->id) {
                     $from = true;
                 }
                 $result[] = [
@@ -154,11 +156,16 @@ class ChatController extends Controller
 
     public function saveMessage(Request $request)
     {
-        if($this->user->type == 'USER') {
+        if ($this->user->type == 'USER') {
             $chat = Chat::where('user_id', $this->user->id)->where('company_id', $request->receiver_id)->where('vacancy_id', $request->vacancy_id)->first();
         } else {
             $chat = Chat::where('user_id', $request->receiver_id)->where('company_id', $this->user->id)->where('vacancy_id', $request->vacancy_id)->first();
         }
+
+        $current_date = date('Y-m-d H:i:s');
+        $chat = Chat::where('id', $chat->id)->first();
+        $chat->updated_at = $current_date;
+        $chat->save();
 
         $message = Message::create([
             'user_id' => $this->user->id,
@@ -171,7 +178,7 @@ class ChatController extends Controller
 
     public function destroyChat(Request $request)
     {
-        if($this->user->type == 'USER') {
+        if ($this->user->type == 'USER') {
             Chat::where('user_id', $this->user->id)->where('company_id', $request->receiver_id)->delete();
         } else {
             Chat::where('user_id', $request->receiver_id)->where('company_id', $this->user->id)->delete();

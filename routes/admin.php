@@ -42,6 +42,7 @@ Route::middleware('auth')->group( function () {
         'chats' => 'ChatController',
         'currencies' => 'CurrencyController',
         'invitations' => 'InvitationController',
+        'words' => 'WordsController'
     ]);
 
     // EXPORT
@@ -73,6 +74,7 @@ Route::middleware('auth')->group( function () {
     Route::name('education_types.delete')->get('education_types/delete/{education_type}', ['uses' => 'EducationTypeController@destroy']);
     Route::name('skillsets.delete')->get('skillsets/delete/{skillset}', ['uses' => 'SkillsetController@destroy']);
     Route::name('skillset_categories.delete')->get('skillset_categories/delete/{skillset_category}', ['uses' => 'SkillsetCategoryController@destroy']);
+    Route::name('words.delete')->get('words/delete/{word}', ['uses' => 'WordsController@destroy']);
 
     Route::name('vacancies.delete')->get('vacancies/delete/{vacancy}', ['uses' => 'VacancyController@destroy']);
     Route::name('user_cv.delete')->get('user_cv/delete/{user_cv}', ['uses' => 'UserCvController@destroy']);
@@ -108,6 +110,7 @@ Route::middleware('auth')->group( function () {
         Route::name('user_cv.api')->get('user_cv', ['uses' => 'UserCvController@api']);
         Route::name('chats.api')->get('chats', ['uses' => 'ChatController@api']);
         Route::name('currencies.api')->get('currencies', ['uses' => 'CurrencyController@api']);
+        Route::name('words.api')->get('words', ['uses' => 'WordsController@api']);
         Route::name('roll')->get('roll', ['uses' => 'PermissionController@Permission']);
     });
 });

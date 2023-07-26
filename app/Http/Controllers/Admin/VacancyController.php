@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyType;
 use App\Models\Currency;
+use App\Models\Word;
 use Mail;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -162,9 +163,9 @@ class VacancyController extends Controller
                 })
                 ->addColumn('name', function ($row) {
                     if (strlen($row->name) > 50) {
-                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . substr($row->name, 0, 50) . '</a>' : '-';
+                        return '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . mb_substr($row->name, 0, 50) . '</a>';
                     } else {
-                        return $row->name ? '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>' : '-';
+                        return '<a href="' . route('vacancies.show', $row) . '" title="Просмотр">' . $row->name . '</a>';
                     }
                 })
                 ->addColumn('company_name', function ($row) {
@@ -233,13 +234,14 @@ class VacancyController extends Controller
         $job_types = JobType::pluck('name_ru', 'id')->toArray();
         $schedules = Schedule::pluck('name_ru', 'id')->toArray();
         $currencies = Currency::pluck('name_ru', 'id')->toArray();
+        $badwords = Word::pluck('name')->toArray();
         $metros = [];
 
         if (app()->getLocale() == 'ru') {
             $vacancy->currency = 3;
         }
 
-        return view('admin.vacancies.create', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries', 'metros'));
+        return view('admin.vacancies.create', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries', 'metros', 'badwords'));
     }
 
     public function store(Request $request)
@@ -309,6 +311,7 @@ class VacancyController extends Controller
         $currencies = Currency::pluck('name_ru', 'id')->toArray();
         $vacancy->region = Region::find($vacancy->region) ? Region::find($vacancy->region)->nameRu : '';
         $vacancy->district = District::find($vacancy->district) ? District::find($vacancy->district)->nameRu : '';
+        $badwords = Word::pluck('name')->toArray();
         $metros = [];
 
         if ($vacancy->address && $vacancy->metro) {
@@ -330,7 +333,7 @@ class VacancyController extends Controller
             }
         }
 
-        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'metros'));
+        return view('admin.vacancies.edit', compact('vacancy', 'title', 'companies', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'metros', 'badwords'));
     }
 
     public function update(Request $request, Vacancy $vacancy)

@@ -33,7 +33,9 @@
         @if ($user->type == 'USER')
             <div class="form-group row">
                 <label class="col-lg-3 col-form-label">Фамилия: @if ($user->type != 'ADMIN')
-                        <span style="color: red">*</span>
+                        @if ($user->id)
+                            <span style="color: red">*</span>
+                        @endif
                     @endif
                 </label>
                 <div class="col-lg-4">
@@ -47,10 +49,15 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">
                 @if ($user->type == 'COMPANY')
-                    Компания: <span style="color: red">*</span>
+                    Компания: @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
             </label>
         @else
-            Имя: <span style="color: red">*</span></label>
+            Имя: @if ($user->id)
+                <span style="color: red">*</span>
+            @endif
+            </label>
             @endif ($user->avatar)
             <div class="col-lg-4">
                 {!! Form::text('name', null, ['class' => 'form-control ' . $errors->first('name', 'is-invalid') . '']) !!}
@@ -72,7 +79,9 @@
         <div class="mb-3">
             <div class="form-group row">
                 <label class="col-lg-3 col-form-label">Пол:
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 </label>
                 <div class="col-lg-4">
                     {!! Form::select('gender', $sexes, null, [
@@ -91,7 +100,9 @@
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Гражданство: @if ($user->type == 'USER')
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 @endif
             </label>
             <div class="col-lg-4">
@@ -121,18 +132,30 @@
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Email: <span style="color: red">*</span></label>
+        <label class="col-lg-3 col-form-label">Email: @if ($user->id)
+                <span style="color: red">*</span>
+            @endif
+        </label>
         <div class="col-lg-4">
-            {!! Form::email('email', null, ['class' => 'form-control ' . $errors->first('email', 'is-invalid') . '']) !!}
+            {!! Form::email('email', null, [
+                $user->id ? 'readonly' : '',
+                'class' => 'form-control ' . $errors->first('email', 'is-invalid') . '',
+            ]) !!}
             @if ($errors->has('email'))
                 <div class="invalid-feedback">{{ $errors->first('email') }}</div>
             @endif
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-lg-3 col-form-label">Пароль: <span style="color: red">*</span></label>
+        <label class="col-lg-3 col-form-label">Пароль: @if ($user->id)
+                <span style="color: red">*</span>
+            @endif
+        </label>
         <div class="col-lg-4">
-            {!! Form::password('password', ['class' => 'form-control ' . $errors->first('password', 'is-invalid') . '']) !!}
+            {!! Form::password('password', [
+                $user->id ? 'readonly' : '',
+                'class' => 'form-control ' . $errors->first('password', 'is-invalid') . '',
+            ]) !!}
             @if ($errors->has('password'))
                 <div class="invalid-feedback">{{ $errors->first('password') }}</div>
             @endif
@@ -141,11 +164,14 @@
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Телефон: @if ($user->type != 'ADMIN')
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 @endif
             </label>
             <div class="col-lg-4">
                 {!! Form::text('phone_number', null, [
+                    $user->id ? 'readonly' : '',
                     'class' => 'phone_number form-control ' . $errors->first('phone_number', 'is-invalid'),
                 ]) !!}
                 @if ($errors->has('phone_number'))
@@ -157,7 +183,9 @@
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Адрес: @if ($user->type == 'USER')
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 @endif
             </label>
             <div class="col-lg-4">
@@ -178,7 +206,9 @@
     @if ($user->type != 'ADMIN')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Регион: @if ($user->type == 'USER')
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 @endif
             </label>
             <div class="col-lg-4">
@@ -225,7 +255,9 @@
     @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Дата рождения: @if ($user->type != 'ADMIN')
-                    <span style="color: red">*</span>
+                    @if ($user->id)
+                        <span style="color: red">*</span>
+                    @endif
                 @endif
             </label>
             <div class="col-lg-4">
@@ -238,20 +270,16 @@
                 @endif
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Возраст:</label>
             <div class="col-lg-4">
                 {!! Form::text('age', null, ['class' => 'form-control', 'readonly' => 'true']) !!}
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
-                {!! Form::select('vacancy_type', $vacancy_types, null, [
+                {!! Form::select('vacancy_type', $vacancytypes, null, [
                     'class' => 'selectpicker form-control',
                     'placeholder' => 'Любой',
                     'data-width' => '100%',
@@ -259,8 +287,6 @@
                 ]) !!}
             </div>
         </div>
-    @endif
-    @if ($user->type == 'USER')
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Вид занятости:</label>
             <div class="col-lg-4">
@@ -272,51 +298,69 @@
                 ]) !!}
             </div>
         </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label">Статус поиска:</label>
+            <div class="col-lg-4">
+                {!! Form::select(
+                    'active',
+                    [
+                        '0' => 'Активно ищу работу',
+                        '1' => 'Могу выйти завтра',
+                        '2' => 'Рассматриваю предложения',
+                    ],
+                    null,
+                    [
+                        'class' => 'selectpicker form-control',
+                        'data-width' => '100%',
+                        'data-size' => '6',
+                    ],
+                ) !!}
+            </div>
+        </div>
     @endif
     @if ($user->type == 'COMPANY')
-    <div class="form-group row align-items-center">
-        <label class="col-lg-3 col-form-label">Разрешить доступ к разделу Приглашения:</label>
-        <div class="col-lg-4">
-            <div class="checkbox-inline">
-                <label class="checkbox">
-                    {!! Form::hidden('invitation_enabled', 0) !!}
-                    {!! Form::checkbox('invitation_enabled', 1, null, ['id' => 'invitation_enabled']) !!}
-                    <span></span>
-                </label>
+        <div class="form-group row align-items-center">
+            <label class="col-lg-3 col-form-label">Разрешить доступ к разделу Приглашения:</label>
+            <div class="col-lg-4">
+                <div class="checkbox-inline">
+                    <label class="checkbox">
+                        {!! Form::hidden('invitation_enabled', 0) !!}
+                        {!! Form::checkbox('invitation_enabled', 1, null, ['id' => 'invitation_enabled']) !!}
+                        <span></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
+            <div class="col-lg-4">
+                @if ($user->invitation_enabled == 0)
+                    {!! Form::number('invitation_count', null, [
+                        'class' => 'form-control',
+                        'min' => 0,
+                        'onkeypress' => 'return event.charCode >= 48',
+                        'placeholder' => '0',
+                        'disabled' => true,
+                    ]) !!}
+                @else
+                    {!! Form::number('invitation_count', null, [
+                        'class' => 'form-control',
+                        'min' => 0,
+                        'onkeypress' => 'return event.charCode >= 48',
+                        'placeholder' => '0',
+                        'disabled' => false,
+                    ]) !!}
+                @endif
+            </div>
+        </div>
+    @endif
+    {!! Form::hidden('type', $user->type) !!}
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <button type="submit" class="btn btn-success mr-2">Сохранить</button>
+                <button type="reset" class="btn btn-secondary" onclick="window.history.back();">Отмена</button>
             </div>
         </div>
     </div>
-    <div class="form-group row">
-        <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
-        <div class="col-lg-4">
-            @if($user->invitation_enabled == 0)
-            {!! Form::number('invitation_count', null, [
-                'class' => 'form-control',
-                'min' => 0,
-                'onkeypress' => 'return event.charCode >= 48',
-                'placeholder' => '0',
-                'disabled' => true,
-            ]) !!}
-            @else
-            {!! Form::number('invitation_count', null, [
-                'class' => 'form-control',
-                'min' => 0,
-                'onkeypress' => 'return event.charCode >= 48',
-                'placeholder' => '0',
-                'disabled' => false,
-            ]) !!}
-            @endif
-        </div>
-    </div>
-</div>
-@endif
-{!! Form::hidden('type', $user->type) !!}
-<div class="card-footer">
-    <div class="row">
-        <div class="col-lg-3"></div>
-        <div class="col-lg-6">
-            <button type="submit" class="btn btn-success mr-2">Сохранить</button>
-            <button type="reset" class="btn btn-secondary" onclick="window.history.back();">Отмена</button>
-        </div>
-    </div>
-</div>
