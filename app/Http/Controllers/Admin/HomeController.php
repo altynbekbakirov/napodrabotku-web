@@ -145,7 +145,7 @@ class HomeController extends Controller
         if ($request->new_message) {
             $current_date = date('Y-m-d H:i:s');
             $chat = Chat::where('id', $request->chat_id)->first();
-            $chat->updated_at = $current_date;
+            $chat->updated_at = $current_date; 
             $chat->save();
 
             $message = new Message();
