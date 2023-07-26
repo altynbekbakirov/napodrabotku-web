@@ -3,6 +3,7 @@
 Route::group([
     'middleware' => ['api']], function () {
     Route::get('users', ['uses' => 'UserController@index']);
+    Route::post('users_list', ['uses' => 'UserController@index']);
     Route::post('/login', ['uses' => 'AuthController@login']);
     Route::post('/login_phone', ['uses' => 'AuthController@login_phone']);
     Route::post('/logged', ['uses' => 'AuthController@logged']);

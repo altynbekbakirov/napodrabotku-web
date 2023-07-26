@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Busyness;
 use App\Models\Chat;
 use App\Models\Department;
 use App\Models\District;
@@ -11,6 +12,7 @@ use App\Models\JobType;
 use App\Models\Opportunity;
 use App\Models\Region;
 use App\Models\Country;
+use App\Models\Schedule;
 use App\Models\SocialOrientation;
 use App\Models\User;
 use App\Models\UserCompany;
@@ -21,6 +23,8 @@ use App\Models\UserExperience;
 use App\Models\UserVacancy;
 use App\Models\Vacancy;
 use App\Models\Skillset;
+use App\Models\VacancyType;
+use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -39,9 +43,106 @@ class UserController extends Controller
         $user = User::where("password", $token)->firstOrFail();
         $lang = $request->lang;
 
+        $time_type = $request->type;
+        $job_type_ids = $request->job_type_ids;
+        $schedule_ids = $request->schedule_ids;
+        $busyness_ids = $request->busyness_ids;
+        $type_ids = $request->type_ids;
+        $region_ids = $request->region_ids;
+        $district_ids = $request->district_ids;
+        $gender_ids = $request->gender_ids;
+        $country_ids = $request->country_ids;
+
+        if (!$job_type_ids) {
+            $job_type_ids = [];
+            foreach (JobType::all() as $model) {
+                array_push($job_type_ids, $model->id);
+            }
+        }
+        if (!$busyness_ids) {
+            $busyness_ids = [];
+            foreach (Busyness::all() as $model) {
+                array_push($busyness_ids, $model->id);
+            }
+        }
+        if (!$schedule_ids) {
+            $schedule_ids = [];
+            foreach (Schedule::all() as $model) {
+                array_push($schedule_ids, $model->id);
+            }
+        }
+        if (!$type_ids) {
+            $type_ids = [];
+            foreach (VacancyType::all() as $model) {
+                array_push($type_ids, $model->id);
+            }
+        }
+        if (!$region_ids || $region_ids[0] == null) {
+            $region_ids = [];
+            foreach (Region::all() as $model) {
+                array_push($region_ids, $model->id);
+            }
+        }
+        if (!$district_ids) {
+            $district_ids = [];
+            foreach (District::all() as $model) {
+                array_push($district_ids, $model->id);
+            }
+        }
+        if (!$gender_ids) {
+            $gender_ids = ['male', 'female'];
+        }
+        if (!$country_ids) {
+            $country_ids = [];
+            foreach (Country::all() as $model) {
+                array_push($country_ids, $model->id);
+            }
+        }
+
         if($user) {
             $liked_users = UserCompany::where("company_id", $user->id)->whereIn('type', ['LIKED', 'INVITED'])->orderBy('id', 'desc')->pluck('user_id')->toArray();
-            $users = User::where('type', 'USER')->whereNotIn('id', $liked_users)->get();
+            $users = User::where('type', 'USER')->whereNotIn('id', $liked_users);
+
+            $specificDate = strtotime('2000-1-1');
+            $specificDate = date("Y-m-d H:i:s", $specificDate);
+
+            if($time_type == 'day'){
+                $date = new DateTime('-1 day');
+                $specificDate = $date->format('Y-m-d H:i:s');
+            }
+            else if($time_type == 'week'){
+                $date = new DateTime('-1 week');
+                $specificDate = $date->format('Y-m-d H:i:s');
+            }
+            else if($time_type == 'month'){
+                $date = new DateTime('-1 month');
+                $specificDate = $date->format('Y-m-d H:i:s');
+            }
+
+            if($request->type_ids){
+                $users = $users
+                    ->whereIn('vacancy_types', $request->type_ids);
+            }
+
+            if($request->schedule_ids){
+                $users = $users
+                    ->whereIn('schedules', $request->schedule_ids);
+            }
+
+            if($request->busyness_ids){
+                $users = $users
+                    ->whereIn('business', $request->busyness_ids);
+            }
+
+            $users = $users
+//                ->whereIn('job_type', $job_type_ids)
+//                ->whereIn('business', $busyness_ids)
+//                ->whereIn('vacancy_types', $type_ids)
+//                ->whereIn('schedules', $schedule_ids)
+                ->whereIn('region', $region_ids);
+
+            $users = $users
+                ->whereDate('created_at', '>', $specificDate)->get();
         } else {
             $users = User::where('type', 'USER')->get();
         }
@@ -50,6 +151,7 @@ class UserController extends Controller
             $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
             $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
             $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+            $user->district = $user->getDistrict ? $user->getDistrict->getName($lang) : null;
             $user->status_text = $user->getStatusPlain();
             $user->status = $user->active;
             $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
@@ -81,34 +183,6 @@ class UserController extends Controller
                 $user->job_type = $job_type->getName($request->lang);
             } else {
                 $user->job_type = '';
-            }
-
-            if($user->opportunity) {
-                $opportunity = Opportunity::find($user->opportunity);
-                $user->opportunity = $opportunity->getName($request->lang);
-            } else {
-                $user->opportunity = '';
-            }
-
-            if($user->job_sphere) {
-                $job_sphere = JobSphere::find($user->job_sphere);
-                $user->job_sphere = $job_sphere->getName($request->lang);
-            } else {
-                $user->job_sphere = '';
-            }
-
-            if($user->department) {
-                $department = Department::find($user->department);
-                $user->department = $department->getName($request->lang);
-            } else {
-                $user->department = '';
-            }
-
-            if($user->social_orientation) {
-                $social_orientation = SocialOrientation::find($user->social_orientation);
-                $user->social_orientation = $social_orientation->getName($request->lang);
-            } else {
-                $user->social_orientation = '';
             }
 
             return response($user);
@@ -908,6 +982,7 @@ class UserController extends Controller
                 $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
                 $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
                 $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+                $user->district = $user->getDistrict ? $user->getDistrict->getName($lang) : null;
                 $user->status_text = $user->getStatusPlain();
                 $user->status = $user->active;
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
@@ -957,6 +1032,7 @@ class UserController extends Controller
                 $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
                 $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
                 $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+                $user->district = $user->getDistrict ? $user->getDistrict->getName($lang) : null;
                 $user->status_text = $user->getStatusPlain();
                 $user->status = $user->active;
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';

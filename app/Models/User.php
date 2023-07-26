@@ -89,7 +89,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'filter_type' => 'array',
         'filter_busyness' => 'array',
         'schedules' => 'array',
-        'vacancy_types ' => 'array',
+        'vacancy_types' => 'array',
     ];
 
     protected $appends = ['age'];
@@ -119,11 +119,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function getStatusPlain()
     {
-        if($this->active == 1){
+        if($this->active == 0){
             $status = 'Активно ищу работу';
-        } elseif ($this->active == 2) {
+        } elseif ($this->active == 1) {
             $status = 'Могу выйти завтра';
-        } elseif ($this->active == 3) {
+        } elseif ($this->active == 2) {
             $status = 'Рассматриваю предложения';
         } else {
             $status = 'Без статуса';
@@ -163,6 +163,10 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function getRegion()
     {
         return $this->belongsTo(Region::class, 'region');
+    }
+    public function getDistrict()
+    {
+        return $this->belongsTo(District::class, 'district');
     }
     public function getCurrency()
     {

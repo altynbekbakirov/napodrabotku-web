@@ -39,40 +39,8 @@ class VacancyController extends Controller
         $region_ids = $request->region_ids;
         $district_ids = $request->district_ids;
         $time_type = $request->type;
-        $opportunity_ids = $request->opportunity_ids;
-        $opportunity_type_ids = $request->opportunity_type_ids;
-        $opportunity_duration_ids = $request->opportunity_duration_ids;
-        $internship_language_ids = $request->internship_language_ids;
 
         $route = $request->route;
-
-        if (!$opportunity_ids) {
-            !$opportunity_ids = [];
-            foreach (Opportunity::all() as $model) {
-                array_push($opportunity_ids, $model->id);
-            }
-        }
-
-        if (!$opportunity_type_ids) {
-            !$opportunity_type_ids = [];
-            foreach (OpportunityType::all() as $model) {
-                array_push($opportunity_type_ids, $model->id);
-            }
-        }
-
-        if (!$opportunity_duration_ids) {
-            !$opportunity_duration_ids = [];
-            foreach (OpportunityDuration::all() as $model) {
-                array_push($opportunity_duration_ids, $model->id);
-            }
-        }
-
-        if (!$internship_language_ids) {
-            !$internship_language_ids = [];
-            foreach (IntershipLanguage::all() as $model) {
-                array_push($internship_language_ids, $model->id);
-            }
-        }
 
         if (!$job_type_ids) {
             $job_type_ids = [];
@@ -144,6 +112,8 @@ class VacancyController extends Controller
         $vacancies = Vacancy::whereNotIn('id', $banned_ones)
 //            ->where('is_active', true)
             ->where('status', 'active')
+            ->whereNotNull('region')
+            ->whereNotNull('district')
             ->whereDate('created_at', '>', $specificDate);
 
         $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids)
@@ -272,8 +242,8 @@ class VacancyController extends Controller
                         'experience' => $request->experience,
                         'pay_period' => $request->pay_period,
                         'is_active' => true,
-                        'lonq' => $request->latitude,
                         'lat' => $request->longitude,
+                        'lonq' => $request->latitude,
                     ]);
                 }
 
@@ -431,7 +401,8 @@ class VacancyController extends Controller
                     ->pluck('vacancy_id')->toArray();
             }
 
-            $vacancies = Vacancy::wherein('id', $result)->get();
+            $vacancies = Vacancy::wherein('id', $result)->whereNotNull('region')
+                ->whereNotNull('district')->get();
             $result1 = [];
             foreach ($vacancies as $item){
                 array_push($result1, [
@@ -474,15 +445,27 @@ class VacancyController extends Controller
     }
     public function getNumberOfLikedVacancies(Request $request, $type)
     {
-
         $token = $request->header('Authorization');
 
         $user = User::where("password", $token)->first();
+        $result = [];
         if($user){
-            $result = UserVacancy::where("type", $type)
-                ->where("user_id", $user->id)
-                ->pluck('vacancy_id')->toArray();
-            $vacancies = Vacancy::wherein('id', $result)->get();
+            if($user->type == 'USER'){
+                $result = UserVacancy::where("status", "not_processed")
+                    ->where("user_id", $user->id)
+                    ->where("type", 'INVITED')
+                    ->pluck('vacancy_id')->toArray();
+            }
+//            else {
+//                $vacancies = Vacancy::where('company_id', $user->id)->where('status', 'active')->pluck('id')->get();
+//                $result = UserVacancy::where("status", "not_processed")
+//                    ->whereIn("vacancy_id", $vacancies)
+//                    ->where("type", "SUBMITTED")
+//                    ->pluck('vacancy_id')->toArray();
+//            }
+
+            $vacancies = Vacancy::wherein('id', $result)->whereNotNull('region')
+                ->whereNotNull('district')->get();
             return count($vacancies);
         }
         else {
@@ -497,15 +480,10 @@ class VacancyController extends Controller
 
         if($user){
             $result1 = [];
-            $vacancies = Vacancy::where('company_id', $user->id)->orderBy('created_at', 'desc')->take(10)->get();
+            $vacancies = Vacancy::where('company_id', $user->id)->orderBy('created_at', 'desc')->get();
 
             foreach ($vacancies as $item) {
 
-                $opportunity = Opportunity::where('id', $item->opportunity_id)->first();
-                $opportunity_duration = OpportunityDuration::where('id', $item->opportunity_duration_id)->first();
-                $opportunity_type = OpportunityType::where('id', $item->opportunity_type_id)->first();
-                $internship_language = IntershipLanguage::where('id', $item->internship_language_id)->first();
-                $recommendation_letter_type = RecommendationLetterType::where('id', $item->recommendation_letter_type_id)->first();
                 $district = District::where('id', $item->district_id)->first();
                 if($item->currency) {
                     $currency = Currency::where('id', $item->currency)->first();
@@ -538,6 +516,7 @@ class VacancyController extends Controller
                     'experience' => $item->experience,
                     'pay_period' => $item->pay_period,
                     'status' => $item->getStatusPlain(),
+                    'status_text' => $item->status,
                 ]);
             }
             return $result1;
@@ -589,6 +568,7 @@ class VacancyController extends Controller
             $result1 = [];
             $vacancies = Vacancy::where('company_id', $user->id)
                 ->where('status', 'active')
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             foreach ($vacancies as $item){
@@ -610,6 +590,7 @@ class VacancyController extends Controller
                     'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
                     'company' => $item->company->id,
                     'status' => $item->getStatusPlain(),
+                    'status_text' => $item->status,
                 ]);
             }
             return $result1;
@@ -629,7 +610,8 @@ class VacancyController extends Controller
         if($user){
             $result1 = [];
             foreach (Vacancy::where('company_id', $user->id)
-                         ->where('status', 'not_published')
+                         ->where('status', '<>', 'active')
+                         ->orderBy('created_at', 'desc')
                          ->get() as $item){
 
                 $opportunity = Opportunity::where('id', $item->opportunity_id)->first();
@@ -655,6 +637,7 @@ class VacancyController extends Controller
                     'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
                     'company' => $item->company->id,
                     'status' => $item->getStatusPlain(),
+                    'status_text' => $item->status,
                 ]);
             }
             return $result1;
@@ -705,6 +688,11 @@ class VacancyController extends Controller
                 ->firstOrFail();
             if($vacancy){
                 $vacancy->is_active = $request->active;
+                if($request->active) {
+                    $vacancy->status = 'active';
+                } else {
+                    $vacancy->status = 'denied';
+                }
                 $vacancy->save();
                 return response()->json([
                     'status' => 200,

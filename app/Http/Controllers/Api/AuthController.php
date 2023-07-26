@@ -14,32 +14,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * @OA\Post(
-     *     path="/userexist",
-     *     operationId="check username",
-     *     tags={"UserAuth"},
-     *     summary="Create yet another user record",
-     * @OA\RequestBody(
-     *    required=true,
-     *    description="Pass user credentials",
-     *    @OA\JsonContent(
-     *       required={"username"},
-     *       @OA\Property(property="username", type="string", example="user"),
-     *    )
-     *     ),
-     *    @OA\Response(
-     *    response=422,
-     *    description="Wrong credentials response",
-     *    @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="Sorry, wrong email address or password. Please try again")
-     *        )
-     *     )
-     * ),
-     * Store a newly created resource in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
-     */
     public function checkusername(Request $request)
     {
         if (User::where('email', $request->email)->count() == 0) {
@@ -56,33 +30,6 @@ class AuthController extends Controller
         return response()->json(0);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/login",
-     *     operationId="userCreate",
-     *     tags={"UserAuth"},
-     *     summary="Create yet another user record",
-     * @OA\RequestBody(
-     *    required=true,
-     *    description="Pass user credentials",
-     *    @OA\JsonContent(
-     *       required={"username","password"},
-     *       @OA\Property(property="username", type="string", format="string", example="user"),
-     *       @OA\Property(property="password", type="string", format="password", example="user123"),
-     *    )
-     *     ),
-     *    @OA\Response(
-     *    response=422,
-     *    description="Wrong credentials response",
-     *    @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="Sorry, wrong email address or password. Please try again")
-     *        )
-     *     )
-     * ),
-     * Store a newly created resource in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|Response
-     */
     public function login(Request $request)
     {
         $user = User::where('email', $request->email);
@@ -101,8 +48,8 @@ class AuthController extends Controller
                     'long' => $user->value('long'),
                     'token' => $user->value('password'),
                     'active' => $user->value('active'),
-//                    'schedules' => $user->value('schedules'),
-//                    'vacancy_types' => $user->value('vacancy_types'),
+                    'schedules' => $user->value('schedules'),
+                    'vacancy_types' => $user->value('vacancy_types'),
                 ]);
 
             }
@@ -132,38 +79,12 @@ class AuthController extends Controller
                 'lat' => $user->value('lat'),
                 'long' => $user->value('long'),
                 'active' => $user->value('active'),
-//                'schedules' => $user->value('schedules'),
-//                'vacancy_types' => $user->value('vacancy_types'),
+                'schedules' => $user->value('schedules'),
+                'vacancy_types' => $user->value('vacancy_types'),
             ]);
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/logged",
-     *     operationId="logged",
-     *     tags={"UserAuth"},
-     *     summary="Create yet another user record",
-     * @OA\RequestBody(
-     *    required=true,
-     *    description="Pass user credentials",
-     *    @OA\JsonContent(
-     *       required={"id"},
-     *       @OA\Property(property="id", type="integer", example=18),
-     *    )
-     *     ),
-     *    @OA\Response(
-     *    response=422,
-     *    description="Wrong credentials response",
-     *    @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="Sorry, wrong email address or password. Please try again")
-     *        )
-     *     )
-     * ),
-     * Store a newly created resource in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
-     */
     public function logged(Request $request)
     {
         $user = User::find($request->id);

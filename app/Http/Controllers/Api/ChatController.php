@@ -32,6 +32,7 @@ class ChatController extends Controller
             $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
                 Message::select('created_at')
                     ->whereColumn('chat_id', 'chats.id')
+//                    ->orderBy('read')
                     ->orderByDesc('created_at')
                     ->limit(1)
             )->get();
@@ -49,7 +50,13 @@ class ChatController extends Controller
             }
 
         } else {
-            $chats = Chat::where('company_id', $this->user->id)->where('deleted', false)->get();
+            $chats = Chat::where('company_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
+                Message::select('created_at')
+                    ->whereColumn('chat_id', 'chats.id')
+//                    ->orderBy('read')
+                    ->orderByDesc('created_at')
+                    ->limit(1)
+            )->get();
 
             foreach ($chats as $chat) {
                 $result[] = [
