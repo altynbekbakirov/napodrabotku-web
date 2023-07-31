@@ -279,11 +279,13 @@
         <div class="form-group row">
             <label class="col-lg-3 col-form-label">Интересуемые вакансии:</label>
             <div class="col-lg-4">
-                {!! Form::select('vacancy_type', $vacancytypes, null, [
+                {!! Form::select('vacancy_types[]', $vacancytypes, null, [
                     'class' => 'selectpicker form-control',
-                    'placeholder' => 'Любой',
+                    'title' => 'Выберите',
                     'data-width' => '100%',
                     'data-size' => '6',
+                    'multiple'=>'multiple',
+                    'data-max-options' => 3
                 ]) !!}
             </div>
         </div>

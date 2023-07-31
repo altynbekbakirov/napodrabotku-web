@@ -324,7 +324,7 @@
                         'id': id,
                     },
                     success: function(result) {
-                        console.log(result);
+                        location.reload();
                     },
                     error: function(xhr, status, error) {
                         console.log('Произошла ошибка при обновлении статуса: ' +

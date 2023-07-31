@@ -43,7 +43,7 @@ class InvitationController extends Controller
         $citizens = Country::whereIn('id', $citizen_ids)->pluck('nameRu', 'id')->toArray();
         $district_ids = User::whereIn('id', $user_ids)->pluck('district')->toArray();
         $districts = District::whereIn('id', $district_ids)->pluck('nameRu', 'id')->toArray();
-        $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('type', 'INVITED')->get()->count();
+        $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('show_phone', '1')->get()->count();
 
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
@@ -60,16 +60,13 @@ class InvitationController extends Controller
             }
         }
 
+        $data = UserCompany::where('company_id', auth()->user()->id)->orderBy('user_company.id', 'desc');
+
         if (request()->ajax()) {
 
-
             if (request()->status_id && request()->status_id != 'all') {
-                $data = UserCompany::where('type', request()->status_id);
-            } else {
-                $data = UserCompany::query();
-            }
-
-            $data = $data->whereIn("user_company.type", ['LIKED', 'INVITED'])->orderBy('user_company.id', 'desc');
+                $data = $data::where('type', request()->status_id);
+            } 
 
             if (request()->search) {
                 $data = $data->search(request()->search);
@@ -178,7 +175,7 @@ class InvitationController extends Controller
                     return $row->user->name . ' ' . $row->user->lastname;
                 })
                 ->addColumn('phone', function ($row) {
-                    if ($row->show_phone === 0 ) {
+                    if ($row->show_phone < 1 ) {
                         return '<a href="#" data-id = " ' . $row->id . '"data-phone="' . $row->user->phone_number . '" class="text-link mr-2 show_phone" title="Показать">Показать</a>';
                     } else {
                         return '<a href="#" class="text-link mr-2" title="Показать"> ' . $row->user->phone_number . '</a>';
