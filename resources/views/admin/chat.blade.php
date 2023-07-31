@@ -113,11 +113,11 @@
                         </div>
                         <!--end::Header-->
                         <!--begin::Body-->
-                        <div class="card-body h-500px">
+                        <div class="card-body">
                             <!--begin::Scroll-->
-                            <div class="scroll scroll-pull" data-mobile-height="350">
+                            <div id="messages-scroll" class="scroll scroll-pull" data-mobile-height="350">
                                 <!--begin::Messages-->
-                                <div class="messages" id="messages" style="overflow-y: scroll; height: 470px">
+                                <div class="messages" id="messages">
 
                                     @if ($selected_chat && $selected_chat->messages)
                                         @foreach ($selected_chat->messages as $message)
@@ -349,11 +349,21 @@
 @endsection
 
 @section('scripts')
+
+    <script src="{{asset('assets/js/pages/custom/chat/chat.js')}}"></script>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+
     <script>
+        const messagesContainer = $('#messages');
+        const scrollContainer = $('#messages-scroll');
+
         $(document).ready(function() {
             // Scroll to down on adding new message
-            var objDiv = document.getElementById("messages");
-            objDiv.scrollTop = objDiv.scrollHeight;
+            // var objDiv = document.getElementById("messages");
+            // objDiv.scrollTop = objDiv.scrollHeight;
+
+            scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
+            KTUtil.scrollUpdate(scrollContainer);
 
             $.date = function(dateObject) {
                 var d = new Date(dateObject);
@@ -555,6 +565,64 @@
                 }
             });
 
+        });
+
+        // Enable pusher logging - don't include this in production
+        Pusher.logToConsole = true;
+
+        {{--Echo = new Echo({--}}
+        {{--    broadcaster: 'pusher',--}}
+        {{--    key: '{{config('broadcasting.connections.pusher.key')}}',--}}
+        {{--    cluster: '{{config('broadcasting.connections.pusher.options.cluster')}}',--}}
+        {{--    forceTLS: true--}}
+        {{--});--}}
+
+        {{--Echo.channel('chat')--}}
+        {{--    .listen('.new-message-sent',(e)=>{--}}
+        {{--        $('#messages').append('<p><strong>'+e.username+'</strong>'+ ': ' + e.message+'</p>');--}}
+        {{--        $('#message').val('');--}}
+        {{--    });--}}
+
+        @if($selected_chat)
+        const chat_id = {{$selected_chat->id}};
+        @else
+        const chat_id = 0;
+        @endif
+
+        const pusher = new Pusher('73e14d3cf78debd02655', {
+            cluster: 'ap2'
+        });
+
+        const channel = pusher.subscribe('chat');
+        channel.bind('new-message-sent', function(data) {
+            if(chat_id === data.chat_id){
+                let messageContent = `<div class="d-flex flex-column mb-5 align-items-start">
+                    <div class="d-flex align-items-center">`;
+
+                if(data.avatar){
+                    messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">
+                                <img alt="Pic" src="//{{$_SERVER['SERVER_NAME']}}/${data.avatar}" />
+                            </div>`;
+                } else {
+                    messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">
+                                <img alt="Pic" src="{{ asset('assets/media/users/default.jpg') }}" />
+                            </div>`;
+                }
+
+                messageContent += `<div>
+                                <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">${data.username}</a>
+                                    <span class="text-muted font-size-sm">${data.created_at}</span>
+                            </div>
+                        </div>
+                    <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                        ${data.message}
+                    </div>
+                </div>`;
+
+                messagesContainer.append(messageContent);
+                scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
+                KTUtil.scrollUpdate(scrollContainer);
+            }
         });
     </script>
 @endsection

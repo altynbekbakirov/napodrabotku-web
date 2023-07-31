@@ -8,6 +8,7 @@ use App\Charts\IntersexChart;
 use App\Charts\SexChart;
 use App\Charts\UserChart;
 use App\Charts\YearChart;
+use App\Events\SendChatMessage;
 use App\Models\Chat;
 use App\Models\QuickWord;
 use App\Models\Message;
@@ -86,7 +87,12 @@ class HomeController extends Controller
     {
         $title = 'Чаты';
 
-        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->orderBy('updated_at', 'desc')->get();
+        $chats = Chat::where('company_id', auth()->user()->id)->where('deleted', false)->with('messages')->orderByDesc(
+            Message::select('created_at')
+                ->whereColumn('chat_id', 'chats.id')
+                ->orderByDesc('created_at')
+                ->limit(1)
+        )->get();
 
         $chat_id = $request->id;
         $selected_chat = null;
@@ -127,7 +133,6 @@ class HomeController extends Controller
         $selected_chat = Chat::where('id', $request->chat_id)->first();
 
         if ($request->new_message) {
-
             $message = new Message();
             $message->user_id = $request->user_id;
             $message->chat_id = $request->chat_id;
@@ -145,7 +150,7 @@ class HomeController extends Controller
         if ($request->new_message) {
             $current_date = date('Y-m-d H:i:s');
             $chat = Chat::where('id', $request->chat_id)->first();
-            $chat->updated_at = $current_date; 
+            $chat->updated_at = $current_date;
             $chat->save();
 
             $message = new Message();
@@ -159,7 +164,7 @@ class HomeController extends Controller
         }
 
         return 'Failed';
-    } 
+    }
 
     public function add_quick_word(Request $request)
     {

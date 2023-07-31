@@ -14,3 +14,9 @@
 // Broadcast::channel('App.User.{id}', function ($user, $id) {
 //     return (int) $user->id === (int) $id;
 // });
+
+//use Illuminate\Support\Facades\Broadcast;
+//
+//Broadcast::channel('my-channel', function ($user, $orderId) {
+//    return $user->id === Order::findOrNew($orderId)->user_id;
+//});

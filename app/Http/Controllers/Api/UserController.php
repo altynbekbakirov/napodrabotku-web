@@ -922,6 +922,8 @@ class UserController extends Controller
             $existing_user_company = UserCompany::where("user_id", $user_id)
                 ->where("company_id", $company->id)
                 ->first();
+            $existing_user_vacancies = UserVacancy::where("user_id", $user_id)
+                ->first();
             if($existing_user_company) {
                 $existing_user_company ->update([
                     'type' => $type,
@@ -934,6 +936,21 @@ class UserController extends Controller
                 $user_company->type = $type;
                 $user_company->save();
             }
+
+//            if($existing_user_vacancies) {
+//                foreach ($existing_user_vacancies as $user_vacancy){
+//                    $user_vacancy ->update([
+//                        'type' => $type,
+//                    ]);
+//                    $user_vacancy->save();
+//                }
+//            } else {
+//                $user_company = new UserCompany;
+//                $user_company->user_id = $user_id;
+//                $user_company->company_id = $company->id;
+//                $user_company->type = $type;
+//                $user_company->save();
+//            }
             return 'OK';
         }
         else{
@@ -1003,27 +1020,43 @@ class UserController extends Controller
         if($user){
             $type = $request->type;
 
+            $response_type = '';
+
             if($type == 'ALL'){
-                $result1 = UserCompany::whereIn('type', ['INVITED', 'SUBMITTED'])
+                $result1 = UserCompany::whereIn('type', ['INVITED'])
                     ->where('company_id', $user->id)
                     ->pluck('user_id')->toArray();
+                $resultResponse1 = UserCompany::whereIn('type', ['INVITED'])
+                    ->where('company_id', $user->id)
+                    ->pluck('type', 'user_id')->toArray();
 
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
-                $result2 = UserVacancy::whereIn('type', ['INVITED', 'SUBMITTED'])
+                $result2 = UserVacancy::whereIn('type', ['SUBMITTED'])
                     ->whereIn('vacancy_id', $companyVacancies)
                     ->pluck('user_id')->toArray();
+                $resultResponse2 = UserVacancy::whereIn('type', ['SUBMITTED'])
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->pluck('type', 'user_id')->toArray();
 
                 $result = Arr::collapse([$result1, $result2]);
+                $resultResponse = $resultResponse2 + $resultResponse1;
 
+//                dd($resultResponse1, $resultResponse2, $resultResponse);
             } elseif($type == 'INVITED') {
                 $result = UserCompany::where("type", $type)
                     ->where('company_id', $user->id)
                     ->pluck('user_id')->toArray();
+                $resultResponse = UserCompany::where("type", $type)
+                    ->where('company_id', $user->id)
+                    ->pluck('type', 'user_id')->toArray();
             } else {
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result = UserVacancy::where('type', $type)
                     ->whereIn('vacancy_id', $companyVacancies)
                     ->pluck('user_id')->toArray();
+                $resultResponse = UserVacancy::where('type', $type)
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->pluck('type', 'user_id')->toArray();
             }
 
             $users = User::wherein('id', $result)->get();
@@ -1036,6 +1069,7 @@ class UserController extends Controller
                 $user->status_text = $user->getStatusPlain();
                 $user->status = $user->active;
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+                $user->response_type = $resultResponse[$user->id];
             }
 
             return response()->json($users);

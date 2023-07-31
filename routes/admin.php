@@ -114,3 +114,4 @@ Route::middleware('auth')->group( function () {
         Route::name('roll')->get('roll', ['uses' => 'PermissionController@Permission']);
     });
 });
+

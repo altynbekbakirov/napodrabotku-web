@@ -691,7 +691,7 @@ class VacancyController extends Controller
                 if($request->active) {
                     $vacancy->status = 'active';
                 } else {
-                    $vacancy->status = 'denied';
+                    $vacancy->status = 'archived';
                 }
                 $vacancy->save();
                 return response()->json([

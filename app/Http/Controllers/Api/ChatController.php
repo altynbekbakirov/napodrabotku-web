@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\NewMessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Message;
@@ -172,6 +173,10 @@ class ChatController extends Controller
             'chat_id' => $chat->id,
             'message' => $request->message
         ]);
+
+        if($message) {
+            event(new NewMessageSent($message->message, $this->user->id, $chat->id, $this->user->avatar, $this->user->getFullName(), $message->getCreatedDateTime()));
+        }
 
         return json_encode($message);
     }
