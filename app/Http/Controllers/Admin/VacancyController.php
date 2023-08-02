@@ -27,9 +27,6 @@ class VacancyController extends Controller
 {
     public function index()
     {
-        event(new NewMessageSent('hello world2'));
-        dd(123);
-
         $title = 'Вакансии';
 
         $districts = District::pluck('nameRu', 'id', 'region')->toArray();

@@ -133,8 +133,9 @@ class VacancyController extends Controller
         }
 
         $vacancies = $vacancies->get();
+//        dd(count($vacancies));
 
-        foreach ($vacancies->reverse() as $item) {
+        foreach ($vacancies as $item) {
             array_push($result, [
                 'id' => $item->id,
                 'name' => $item->name,

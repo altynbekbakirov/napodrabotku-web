@@ -107,22 +107,69 @@
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 {{-- <script src="{{ asset('assets/js/pages/custom/chat/chat.js') }}"></script> --}}
 
+<script src="{{asset('js/js.pusher.com_8.2.0_pusher.min.js')}}"></script>
+
+<script>
+
+    const chatLabel = $('#chat_label');
+    const messagesContainer = $('#messages');
+    const scrollContainer = $('#messages-scroll');
+
+    Pusher.logToConsole = true;
+
+    const pusher = new Pusher('73e14d3cf78debd02655', {
+        cluster: 'ap2'
+    });
+
+    const channelChat = pusher.subscribe('chat');
+
+    let chat_id = 0;
+    @if(isset($selected_chat) && $selected_chat)
+        chat_id = {{$selected_chat->id}};
+    @endif
+
+    channelChat.bind('new-message-sent', function(data) {
+
+        if(chat_id > 0 && chat_id === data.chat_id){
+            let messageContent = `<div class="d-flex flex-column mb-5 align-items-start">
+                    <div class="d-flex align-items-center">`;
+
+            if(data.avatar){
+                messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">
+                                <img alt="Pic" src="//{{$_SERVER['SERVER_NAME']}}/${data.avatar}" />
+                            </div>`;
+            } else {
+                messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">
+                                <img alt="Pic" src="{{ asset('assets/media/users/default.jpg') }}" />
+                            </div>`;
+            }
+
+            messageContent += `<div>
+                                <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">${data.username}</a>
+                                    <span class="text-muted font-size-sm">${data.created_at}</span>
+                            </div>
+                        </div>
+                    <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                        ${data.message}
+                    </div>
+                </div>`;
+
+            messagesContainer.append(messageContent);
+            scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
+            KTUtil.scrollUpdate(scrollContainer);
+        } else {
+            if(chatLabel.find('.label').length > 0) {
+                let chatCounter = parseInt(chatLabel.find('.label').text());
+                console.log(chatCounter)
+                chatLabel.find('.label').text(chatCounter+1);
+            } else {
+                chatLabel.append(`<span class="label label-danger label-inline font-weight-bold">1</span>`);
+            }
+        }
+    });
+</script>
+
 @yield('scripts')
-
-{{--<script>--}}
-{{--    var conn = new WebSocket('ws://192.168.88.16:8001');--}}
-{{--    conn.onopen = function(e) {--}}
-
-{{--        conn.onmessage = function(e) {--}}
-{{--            console.log(e.data);--}}
-{{--        };--}}
-
-{{--        // conn.send(JSON.stringify({command: "register", userId: 1}));--}}
-{{--        // conn.send(JSON.stringify({command: "register", userId: 9}));--}}
-
-{{--        conn.send(JSON.stringify({command: "message", from:"9", to: "1", message: "Hello"}));--}}
-{{--    };--}}
-{{--</script>--}}
 
 </body>
 <!--end::Body-->
