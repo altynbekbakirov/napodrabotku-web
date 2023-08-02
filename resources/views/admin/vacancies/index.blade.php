@@ -18,7 +18,7 @@
                             <div class="col-md-10">
                                 <div class="row">
                                     <div class="col-md-2">
-                                        <label for="district">Населенный пункт</label>
+                                        <label for="district">Город</label>
                                         {!! Form::select('district', $districts, null, [
                                             'class' => 'form-control select2',
                                             'data-width' => '100%',
@@ -229,7 +229,7 @@
                                 'vacancies': vacancies,
                             },
                             success: function(result) {
-                                location.reload();
+                                table.ajax.reload(null, false);
                             },
                             error: function(xhr, status, error) {
                                 console.log('Произошла ошибка при обновлении статуса: ' +
@@ -257,7 +257,7 @@
                                 'vacancies': vacancies,
                             },
                             success: function(result) {
-                                location.reload();
+                                table.ajax.reload(null, false);
                             },
                             error: function(xhr, status, error) {
                                 console.log('Произошла ошибка при обновлении статуса: ' +
@@ -285,7 +285,7 @@
                                 'vacancies': vacancies,
                             },
                             success: function(result) {
-                                location.reload();
+                                table.ajax.reload(null, false);
                             },
                             error: function(xhr, status, error) {
                                 console.log('Произошла ошибка при обновлении статуса: ' +

@@ -333,7 +333,6 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
         }
 
-
         if ($request->file('image')) {
 
             if ($user->avatar) @unlink($user->avatar);

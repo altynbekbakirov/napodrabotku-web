@@ -50,7 +50,7 @@
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('region', $regions, null, [
                                         'class' => 'selectpicker',
-                                        'placeholder' => 'Регион вакансии',
+                                        'placeholder' => 'Город вакансии',
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'id' => 'kt_datatable_search_region',
@@ -127,23 +127,22 @@
 @section('scripts')
     <script>
         let table = $('#dataTable').DataTable({
-            buttons: [
-                {
+            buttons: [{
                     extend: 'print',
                     exportOptions: {
-                        columns: [0,1,2,3,4,5,6,7]
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
                     }
                 },
                 {
                     extend: 'excelHtml5',
                     exportOptions: {
-                        columns: [0,1,2,3,4,5,6,7]
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
                     }
                 },
                 {
                     extend: 'pdfHtml5',
                     exportOptions: {
-                        columns: [0,1,2,3,4,5,6,7]
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
                     }
                 },
             ],
@@ -201,8 +200,12 @@
             pageLength: 25,
             language: {
                 "url": "{{ asset('js/russian.json') }}"
-            }
+            },
+            initComplete: function() {
+                $('.selectpicker').selectpicker();
+             }
         });
+        
 
         $('#kt_datatable_search_query').keyup(function() {
             table.draw();

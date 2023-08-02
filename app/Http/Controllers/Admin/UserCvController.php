@@ -85,10 +85,10 @@ class UserCvController extends Controller
         if (request()->ajax()) {
 
             if (request()->country_id && request()->region_id) {
-                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
                 $company_vacancies = Vacancy::whereIn('region', $ids)->where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
             } else if (request()->country_id) {
-                $ids =  Region::where('country', request()->country_id)->pluck('id')->toArray();
+                $ids = Region::where('country', request()->country_id)->pluck('id')->toArray();
                 $company_vacancies = Vacancy::whereIn('region', $ids)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
             } else if (request()->region_id) {
                 $company_vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
@@ -107,7 +107,7 @@ class UserCvController extends Controller
             }
 
             $data = $data->whereIn("vacancy_id", $company_vacancies)->whereIn("user_vacancy.type", ['SUBMITTED'])->orderBy('user_vacancy.id', 'desc');
-            
+
             if (request()->search) {
                 $data = $data->search(request()->search);
             }
@@ -142,11 +142,11 @@ class UserCvController extends Controller
                     if ($chat) {
                         $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
                         if (count($msgs) > 0) {
-                            return '<a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
+                            return '<a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
                                 Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span></a>';
                         } else {
                             return '
-                            <a href="' . route('admin.chat',) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                            <a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
                                 Перейти в чат
                             </a>';
                         }
@@ -161,19 +161,19 @@ class UserCvController extends Controller
                     if (strlen($row->vacancy->name) > 50) {
                         $row->vacancy->name = mb_substr($row->vacancy->name, 0, 50);
                     }
-                    
+
                     $actions = '<a href="' . route('vacancies.show', $row->vacancy->id) . '" class="text-link mr-2" title="Редактировать">' . $row->vacancy->name . '</a>';
                     return $actions;
                 })
                 ->addColumn('country', function ($row) {
-                    $region = Region::where('id', $row->vacancy->region)->first()->country;
-                    return Country::where('id', $region)->first()->nameRu;
+                    $region = Region::where('id', $row->vacancy->region)->first()->country ?? null;
+                    return $region ? Country::where('id', $region)->first()->nameRu : '';
                 })
                 ->addColumn('region', function ($row) {
-                    return Region::where('id', $row->vacancy->region)->first()->nameRu;
+                    return Region::where('id', $row->vacancy->region)->first()->nameRu ?? '';
                 })
                 ->addColumn('citizen', function ($row) {
-                    return Country::where('id', $row->user->citizen)->first()->nameRu;
+                    return Country::where('id', $row->user->citizen)->first()->nameRu ?? '';
                 })
                 ->addColumn('user_name', function ($row) {
                     return $row->user->name . ' ' . $row->user->lastname . '<br /> <a href="https://wa.me/' . preg_replace("/[^0-9\-]/", "", $row->user->phone_number) . '" class="text-link mr-2" title="Редактировать">' . $row->user->phone_number . '</a>';
@@ -197,9 +197,16 @@ class UserCvController extends Controller
                     $options = '';
                     foreach ($sts as $value => $label) {
                         $selected = $row->status == $value ? 'selected' : '';
+                        if ($row->status == $value) {
+                            $selected_value = $row->status;
+                        }
                         $options .= '<option value="' . $value . '" data-vacancy-id="' . $row->id . '" ' . $selected . '>' . $label . '</option>';
                     }
-                    return '<select class="select_status form-control">' . $options . '</select>';
+                    if ($selected_value == 'not_processed') {
+                        return '<select class="form-control selectpicker select_status"  data-container="body" data-style="btn-danger">' . $options . '</select>';
+                    } else {
+                        return '<select class="form-control selectpicker select_status"  data-container="body" >' . $options . '</select>';
+                    }
                 })
                 ->rawColumns(['acts', 'status', 'name', 'user_name'])
                 ->make(true);
@@ -231,7 +238,7 @@ class UserCvController extends Controller
     public function store(Request $request, UserVacancy $userVacancy)
     {
         $this->validate($request, [
-            'vacancy_id'  => ['required'],
+            'vacancy_id' => ['required'],
             'user_id' => ['required'],
             'status_id' => ['required'],
         ]);
@@ -246,7 +253,7 @@ class UserCvController extends Controller
         $diff = $birth_date->diffInYears($current_birthdate);
 
         if ($request->user_age && $diff != $request->user_age) {
-            $user->birth_date =  $current_birthdate->subYears($request->user_age);
+            $user->birth_date = $current_birthdate->subYears($request->user_age);
         }
         $user->save();
 
@@ -306,7 +313,6 @@ class UserCvController extends Controller
 
         $company_vacancies = Vacancy::where('company_id', auth()->user()->id)->pluck('id')->toArray();
         $resultPaginated = UserVacancy::whereIn("vacancy_id", $company_vacancies)->where("type", 'SUBMITTED')->orderBy('id', 'desc');
-        // dd($resultPaginated);
 
         if ($query) {
             if (array_key_exists('generalSearch', $query)) {
