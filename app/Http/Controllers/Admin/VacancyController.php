@@ -27,8 +27,8 @@ class VacancyController extends Controller
 {
     public function index()
     {
-        event(new NewMessageSent('hello world2'));
-        dd(123);
+        // event(new NewMessageSent('hello world2'));
+        // dd(123);
 
         $title = 'Вакансии';
 
@@ -176,7 +176,7 @@ class VacancyController extends Controller
                     return $row->company ? $row->company->name : '-';
                 })
                 ->addColumn('region', function ($row) {
-                    return Region::find($row->region) ? Region::find($row->region)->nameRu : '-';
+                    return District::find($row->district) ? District::find($row->district)->nameRu : '-';
                 })
                 ->addColumn('job_type', function ($row) {
                     return $row->jobtype ? $row->jobtype->name_ru : '-';

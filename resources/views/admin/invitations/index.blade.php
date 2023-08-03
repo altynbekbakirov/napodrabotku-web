@@ -41,7 +41,7 @@
                                 <div class="col-md-2 my-2 my-md-0">
                                     {!! Form::select('region', $regions, null, [
                                         'class' => 'selectpicker',
-                                        'placeholder' => 'Регион вакансии',
+                                        'placeholder' => 'Город вакансии',
                                         'data-width' => '100%',
                                         'data-size' => '6',
                                         'data-live-search' => 'true',
