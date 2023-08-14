@@ -8,6 +8,7 @@ use App\Charts\IntersexChart;
 use App\Charts\SexChart;
 use App\Charts\UserChart;
 use App\Charts\YearChart;
+use App\Events\NewMessageSent;
 use App\Events\SendChatMessage;
 use App\Models\Chat;
 use App\Models\QuickWord;
@@ -139,6 +140,19 @@ class HomeController extends Controller
             $message->message = $request->new_message;
             $message->read = 0;
             $message->save();
+
+            if($message){
+                event(new NewMessageSent(
+                    $message->message,
+                    $selected_chat->user_id,
+                    auth()->user()->id,
+                    $request->chat_id,
+                    auth()->user()->avatar,
+                    auth()->user()->getFullName(),
+                    $selected_chat->vacancy_id,
+                    $message->getCreatedDateTime()
+                ));
+            }
         }
 
         return view('admin.chat', compact('title', 'chats', 'selected_chat'));
@@ -159,6 +173,19 @@ class HomeController extends Controller
             $message->message = $request->new_message;
             $message->read = 0;
             $message->save();
+
+            if($message){
+                event(new NewMessageSent(
+                    $message->message,
+                    $chat->user_id,
+                    auth()->user()->id,
+                    $request->chat_id,
+                    auth()->user()->avatar,
+                    auth()->user()->getFullName(),
+                    $chat->vacancy_id,
+                    $message->getCreatedDateTime()
+                ));
+            }
 
             return $message;
         }

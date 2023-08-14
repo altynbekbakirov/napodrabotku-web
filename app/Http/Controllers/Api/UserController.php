@@ -56,37 +56,37 @@ class UserController extends Controller
         if (!$job_type_ids) {
             $job_type_ids = [];
             foreach (JobType::all() as $model) {
-                array_push($job_type_ids, $model->id);
+                $job_type_ids[] = $model->id;
             }
         }
         if (!$busyness_ids) {
             $busyness_ids = [];
             foreach (Busyness::all() as $model) {
-                array_push($busyness_ids, $model->id);
+                $busyness_ids[] = $model->id;
             }
         }
         if (!$schedule_ids) {
             $schedule_ids = [];
             foreach (Schedule::all() as $model) {
-                array_push($schedule_ids, $model->id);
+                $schedule_ids[] = $model->id;
             }
         }
         if (!$type_ids) {
             $type_ids = [];
             foreach (VacancyType::all() as $model) {
-                array_push($type_ids, $model->id);
+                $type_ids[] = $model->id;
             }
         }
         if (!$region_ids || $region_ids[0] == null) {
             $region_ids = [];
             foreach (Region::all() as $model) {
-                array_push($region_ids, $model->id);
+                $region_ids[] = $model->id;
             }
         }
         if (!$district_ids) {
             $district_ids = [];
             foreach (District::all() as $model) {
-                array_push($district_ids, $model->id);
+                $district_ids[] = $model->id;
             }
         }
         if (!$gender_ids) {
@@ -95,7 +95,7 @@ class UserController extends Controller
         if (!$country_ids) {
             $country_ids = [];
             foreach (Country::all() as $model) {
-                array_push($country_ids, $model->id);
+                $country_ids[] = $model->id;
             }
         }
 
@@ -411,7 +411,6 @@ class UserController extends Controller
                 'is_migrant' => $request->is_migrant == '1',
                 'gender' => strtolower($request->gender),
                 'region' => $region ? $region->id : null,
-                'address' => $request->address,
                 'citizen' => $citizen ? $citizen->id : null,
                 'district' => $district ? $district->id : null,
                 'job_type' => $job_type ? $job_type->id : null,
@@ -594,7 +593,7 @@ class UserController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $user = Patient::findOrFail($id);
+        $user = User::findOrFail($id);
         if ($request->header('token') == $user->password) {
             $user->delete();
         }
@@ -743,12 +742,6 @@ class UserController extends Controller
                 'status' => 999,
             ]);
         }
-        return response()->json([
-            'id' => null,
-            'token' => null,
-            'message' => 'user exist!',
-            'status' => 999,
-        ]);
     }
 
     public function saveJobSphere(Request $request)
@@ -917,14 +910,13 @@ class UserController extends Controller
         $type = $request->type;
         $token = $request->header('Authorization');
         $user_id = $request->user_id;
+        $vacancy_id = $request->vacancy_id;
 
         $company = User::where("password", $token)->firstOrFail();
 
         if($company){
             $existing_user_company = UserCompany::where("user_id", $user_id)
-                ->where("company_id", $company->id)
-                ->first();
-            $existing_user_vacancies = UserVacancy::where("user_id", $user_id)
+                ->where("vacancy_id", $vacancy_id)
                 ->first();
             if($existing_user_company) {
                 $existing_user_company ->update([
@@ -939,20 +931,21 @@ class UserController extends Controller
                 $user_company->save();
             }
 
-//            if($existing_user_vacancies) {
-//                foreach ($existing_user_vacancies as $user_vacancy){
-//                    $user_vacancy ->update([
-//                        'type' => $type,
-//                    ]);
-//                    $user_vacancy->save();
-//                }
-//            } else {
-//                $user_company = new UserCompany;
-//                $user_company->user_id = $user_id;
-//                $user_company->company_id = $company->id;
-//                $user_company->type = $type;
-//                $user_company->save();
-//            }
+            $existing_user_vacancy = UserVacancy::where("user_id", $user_id)
+                ->where("vacancy_id", $vacancy_id)
+                ->first();
+            if($existing_user_vacancy) {
+                $existing_user_vacancy ->update([
+                    'type' => $type,
+                ]);
+                $existing_user_vacancy->save();
+            } else {
+                $user_vacancy = new UserVacancy;
+                $user_vacancy->user_id = $user_id;
+                $user_vacancy->vacancy_id = $vacancy_id;
+                $user_vacancy->type = $type;
+                $user_vacancy->save();
+            }
             return 'OK';
         }
         else{
@@ -1027,55 +1020,72 @@ class UserController extends Controller
             $response_type = '';
 
             if($type == 'ALL'){
-                $result1 = UserCompany::whereIn('type', ['INVITED'])
-                    ->where('company_id', $user->id)
-                    ->pluck('user_id')->toArray();
-                $resultResponse1 = UserCompany::whereIn('type', ['INVITED'])
-                    ->where('company_id', $user->id)
-                    ->pluck('type', 'user_id')->toArray();
+                $result1 = UserCompany::whereNotNull('vacancy_id')->whereIn('type', ['INVITED'])
+                    ->where('company_id', $user->id)->get()
+                    ->mapToGroups(function ($item, $key) {
+                        return [$item['vacancy_id'] => [
+                            'user_id' => $item['user_id'],
+                            'type' => $item['type'],
+                        ]];
+                    })->toArray();
 
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result2 = UserVacancy::whereIn('type', ['SUBMITTED'])
-                    ->whereIn('vacancy_id', $companyVacancies)
-                    ->pluck('user_id')->toArray();
-                $resultResponse2 = UserVacancy::whereIn('type', ['SUBMITTED'])
-                    ->whereIn('vacancy_id', $companyVacancies)
-                    ->pluck('type', 'user_id')->toArray();
+                    ->whereIn('vacancy_id', $companyVacancies)->get()
+                    ->mapToGroups(function ($item, $key) {
+                        return [$item['vacancy_id'] => [
+                            'user_id' => $item['user_id'],
+                            'type' => $item['type'],
+                        ]];
+                    })
+                    ->toArray();
 
-                $result = Arr::collapse([$result1, $result2]);
-                $resultResponse = $resultResponse2 + $resultResponse1;
-
-//                dd($resultResponse1, $resultResponse2, $resultResponse);
+                $result = $result1 + $result2;
             } elseif($type == 'INVITED') {
-                $result = UserCompany::where("type", $type)
-                    ->where('company_id', $user->id)
-                    ->pluck('user_id')->toArray();
-                $resultResponse = UserCompany::where("type", $type)
-                    ->where('company_id', $user->id)
-                    ->pluck('type', 'user_id')->toArray();
+                $result = UserCompany::whereNotNull('vacancy_id')->where("type", $type)
+                    ->where('company_id', $user->id)->get()
+                    ->mapToGroups(function ($item, $key) {
+                        return [$item['vacancy_id'] => [
+                            'user_id' => $item['user_id'],
+                            'type' => $item['type'],
+                        ]];
+                    })->toArray();
             } else {
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result = UserVacancy::where('type', $type)
-                    ->whereIn('vacancy_id', $companyVacancies)
-                    ->pluck('user_id')->toArray();
-                $resultResponse = UserVacancy::where('type', $type)
-                    ->whereIn('vacancy_id', $companyVacancies)
-                    ->pluck('type', 'user_id')->toArray();
+                    ->whereIn('vacancy_id', $companyVacancies)->get()
+                    ->mapToGroups(function ($item, $key) {
+                        return [$item['vacancy_id'] => [
+                            'user_id' => $item['user_id'],
+                            'type' => $item['type'],
+                        ]];
+                    })->toArray();
             }
+            $users = [];
 
-            $users = User::wherein('id', $result)->get();
+            foreach ($result as $key=>$row){
 
-            foreach ($users as $user){
-                $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
-                $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
-                $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
-                $user->district = $user->getDistrict ? $user->getDistrict->getName($lang) : null;
-                $user->status_text = $user->getStatusPlain();
-                $user->status = $user->active;
-                $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
-                $user->response_type = $resultResponse[$user->id];
-                $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
-                $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
+                foreach ($row as $item){
+                    $user = User::findOrFail($item['user_id']);
+                    $vacancy = Vacancy::findOrFail($key);
+
+                    if($user) {
+                        $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
+                        $user->business = $user->getBusiness ? $user->getBusiness->getName($lang) : null;
+                        $user->region = $user->getRegion ? $user->getRegion->getName($lang) : null;
+                        $user->district = $user->getDistrict ? $user->getDistrict->getName($lang) : null;
+                        $user->status_text = $user->getStatusPlain();
+                        $user->status = $user->active;
+                        $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+                        $user->response_type = $item['type'];
+                        $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
+                        $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
+                        $user->vacancy_name = $vacancy->name;
+                        $user->user_vacancy_id = $vacancy->id;
+
+                        $users[] = $user;
+                    }
+                }
             }
 
             return response()->json($users);
