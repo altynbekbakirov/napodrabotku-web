@@ -156,6 +156,8 @@ class UserController extends Controller
             $user->status = $user->active;
             $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
             $user->age = $user->birth_date ? $user->getAge() : '';
+            $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
+            $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
         }
 
         return response()->json($users);
@@ -1003,6 +1005,8 @@ class UserController extends Controller
                 $user->status_text = $user->getStatusPlain();
                 $user->status = $user->active;
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
+                $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
+                $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
             }
 
             return response()->json($users);
@@ -1070,6 +1074,8 @@ class UserController extends Controller
                 $user->status = $user->active;
                 $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
                 $user->response_type = $resultResponse[$user->id];
+                $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
+                $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
             }
 
             return response()->json($users);

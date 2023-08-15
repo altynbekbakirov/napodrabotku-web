@@ -119,16 +119,15 @@
                 @if (auth()->user()->invitation_enabled == 1)
                 <li class="menu-item">
                     <a href="{{ route('invitations.index') }}" class="menu-link">
-                        <span class="menu-text">Приглашения</span>&nbsp;                        
+                        <span class="menu-text">Приглашения</span>&nbsp;
                     </a>
                 </li>
                 @endif
                 <li class="menu-item">
-                    <a href="{{ route('admin.chat') }}" class="menu-link">
+                    <a href="{{ route('admin.chat') }}" class="menu-link" id="chat_label">
                         <span class="menu-text">Чат</span>&nbsp;
                         @if ($unread_messages)
-                            <span
-                                class="label label-danger label-inline font-weight-bold">{{ $unread_messages }}</span>
+                            <span class="label label-danger label-inline font-weight-bold">{{ $unread_messages }}</span>
                         @endif
                     </a>
                 </li>
