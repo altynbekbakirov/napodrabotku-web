@@ -229,7 +229,7 @@
                                     </div>
                                     <div class="ml-auto">
                                         <input type="submit"
-                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6"
+                                            class="btn btn-primary btn-md text-uppercase font-weight-bold py-2 px-6"
                                             value="Отправить">
                                     </div>
                                 </div>
@@ -470,7 +470,8 @@
                                                     </div>
                                                 </div>`);
 
-                            objDiv.scrollTop = objDiv.scrollHeight;
+                            scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
+                            KTUtil.scrollUpdate(scrollContainer);
                         },
                         error: function(xhr, status, error) {
                             console.log('Произошла ошибка при обновлении статуса: ' +
@@ -566,58 +567,5 @@
             });
 
         });
-
-        // Enable pusher logging - don't include this in production
-
-
-        {{--Echo = new Echo({--}}
-        {{--    broadcaster: 'pusher',--}}
-        {{--    key: '{{config('broadcasting.connections.pusher.key')}}',--}}
-        {{--    cluster: '{{config('broadcasting.connections.pusher.options.cluster')}}',--}}
-        {{--    forceTLS: true--}}
-        {{--});--}}
-
-        {{--Echo.channel('chat')--}}
-        {{--    .listen('.new-message-sent',(e)=>{--}}
-        {{--        $('#messages').append('<p><strong>'+e.username+'</strong>'+ ': ' + e.message+'</p>');--}}
-        {{--        $('#message').val('');--}}
-        {{--    });--}}
-
-
-
-        // const pusherChat = new Pusher('73e14d3cf78debd02655', {
-        //     cluster: 'ap2'
-        // });
-
-        {{--channelChat.bind('new-message-sent', function(data) {--}}
-        {{--    if(chat_id === data.chat_id){--}}
-        {{--        let messageContent = `<div class="d-flex flex-column mb-5 align-items-start">--}}
-        {{--            <div class="d-flex align-items-center">`;--}}
-
-        {{--        if(data.avatar){--}}
-        {{--            messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">--}}
-        {{--                        <img alt="Pic" src="//{{$_SERVER['SERVER_NAME']}}/${data.avatar}" />--}}
-        {{--                    </div>`;--}}
-        {{--        } else {--}}
-        {{--            messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">--}}
-        {{--                        <img alt="Pic" src="{{ asset('assets/media/users/default.jpg') }}" />--}}
-        {{--                    </div>`;--}}
-        {{--        }--}}
-
-        {{--        messageContent += `<div>--}}
-        {{--                        <a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">${data.username}</a>--}}
-        {{--                            <span class="text-muted font-size-sm">${data.created_at}</span>--}}
-        {{--                    </div>--}}
-        {{--                </div>--}}
-        {{--            <div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">--}}
-        {{--                ${data.message}--}}
-        {{--            </div>--}}
-        {{--        </div>`;--}}
-
-        {{--        messagesContainer.append(messageContent);--}}
-        {{--        scrollContainer.scrollTop(scrollContainer[0].scrollHeight);--}}
-        {{--        KTUtil.scrollUpdate(scrollContainer);--}}
-        {{--    }--}}
-        {{--});--}}
     </script>
 @endsection

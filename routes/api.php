@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Routing\Route;
+
 Route::group([
     'middleware' => ['api']], function () {
     Route::get('users', ['uses' => 'UserController@index']);
@@ -112,4 +114,6 @@ Route::group([
     Route::post('change_vacancy_types', ['uses' => 'UserController@changeVacancyTypes']);
     Route::get('users/schedules/{user}', ['uses' => 'UserController@getSchedules']);
     Route::get('users/vacancy_types/{user}', ['uses' => 'UserController@getVacancyTypes']);
+
+    Route::post('metros', ['uses' => 'RegionController@metros']);
 });

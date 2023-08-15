@@ -30,7 +30,7 @@ class ChatController extends Controller
 
         if ($this->user->type == 'USER') {
 
-            $chats = Chat::where('user_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
+            $chats = Chat::whereNotNull('vacancy_id')->where('user_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
                 Message::select('created_at')
                     ->whereColumn('chat_id', 'chats.id')
 //                    ->orderBy('read')
@@ -39,19 +39,21 @@ class ChatController extends Controller
             )->get();
 
             foreach ($chats as $chat) {
-                $result[] = [
-                    'id' => $chat->company->id,
-                    'name' => $chat->company->name,
-                    'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
-                    'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
-                    'avatar' => $chat->company->avatar,
-                    'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
-                    'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
-                ];
+
+                if($chat->vacancy)
+                    $result[] = [
+                        'id' => $chat->company->id,
+                        'name' => $chat->company->name,
+                        'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
+                        'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
+                        'avatar' => $chat->company->avatar,
+                        'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
+                        'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
+                    ];
             }
 
         } else {
-            $chats = Chat::where('company_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
+            $chats = Chat::whereNotNull('vacancy_id')->where('company_id', $this->user->id)->where('deleted', false)->with('messages')->orderByDesc(
                 Message::select('created_at')
                     ->whereColumn('chat_id', 'chats.id')
 //                    ->orderBy('read')
@@ -60,15 +62,18 @@ class ChatController extends Controller
             )->get();
 
             foreach ($chats as $chat) {
-                $result[] = [
-                    'id' => $chat->user->id,
-                    'name' => $chat->user->name,
-                    'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
-                    'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
-                    'avatar' => $chat->user->avatar,
-                    'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
-                    'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
-                ];
+
+                if($chat->vacancy){
+                    $result[] = [
+                        'id' => $chat->user->id,
+                        'name' => $chat->user->name,
+                        'vacancy_id' => $chat->vacancy ? $chat->vacancy->id : '',
+                        'vacancy' => $chat->vacancy ? $chat->vacancy->name : '',
+                        'avatar' => $chat->user->avatar,
+                        'last_message' => $chat->messages->sortByDesc('created_at')->first() ? $chat->messages->sortByDesc('created_at')->first()->message : '',
+                        'unread_messages' => $chat->messages->where('user_id', '<>', $this->user->id)->where('read', false)->count()
+                    ];
+                }
             }
         }
 
@@ -175,7 +180,16 @@ class ChatController extends Controller
         ]);
 
         if($message) {
-            event(new NewMessageSent($message->message, $this->user->id, $chat->id, $this->user->avatar, $this->user->getFullName(), $message->getCreatedDateTime()));
+            event(new NewMessageSent(
+                $message->message,
+                $this->user->id,
+                $chat->company_id,
+                $chat->id,
+                $this->user->avatar,
+                $this->user->getFullName(),
+                $chat->vacancy_id,
+                $message->getCreatedDateTime()
+            ));
         }
 
         return json_encode($message);

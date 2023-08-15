@@ -124,6 +124,7 @@
     const channelChat = pusher.subscribe('chat');
 
     let chat_id = 0;
+    let auth_user_id = {{auth()->user()->id}};
     @if(isset($selected_chat) && $selected_chat)
         chat_id = {{$selected_chat->id}};
     @endif
@@ -158,12 +159,14 @@
             scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
             KTUtil.scrollUpdate(scrollContainer);
         } else {
-            if(chatLabel.find('.label').length > 0) {
-                let chatCounter = parseInt(chatLabel.find('.label').text());
-                console.log(chatCounter)
-                chatLabel.find('.label').text(chatCounter+1);
-            } else {
-                chatLabel.append(`<span class="label label-danger label-inline font-weight-bold">1</span>`);
+            if(auth_user_id !== data.sender_id){
+                if(chatLabel.find('.label').length > 0) {
+                    let chatCounter = parseInt(chatLabel.find('.label').text());
+                    console.log(chatCounter)
+                    chatLabel.find('.label').text(chatCounter+1);
+                } else {
+                    chatLabel.append(`<span class="label label-danger label-inline font-weight-bold">1</span>`);
+                }
             }
         }
     });
