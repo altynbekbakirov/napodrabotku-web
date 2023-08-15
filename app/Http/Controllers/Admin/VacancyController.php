@@ -298,7 +298,27 @@ class VacancyController extends Controller
     public function show(Vacancy $vacancy)
     {
         $title = 'Вакансии';
-        return view('admin.vacancies.show', compact('vacancy', 'title'));
+        $currency = Currency::where('id', $vacancy->currency)->pluck('name_ru')->first();
+        $pay_periods = ['Ежедневная', 'Еженедельная', 'Ежемесячная'];
+        $experiences = ['Без опыта', 'Полгода', 'Более года'];
+        $metros = [];
+
+        if ($vacancy->address && $vacancy->metro) {
+            $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
+            if ($dadata['suggestions'][0]['data']['metro']) {
+                foreach ($dadata['suggestions'][0]['data']['metro'] as $item) {
+                    $token = "d06b572efe686359a407652e5f66ef079ea649dc";
+                    $dadataMetro = new \Dadata\DadataClient($token, null);
+                    $result = $dadataMetro->suggest("metro", $item['name']);
+                    foreach ($result as $row) {
+                        if ($row['data']['line_name'] == $item['line']) {
+                            $metros[] = '<p style=\'color: #ffffff; background-color: #' . $row['data']['color'] . '\'> &nbsp;' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')</p>';
+                        }
+                    }
+                }
+            }
+        }
+        return view('admin.vacancies.show', compact('vacancy', 'title', 'currency', 'pay_periods', 'experiences', 'metros'));
     }
 
     public function edit(Vacancy $vacancy)

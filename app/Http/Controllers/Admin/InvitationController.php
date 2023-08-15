@@ -36,7 +36,7 @@ class InvitationController extends Controller
         $region_ids = Vacancy::where('company_id', auth()->user()->id)->pluck('region')->toArray();
         $regions = Region::whereIn('id', $region_ids)->pluck('nameRu', 'id')->toArray();
         $regions_countries = Region::whereIn('id', $region_ids)->pluck('country')->toArray();
-        $statuses = UserCompany::whereIn("user_company.type", ['LIKED', 'INVITED'])->pluck('type')->toArray();
+        $statuses = UserCompany::where("company_id", auth()->user()->id)->pluck('type')->toArray();
         $statuses_count = array_count_values($statuses);
         $user_ids = UserVacancy::whereIn('vacancy_id', $vacancies_ids)->pluck('user_id')->toArray();
         $citizen_ids = User::whereIn('id', $user_ids)->pluck('citizen')->toArray();
@@ -48,6 +48,7 @@ class InvitationController extends Controller
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
             'LIKED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
+            'LIKED_THEN_DELETED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED_THEN_DELETED">Удаленные <span class="label label-primary">0</span></button>&nbsp;',
             'INVITED' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">0</span></button>&nbsp;',
         ];
 
@@ -58,9 +59,12 @@ class InvitationController extends Controller
             if ($value === 'INVITED') {
                 $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
+            if ($value === 'LIKED_THEN_DELETED') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED_THEN_DELETED">Удаленные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
         }
 
-        $data = UserCompany::where('company_id', auth()->user()->id)->orderBy('user_company.id', 'desc');
+        $data = UserCompany::where('company_id', auth()->user()->id)->orderBy('id', 'desc');
 
         if (request()->ajax()) {
 
