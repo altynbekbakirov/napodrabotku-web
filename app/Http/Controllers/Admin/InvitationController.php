@@ -66,13 +66,13 @@ class InvitationController extends Controller
             }
         }
 
-        $data = UserCompany::where('company_id', auth()->user()->id)->orderBy('id', 'desc');
-
         if (request()->ajax()) {
 
+            $data = UserCompany::where('user_company.company_id', auth()->user()->id)->orderBy('id', 'desc');
+
             if (request()->status_id && request()->status_id != 'all') {
-                $data = $data::where('type', request()->status_id);
-            }
+                $data = $data->where('user_company.type', request()->status_id);
+            } 
 
             if (request()->search) {
                 $data = $data->search(request()->search);
@@ -83,7 +83,7 @@ class InvitationController extends Controller
             }
 
             if (request()->region_id) {
-                $vacancies = Vacancy::where('region', request()->region_id)->where('company_id', auth()->user()->id)->pluck('id')->toArray();
+                $vacancies = Vacancy::where('vacancies.region', request()->region_id)->where('vacancies.company_id', auth()->user()->id)->pluck('id')->toArray();
                 $data = $data->whereIn("user_company.vacancy_id", $vacancies);
             }
 
@@ -130,11 +130,11 @@ class InvitationController extends Controller
                     if ($chat) {
                         $msgs = Message::where('chat_id', $chat->id)->where('user_id', '<>', auth()->user()->id)->where('read', 0)->pluck('message')->toArray();
                         if (count($msgs) > 0) {
-                            return '<a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
+                            return '<a href="' . route('admin.chat' ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
                                 Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span></a>';
                         } else {
                             return '
-                            <a href="' . route('admin.chat', ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
+                            <a href="' . route('admin.chat' ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2" title="Перейти в чат">
                                 Перейти в чат
                             </a>';
                         }
