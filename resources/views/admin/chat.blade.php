@@ -197,7 +197,7 @@
                                 <!--begin::Compose-->
                                 <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message"></textarea>
                                 <div class="d-flex align-items-center justify-content-between mt-5">
-                                    <div class="dropdown dropdown-inline w-75">
+                                    <div class="dropdown dropdown-inline w-75" id="quick_add_words">
                                         <button type="button" class="btn btn-light-grey btn-icon btn-sm"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="flaticon2-pen"></i>
@@ -269,7 +269,7 @@
                                 <p class="font-weight-bold mb-0 vacancy_name"></p>
                             </div>
                         </div>
-                        <div class="form-group row align-items-center">
+                        <div class="form-group row align-items-center"> 
                             <label
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Зарплата:</label>
                             <div class="col-lg-9 col-xl-6">
@@ -293,6 +293,20 @@
 
                         <div class="separator separator-dashed my-10"></div>
 
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Адрес:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 address"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Метро:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 metro"></p>
+                            </div>
+                        </div>
                         <div class="form-group row align-items-center">
                             <label
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Вид
@@ -323,6 +337,20 @@
                                 работы:</label>
                             <div class="col-lg-9 col-xl-6">
                                 <p class="font-weight-bold mb-0 schedule_name"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Частота выплат:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 pay_period"></p>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label
+                                class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Требуемый опыт:</label>
+                            <div class="col-lg-9 col-xl-6">
+                                <p class="font-weight-bold mb-0 experience"></p>
                             </div>
                         </div>
 
@@ -404,11 +432,16 @@
                             $('p.vacancy_salary').text(salary_from + ' - ' + salary_to);
                             $('p.vacancy_company_name').text(result['company_name']);
                             $('p.vacancy_description').html(result['description']);
+                            $('p.address').html(result['address']);
+                            $('p.metro').html(result['metro']);
                             $('p.vacancy_created').text($.date(result['created_at']));
                             $('p.type_name').html(result['type_name']);
                             $('p.vacancy_type_name').html(result['vacancy_type_name']);
                             $('p.busyness_name').html(result['busyness_name']);
                             $('p.schedule_name').html(result['schedule_name']);
+                            $('p.pay_period').html(result['pay_period']);
+                            $('p.experience').html(result['experience']);
+
                         },
                         error: function(xhr, status, error) {
                             console.log('Произошла ошибка при обновлении статуса: ' +
@@ -495,6 +528,7 @@
                 } else {
                     text_area.val($(this).text());
                 }
+                $('#quick_add_words').dropdown('toggle');
             });
 
 

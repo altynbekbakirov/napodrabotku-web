@@ -284,8 +284,8 @@
                     'title' => 'Выберите',
                     'data-width' => '100%',
                     'data-size' => '6',
-                    'multiple'=>'multiple',
-                    'data-max-options' => 3
+                    'multiple' => 'multiple',
+                    'data-max-options' => 3,
                 ]) !!}
             </div>
         </div>
@@ -333,28 +333,68 @@
                 </div>
             </div>
         </div>
-        <div class="form-group row">
-            <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
-            <div class="col-lg-4">
-                @if ($user->invitation_enabled == 0)
-                    {!! Form::number('invitation_count', null, [
-                        'class' => 'form-control',
-                        'min' => 0,
-                        'onkeypress' => 'return event.charCode >= 48',
-                        'placeholder' => '0',
-                        'disabled' => true,
-                    ]) !!}
-                @else
-                    {!! Form::number('invitation_count', null, [
-                        'class' => 'form-control',
-                        'min' => 0,
-                        'onkeypress' => 'return event.charCode >= 48',
-                        'placeholder' => '0',
-                        'disabled' => false,
-                    ]) !!}
-                @endif
+        @if ($user->id == null)
+            <div class="form-group row">
+                <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="la la-phone"></i>
+                            </span>
+                        </div>
+                        @if ($user->invitation_enabled == 0)
+                            {!! Form::number('invitation_count', null, [
+                                'class' => 'form-control',
+                                'min' => 0,
+                                'onkeypress' => 'return event.charCode >= 48',
+                                'placeholder' => '0',
+                                'disabled' => true,
+                            ]) !!}
+                        @else
+                            {!! Form::number('invitation_count', null, [
+                                'class' => 'form-control',
+                                'min' => 0,
+                                'onkeypress' => 'return event.charCode >= 48',
+                                'placeholder' => '0',
+                                'disabled' => false,
+                            ]) !!}
+                        @endif
+                    </div>
+                </div>
             </div>
-        </div>
+        @else
+            <div class="form-group row">
+                <label class="col-lg-3 col-form-label text-danger">Количество открытий контактов (оплачено):</label>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="la la-phone"></i>
+                            </span>
+                        </div>
+                        @if ($user->invitation_enabled == 0)
+                            {!! Form::number('invitation_count', 0, [
+                                'class' => 'form-control',
+                                'min' => 0,
+                                'onkeypress' => 'return event.charCode >= 48',
+                                'placeholder' => '0',
+                                'disabled' => true,
+                            ]) !!}
+                        @else
+                            {!! Form::number('invitation_count', 0, [
+                                'class' => 'form-control',
+                                'min' => 0,
+                                'onkeypress' => 'return event.charCode >= 48',
+                                'placeholder' => '0',
+                                'disabled' => false,
+                            ]) !!}
+                        @endif
+                    </div>
+                    <span class="form-text text-muted">Осталось <?php echo ($invitations - $total_invited); ?></span>
+                </div>
+            </div>
+        @endif
     @endif
     {!! Form::hidden('type', $user->type) !!}
     <div class="card-footer">
@@ -366,3 +406,4 @@
             </div>
         </div>
     </div>
+</div>

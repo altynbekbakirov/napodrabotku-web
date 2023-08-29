@@ -10,6 +10,8 @@ use App\Models\UserCV;
 use App\Models\Country;
 use App\Models\VacancyType;
 use App\Models\Busyness;
+use App\Models\UserCompany;
+use App\Models\Invitation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -228,9 +230,16 @@ class UserController extends Controller
             $name = Str::slug($user->name, '-') . '.' . $file->getClientOriginalExtension();
             Image::make($file)->fit(400, 400)->save($dir . $name, 75);
             $user->avatar = $dir . $name;
-        }
+        }        
 
         $user->save();
+
+        if ($request->type == 'COMPANY' && $request->invitation_enabled && $request->invitation_count > 0) {
+            $invitation = new Invitation();
+            $invitation->user_id = $user->id;
+            $invitation->invitation_count = $request->invitation_count;
+            $invitation->save();
+        }
 
         if ($user && $user->type == 'USER') {
             UserCV::create([
@@ -284,8 +293,11 @@ class UserController extends Controller
         $user->region = Region::find($user->region) ? Region::find($user->region)->nameRu : '';
         $user->district = District::find($user->district) ? District::find($user->district)->nameRu : '';
         $user->birth_date = date('d-m-Y', strtotime($user->birth_date));
+        $total_invited = UserCompany::where('company_id', $user->id)->where('show_phone', '1')->get()->count();
+        $invitations = Invitation::where('user_id', $user->id)->sum('invitation_count');
+        // $previous_invitation_count = Invitation::where('user_id', $user->id)->last();
 
-        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes', 'businesses'));
+        return view('admin.users.edit', compact('user', 'title', 'types', 'sexes', 'citizenship', 'vacancytypes', 'businesses', 'total_invited', 'invitations'));
     }
 
     public function update(Request $request, User $user)
@@ -350,6 +362,13 @@ class UserController extends Controller
             $user->avatar = $dir . $name;
         }
 
+        if ($request->type == 'COMPANY' && $request->invitation_enabled && $request->invitation_count > 0) {
+            $invitation = new Invitation();
+            $invitation->user_id = $user->id;
+            $invitation->invitation_count = $request->invitation_count;
+            $invitation->save();
+        }
+
         $user->save();
 
         if (auth()->user()->type == 'COMPANY') {
@@ -372,6 +391,7 @@ class UserController extends Controller
         $type = $user->type;
         if ($user->avatar) @unlink($user->avatar);
         $user->delete();
+        Invitation::where('user_id', $user->id)->delete();
         return redirect()->route('users.index', ['type' => $type]);
     }
 
