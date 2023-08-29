@@ -1021,43 +1021,48 @@ class UserController extends Controller
 
             if($type == 'ALL'){
                 $result1 = UserCompany::whereNotNull('vacancy_id')->whereIn('type', ['INVITED'])
-                    ->where('company_id', $user->id)->get()
+                    ->where('company_id', $user->id)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
+                            'read' => $item['read'],
                         ]];
                     })->toArray();
 
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result2 = UserVacancy::whereIn('type', ['SUBMITTED'])
-                    ->whereIn('vacancy_id', $companyVacancies)->get()
+                    ->whereIn('vacancy_id', $companyVacancies)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
+                            'read' => $item['read'],
                         ]];
                     })
                     ->toArray();
+//                dd($result2);
 
                 $result = $result1 + $result2;
             } elseif($type == 'INVITED') {
                 $result = UserCompany::whereNotNull('vacancy_id')->where("type", $type)
-                    ->where('company_id', $user->id)->get()
+                    ->where('company_id', $user->id)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
+                            'read' => $item['read'],
                         ]];
                     })->toArray();
             } else {
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result = UserVacancy::where('type', $type)
-                    ->whereIn('vacancy_id', $companyVacancies)->get()
+                    ->whereIn('vacancy_id', $companyVacancies)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
+                            'read' => $item['read'],
                         ]];
                     })->toArray();
             }
@@ -1078,6 +1083,7 @@ class UserController extends Controller
                         $user->status = $user->active;
                         $user->currency = $user->getCurrency ? $user->getCurrency->code : '';
                         $user->response_type = $item['type'];
+                        $user->response_read = $item['read'];
                         $user->vacancy_types = $user->vacancy_types ? VacancyType::whereIn('id', $user->vacancy_types)->pluck('name_ru')->toArray() : null;
                         $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
                         $user->vacancy_name = $vacancy->name;
@@ -1184,6 +1190,71 @@ class UserController extends Controller
         }
 
         return $result;
+    }
+
+
+
+    public function getUnreadResponses(Request $request)
+    {
+        $lang = $request->lang;
+        $token = $request->header('Authorization');
+        $user = User::where("password", $token)->firstOrFail();
+        $result = 0;
+
+        if($user){
+
+            if($user->type == 'COMPANY'){
+//                $invited = UserCompany::whereNotNull('vacancy_id')->whereIn('type', ['INVITED'])
+//                    ->where('company_id', $user->id)->where('read', false)->count();
+
+                $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
+                $submitted = UserVacancy::whereIn('type', ['SUBMITTED'])
+                    ->whereIn('vacancy_id', $companyVacancies)->where('read', false)->count();
+
+//                $result = $invited + $submitted;
+                $result = $submitted;
+            } else {
+                $invited = UserCompany::whereNotNull('vacancy_id')->whereIn('type', ['INVITED'])
+                    ->where('user_id', $user->id)->where('read', false)->count();
+
+//                $submitted = UserVacancy::whereIn('type', ['SUBMITTED'])
+//                    ->where('user_id', $user->id)->where('read', false)->count();
+
+//                $result = $invited + $submitted;
+                $result = $invited;
+            }
+
+        }
+
+        return $result;
+    }
+
+    public function userVacancyRead(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+        $user_vacancy = UserVacancy::where('vacancy_id', $request->user_vacancy_id)->where('user_id', $request->user_id)->first();
+
+        if($user) {
+            if($user_vacancy) {
+                $user_vacancy->read = true;
+                $user_vacancy->save();
+                return response()->json([
+                    'message' => 'OK'
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'User vacancy does not exist',
+                    'status' => 400,
+                ]);
+            }
+        } else {
+            return response()->json([
+                'id' => null,
+                'token' => null,
+                'message' => 'User does not exist',
+                'status' => 400,
+            ]);
+        }
     }
 
 }

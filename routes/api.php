@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Routing\Route;
+//use Illuminate\Routing\Route;
 
 Route::group([
     'middleware' => ['api']], function () {
@@ -15,13 +15,14 @@ Route::group([
     Route::put('/change-password/{id}', ['uses' => 'ResetPasswordController@change_pass']);
     Route::post('/resetpassword', ['uses' => 'ResetPasswordController@resetpassword']);
     Route::post('/set_pin_kod/{id}', ['uses' => 'ResetPasswordController@set_pin_kod']);
+    Route::get('currencies', ['uses' => 'CurrencyController@index']);
     Route::get('busyness', ['uses' => 'BusynessController@index']);
     Route::get('countries', ['uses' => 'CountryController@index']);
     Route::get('schedule', ['uses' => 'ScheduleController@index']);
     Route::get('region', ['uses' => 'RegionController@index']);
     Route::get('region_by_name', ['uses' => 'RegionController@regionByName']);
     Route::get('districts', ['uses' => 'RegionController@districts']);
-    Route::get('currencies', ['uses' => 'CurrencyController@index']);
+    Route::get('districts_by_name', ['uses' => 'RegionController@districtsByName']);
     Route::get('districts_by_region_id', ['uses' => 'RegionController@districtsByRegionId']);
     Route::get('job_type', ['uses' => 'JobTypeController@index']);
     Route::get('education_type', ['uses' => 'EducationTypeController@index']);
@@ -108,12 +109,15 @@ Route::group([
     Route::get('user_company/num_of/{type}', ['uses' => 'UserController@userCompanyNumberOfLiked']);
     Route::post('user_company/liked_users/{company_id}', ['uses' => 'UserController@userCompanyLikedUsers']);
     Route::get('user_company/{type}', ['uses' => 'UserController@getUsersByType']);
+    Route::post('user_company/read', ['uses' => 'VacancyController@userCompanyRead']);
+    Route::post('user_vacancy/read', ['uses' => 'UserController@userVacancyRead']);
 
     Route::post('change_status', ['uses' => 'UserController@changeStatus']);
     Route::post('change_schedules', ['uses' => 'UserController@changeSchedules']);
     Route::post('change_vacancy_types', ['uses' => 'UserController@changeVacancyTypes']);
     Route::get('users/schedules/{user}', ['uses' => 'UserController@getSchedules']);
     Route::get('users/vacancy_types/{user}', ['uses' => 'UserController@getVacancyTypes']);
+    Route::get('unread_responses', ['uses' => 'UserController@getUnreadResponses']);
 
     Route::post('metros', ['uses' => 'RegionController@metros']);
 });

@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers\Api;
+use App\Events\NewInvitationSent;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Currency;
@@ -13,8 +14,6 @@ use App\Models\Busyness;
 use App\Models\Schedule;
 use App\Models\JobType;
 use App\Models\VacancyType;
-use \App\Models\Department;
-use \App\Models\SocialOrientation;
 use \App\Models\Opportunity;
 use \App\Models\IntershipLanguage;
 use \App\Models\OpportunityType;
@@ -307,6 +306,16 @@ class VacancyController extends Controller
         if($user){
 
             if($user_id){
+
+                $liked_user_company = UserCompany::where("user_id", $user_id)
+                    ->where("company_id", $user->id)
+                    ->where("type", "LIKED")
+                    ->first();
+
+                if($liked_user_company){
+                    $liked_user_company->delete();
+                }
+
                 $existing_user_company = UserCompany::where("user_id", $user_id)
                     ->where("company_id", $user->id)
                     ->where("vacancy_id", $vacancy_id)
@@ -318,6 +327,7 @@ class VacancyController extends Controller
                     ]);
                     $existing_user_company->save();
                 } else {
+
                     $user_company = new UserCompany;
                     $user_company->user_id = $user_id;
                     $user_company->company_id = $user->id;
@@ -380,6 +390,14 @@ class VacancyController extends Controller
                     $user_vacancy->vacancy_id = $vacancy_id;
                     $user_vacancy->type = $type;
                     $user_vacancy->save();
+
+                    if($user_vacancy){
+                        event(new NewInvitationSent(
+                            $user->id,
+                            $vacancy->company_id,
+                            $vacancy->id
+                        ));
+                    }
 
                     // open chat
                     $chat = Chat::where('user_id', $user->id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
@@ -447,6 +465,9 @@ class VacancyController extends Controller
 
             $result1 = [];
             foreach ($vacancies as $item){
+
+                $user_company = UserCompany::where('user_id', $user->id)->where('vacancy_id', $item->id)->where('type', 'INVITED')->first();
+
                 $result1[] = [
                     'id' => $item->id,
                     'name' => $item->name,
@@ -467,6 +488,7 @@ class VacancyController extends Controller
                     'longitude' => $item->lonq,
                     'company' => $item->company->id,
                     'response_type' => $resultResponse[$item->id],
+                    'response_read' => $user_company->read ?? 0,
                 ];
             }
             return $result1;
@@ -998,5 +1020,33 @@ class VacancyController extends Controller
             ]);
         }
 
+    }
+
+    public function userCompanyRead(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+        $user_company = UserCompany::where('vacancy_id', $request->vacancy_id)->where('user_id', $request->user_id)->first();
+
+        if($user) {
+            if($user_company) {
+                $user_company->read = true;
+                $user_company->save();
+                return response()->json([
+                    'message' => 'OK'
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'User vacancy does not exist',
+                    'status' => 400,
+                ]);
+            }
+        } else {
+            return response()->json([
+                'id' => null,
+                'token' => null,
+                'message' => 'User does not exist',
+                'status' => 400,
+            ]);
+        }
     }
 }

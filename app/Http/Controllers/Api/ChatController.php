@@ -180,16 +180,29 @@ class ChatController extends Controller
         ]);
 
         if($message) {
-            event(new NewMessageSent(
-                $message->message,
-                $this->user->id,
-                $chat->company_id,
-                $chat->id,
-                $this->user->avatar,
-                $this->user->getFullName(),
-                $chat->vacancy_id,
-                $message->getCreatedDateTime()
-            ));
+            if ($this->user->type == 'USER') {
+                event(new NewMessageSent(
+                    $message->message,
+                    $this->user->id,
+                    $chat->company_id,
+                    $chat->id,
+                    $this->user->avatar,
+                    $this->user->getFullName(),
+                    $chat->vacancy_id,
+                    $message->getCreatedDateTime()
+                ));
+            } else {
+                event(new NewMessageSent(
+                    $message->message,
+                    $this->user->id,
+                    $chat->company_id,
+                    $chat->id,
+                    $this->user->avatar,
+                    $this->user->getFullName(),
+                    $chat->vacancy_id,
+                    $message->getCreatedDateTime()
+                ));
+            }
         }
 
         return json_encode($message);

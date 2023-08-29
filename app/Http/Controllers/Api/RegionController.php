@@ -65,6 +65,36 @@ class RegionController extends Controller
         }
         return $result;
     }
+
+    public function districtsByName(Request $request)
+    {
+        $result = [];
+
+        if($request->region && $request->region != ''){
+
+            $region = Region::where('nameRu', $request->region)->orWhere('nameKg', $request->region)->first();
+
+//            $result = District::where('region', $region->id)->orderBy('nameRu', 'asc')->pluck('id')->toArray();
+            if($region){
+                foreach (District::where('region', $region->id)->orderBy('nameRu', 'asc')->get() as $item){
+                    $result[] = [
+                        'id' => $item->id,
+                        'name' => $item->getName($request->lang)
+                    ];
+                }
+            }
+
+        } else {
+//            $result = District::orderBy('nameRu', 'asc')->pluck('id')->toArray();
+            foreach (District::orderBy('nameRu', 'asc')->get() as $item){
+                $result[] = [
+                    'id' => $item->id,
+                    'name' => $item->getName($request->lang)
+                ];
+            }
+        }
+        return $result;
+    }
     public function districtsByRegionId(Request $request)
     {
         $result = [];
@@ -103,6 +133,7 @@ class RegionController extends Controller
         }
 
         foreach ($resultTemp as $row){
+//            $result[] = ['name' => explode('-', $row)[0]];
             $result[] = ['name' => $row];
         }
 
