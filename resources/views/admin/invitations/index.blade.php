@@ -81,7 +81,7 @@
                                                 Количество открытий контактов: </div>
                                             &nbsp;&nbsp;&nbsp;
                                             <div class="display-3 font-weight-boldest">
-                                                {{ auth()->user()->invitation_count - $total_invited }}</div>
+                                                {{ $invitation_count - $total_invited }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -310,7 +310,7 @@
         $('#dataTable').on('click', '.show_phone', function(e) {
             var value = $(this).attr('data-phone');
             var id = $(this).attr('data-id');
-            $(this).text(value);
+            var thisObject = $(this);
 
             if (!$.isEmptyObject(id)) {
                 $.ajax({
@@ -324,7 +324,12 @@
                         'id': id,
                     },
                     success: function(result) {
-                        location.reload();
+                        if (result == 'error') {
+                            alert('Нет доступа');
+                        } else {
+                           thisObject.text(value);
+                           location.reload();
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.log('Произошла ошибка при обновлении статуса: ' +

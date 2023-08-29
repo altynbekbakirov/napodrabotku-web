@@ -203,9 +203,12 @@
             },
             initComplete: function() {
                 $('.selectpicker').selectpicker();
-             }
+            },
+            drawCallback: function() {
+                $('.selectpicker').selectpicker();
+            }
         });
-        
+
 
         $('#kt_datatable_search_query').keyup(function() {
             table.draw();

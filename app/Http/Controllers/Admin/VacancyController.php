@@ -284,12 +284,12 @@ class VacancyController extends Controller
 
         $html = 'Новая вакансия <br /><a href="http://188.246.185.182/admin/vacancies"> ' . $vacancy->name . '</a>';
 
-        Mail::send([], [], function ($message) use ($html) {
-            $message->to('admin@napodrabotku.com')
-                ->subject('Вакансия для обработки')
-                ->from('service@napodrabotku.com')
-                ->setBody($html, 'text/html');
-        });
+        // Mail::send([], [], function ($message) use ($html) {
+        //     $message->to('admin@napodrabotku.com')
+        //         ->subject('Вакансия для обработки')
+        //         ->from('service@napodrabotku.com')
+        //         ->setBody($html, 'text/html');
+        // });
 
         return redirect()->route('vacancies.index');
     }
@@ -404,12 +404,12 @@ class VacancyController extends Controller
 
         $html = 'Вакансия отредактирована <br /><a href="http://188.246.185.182/admin/vacancies"> ' . $vacancy->name . '</a>';
 
-        Mail::send([], [], function ($message) use ($html) {
-            $message->to('admin@napodrabotku.com')
-                ->subject('Вакансия для обработки')
-                ->from('service@napodrabotku.com')
-                ->setBody($html, 'text/html');
-        });
+        // Mail::send([], [], function ($message) use ($html) {
+        //     $message->to('admin@napodrabotku.com')
+        //         ->subject('Вакансия для обработки')
+        //         ->from('service@napodrabotku.com')
+        //         ->setBody($html, 'text/html');
+        // });
 
         return redirect()->route('vacancies.index');
     }
@@ -586,12 +586,36 @@ class VacancyController extends Controller
     public function get_vacancy(Request $request)
     {
         $vacancy = Vacancy::where('id', $request->id)->first();
+
+        $pay_periods = ['Ежедневная', 'Еженедельная', 'Ежемесячная'];
+        $experiences = ['Без опыта', 'Полгода', 'Более года'];
+        $metros = [];
+
+        if ($vacancy->address && $vacancy->metro) {
+            $dadata = DaDataAddress::prompt($vacancy->address, 1, Language::RU, ["country_iso_code" => "*"]);
+            if ($dadata['suggestions'][0]['data']['metro']) {
+                foreach ($dadata['suggestions'][0]['data']['metro'] as $item) {
+                    $token = "d06b572efe686359a407652e5f66ef079ea649dc";
+                    $dadataMetro = new \Dadata\DadataClient($token, null);
+                    $result = $dadataMetro->suggest("metro", $item['name']);
+                    foreach ($result as $row) {
+                        if ($row['data']['line_name'] == $item['line']) {
+                            $metros[] = '<p style=\'color: #ffffff; background-color: #' . $row['data']['color'] . '\'> &nbsp;' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')</p>';
+                        }
+                    }
+                }
+            }
+        }
+
         $vacancy->created_at = date('d.m.Y', strtotime($vacancy->created_at));
         $vacancy->company_name = User::where('id', $vacancy->company_id)->first() ? User::where('id', $vacancy->company_id)->first()->name : null;
         $vacancy->type_name = JobType::where('id', $vacancy->job_type_id)->first() ? JobType::where('id', $vacancy->job_type_id)->first()->name_ru : null;
         $vacancy->vacancy_type_name = VacancyType::where('id', $vacancy->vacancy_type_id)->first() ? VacancyType::where('id', $vacancy->vacancy_type_id)->first()->name_ru : null;
         $vacancy->busyness_name = Busyness::where('id', $vacancy->busyness_id)->first() ? Busyness::where('id', $vacancy->busyness_id)->first()->name_ru : null;
         $vacancy->schedule_name = Schedule::where('id', $vacancy->schedule_id)->first() ? Schedule::where('id', $vacancy->schedule_id)->first()->name_ru : null;
+        $vacancy->pay_period = $pay_periods[$vacancy->pay_period];
+        $vacancy->experience = $experiences[$vacancy->experience];
+        $vacancy->metro = $metros;
         return $vacancy;
     }
 }

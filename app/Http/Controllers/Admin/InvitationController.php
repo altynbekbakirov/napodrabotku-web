@@ -21,6 +21,7 @@ use App\Models\VacancyType;
 use App\Models\Country;
 use App\Models\Chat;
 use App\Models\Message;
+use App\Models\Invitation;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use DateTime;
@@ -44,6 +45,7 @@ class InvitationController extends Controller
         $district_ids = User::whereIn('id', $user_ids)->pluck('district')->toArray();
         $districts = District::whereIn('id', $district_ids)->pluck('nameRu', 'id')->toArray();
         $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('show_phone', '1')->get()->count();
+        $invitation_count = Invitation::where('user_id', auth()->user()->id)->sum('invitation_count');
 
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
@@ -70,7 +72,7 @@ class InvitationController extends Controller
 
             if (request()->status_id && request()->status_id != 'all') {
                 $data = $data->where('user_company.type', request()->status_id);
-            }
+            } 
 
             if (request()->search) {
                 $data = $data->search(request()->search);
@@ -126,7 +128,7 @@ class InvitationController extends Controller
                 ->addColumn('acts', function ($row) {
                     $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy_id)->first();
                     if ($chat) {
-                        $msgs = Message::where('chat_id', $chat->id)->where('read', 0)->pluck('message')->toArray();
+                        $msgs = Message::where('chat_id', $chat->id)->where('user_id', '<>', auth()->user()->id)->where('read', 0)->pluck('message')->toArray();
                         if (count($msgs) > 0) {
                             return '<a href="' . route('admin.chat' ) . '?id=' . $chat->id . '" class="btn btn-light-primary font-weight-bold mr-2 position-relative" title="Перейти в чат">
                                 Перейти в чат <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">' . count($msgs) . '</span></a>';
@@ -179,7 +181,7 @@ class InvitationController extends Controller
                     return $row->user->name . ' ' . $row->user->lastname;
                 })
                 ->addColumn('phone', function ($row) {
-                    if ($row->show_phone < 1 ) {
+                    if ($row->show_phone < 1) {
                         return '<a href="#" data-id = " ' . $row->id . '"data-phone="' . $row->user->phone_number . '" class="text-link mr-2 show_phone" title="Показать">Показать</a>';
                     } else {
                         return '<a href="#" class="text-link mr-2" title="Показать"> ' . $row->user->phone_number . '</a>';
@@ -208,7 +210,7 @@ class InvitationController extends Controller
                 ->make(true);
         }
 
-        return view('admin.invitations.index', compact('title', 'vacancies', 'regions', 'districts', 'citizens', "user_ids", "statuses_count", "stats", 'total_invited'));
+        return view('admin.invitations.index', compact('title', 'vacancies', 'regions', 'districts', 'citizens', "user_ids", "statuses_count", "stats", 'total_invited', 'invitation_count'));
     }
 
     public function create()
@@ -492,10 +494,18 @@ class InvitationController extends Controller
 
     public function show_phone(Request $request)
     {
-        $user_company = UserCompany::where('id', $request->id)->first();
-        $user_company->show_phone = 1;
-        $user_company->save();
-        return 'success';
+
+        $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('show_phone', '1')->get()->count();
+        $invitation_count = Invitation::where('user_id', auth()->user()->id)->sum('invitation_count');
+        if ($invitation_count <= $total_invited) {
+            return 'error';
+        } else {
+            $user_company = UserCompany::where('id', $request->id)->first();
+            $user_company->show_phone = 1;
+            $user_company->save();
+            return 'ok';
+        }
+
     }
 
 }
