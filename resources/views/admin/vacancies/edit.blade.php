@@ -144,7 +144,7 @@
                                                     for (let i = 0; i < dataMetro.suggestions.length; i++) {
                                                         if(dataMetro.suggestions[i].data.line_name == value['line']){
                                                             metroTag.append($(
-                                                                `<option data-content="<span class='badge' style='color: #ffffff; background-color: #${dataMetro.suggestions[i].data.color}'>${dataMetro.suggestions[i].data.name} (${dataMetro.suggestions[i].data.line_name})</span>" value='${dataMetro.suggestions[i].data.name}-${dataMetro.suggestions[i].data.line_name}'>
+                                                                `<option data-content="<span class='badge' style='color: #ffffff; background-color: #${dataMetro.suggestions[i].data.color}'>${dataMetro.suggestions[i].data.name} (${dataMetro.suggestions[i].data.line_name})</span>" value='${dataMetro.suggestions[i].data.name}--${dataMetro.suggestions[i].data.line_name}'>
                                                                     ${dataMetro.suggestions[i].data.name} (${dataMetro.suggestions[i].data.line_name})
                                                                 </option>`
                                                             ));

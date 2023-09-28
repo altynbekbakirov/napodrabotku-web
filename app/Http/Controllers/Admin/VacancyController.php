@@ -280,6 +280,21 @@ class VacancyController extends Controller
             }
         }
         $vacancy->salary = $salary;
+
+        if ($vacancy->metro) {
+            $metro_colors = [];
+            foreach ($vacancy->metro as $item) {
+                $token = "d06b572efe686359a407652e5f66ef079ea649dc";
+                $dadataMetro = new \Dadata\DadataClient($token, null);
+                $result = $dadataMetro->suggest("metro", explode('--', $item)[0]);
+                foreach ($result as $row) {
+                    $metro_colors[$item] = $row['data']['color'];
+                }
+            }
+
+            $vacancy->metro_colors = $metro_colors;
+        }
+
         $vacancy->save();
 
         $html = 'Новая вакансия <br /><a href="http://188.246.185.182/admin/vacancies"> ' . $vacancy->name . '</a>';
@@ -344,7 +359,7 @@ class VacancyController extends Controller
                     foreach ($result as $row) {
                         $selected = in_array($row['data']['name'] . '-' . $row['data']['line_name'], $vacancy->metro) ? 'selected' : '';
                         if ($row['data']['line_name'] == $item['line']) {
-                            $metros[] = '<option ' . $selected . ' data-content="<span class=\'badge\' style=\'color: #ffffff; background-color: #' . $row['data']['color'] . '\'>' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')</span>" value="' . $row['data']['name'] . '-' . $row['data']['line_name'] . '">
+                            $metros[] = '<option ' . $selected . ' data-content="<span class=\'badge\' style=\'color: #ffffff; background-color: #' . $row['data']['color'] . '\'>' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')</span>" value="' . $row['data']['name'] . '--' . $row['data']['line_name'] . '">
                             ' . $row['data']['name'] . ' (' . $row['data']['line_name'] . ')
                             </option>';
                         }
@@ -393,6 +408,20 @@ class VacancyController extends Controller
             }
         }
         $vacancy->salary = $salary;
+
+        if ($vacancy->metro) {
+            $metro_colors = [];
+            foreach ($vacancy->metro as $item) {
+                $token = "d06b572efe686359a407652e5f66ef079ea649dc";
+                $dadataMetro = new \Dadata\DadataClient($token, null);
+                $result = $dadataMetro->suggest("metro", explode('--', $item)[0]);
+                foreach ($result as $row) {
+                    $metro_colors[$item] = $row['data']['color'];
+                }
+            }
+
+            $vacancy->metro_colors = $metro_colors;
+        }
 
         $vacancy->save();
 

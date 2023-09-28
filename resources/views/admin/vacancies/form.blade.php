@@ -118,7 +118,6 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Метро:</label>
         <div class="col-lg-5">
-
             <select name="metro[]" id="data_metro" class="selectpicker" title="Выбрать" data-width="100%" data-live-search="true" data-size="6" multiple>
                 @foreach ($metros as $metro)
                     {!! $metro !!}

@@ -113,18 +113,23 @@ class VacancyController extends Controller
             }
         }
 
-        $vacancies = Vacancy::whereNotIn('id', $banned_ones)
-//            ->where('is_active', true)
-            ->where('status', 'active')
+        $vacancies = Vacancy::where('status', 'active')
             ->whereNotNull('region')
             ->whereNotNull('district')
             ->whereDate('created_at', '>', $specificDate);
 
-        $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids)
-            ->whereIn('schedule_id', $schedule_ids)
-            ->whereIn('busyness_id', $busyness_ids)
-            ->whereIn('vacancy_type_id', $type_ids)
-            ->whereIn('region', $region_ids);
+        if($route == 'USER'){
+            $vacancies = $vacancies->whereNotIn('id', $banned_ones);
+        }
+        if($route == 'MAP'){
+            $vacancies = $vacancies->whereNotNull('lat')->whereNotNull('lonq');
+        }
+
+        if($job_type_ids) $vacancies = $vacancies->whereIn('job_type_id', $job_type_ids);
+        if($schedule_ids) $vacancies = $vacancies->whereIn('schedule_id', $schedule_ids);
+        if($busyness_ids) $vacancies = $vacancies->whereIn('busyness_id', $busyness_ids);
+        if($type_ids) $vacancies = $vacancies->whereIn('vacancy_type_id', $type_ids);
+        if($region_ids) $vacancies = $vacancies->whereIn('region', $region_ids);
 
         if($metros){
             $vacancies = $vacancies->whereNotNull('metro')
@@ -374,39 +379,52 @@ class VacancyController extends Controller
 //                    }
 //                }
             } else {
-                $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
-                    ->where("vacancy_id", $vacancy_id)
-                    ->where("type", "LIKED")
-                    ->first();
 
-                if($existing_user_vacancy) {
-                    $existing_user_vacancy ->update([
-                        'type' => $type,
-                    ]);
-                    $existing_user_vacancy->save();
-                } else {
-                    $user_vacancy = new UserVacancy;
-                    $user_vacancy->user_id = $user->id;
-                    $user_vacancy->vacancy_id = $vacancy_id;
-                    $user_vacancy->type = $type;
-                    $user_vacancy->save();
+                if($type == 'INVITED') {
+                    $invited_user_company = UserCompany::where("user_id", $user->id)
+                        ->where("vacancy_id", $vacancy_id)
+                        ->where("type", "INVITED")
+                        ->first();
 
-                    if($user_vacancy){
-                        event(new NewInvitationSent(
-                            $user->id,
-                            $vacancy->company_id,
-                            $vacancy->id
-                        ));
+                    if($invited_user_company){
+                        $invited_user_company->type = 'DECLINED';
+                        $invited_user_company->save();
                     }
+                } else {
+                    $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
+                        ->where("vacancy_id", $vacancy_id)
+                        ->where("type", "LIKED")
+                        ->first();
 
-                    // open chat
-                    $chat = Chat::where('user_id', $user->id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
-                    if(!$chat) {
-                        Chat::create([
-                            'user_id' => $user->id,
-                            'company_id' => $vacancy->company_id,
-                            'vacancy_id' => $vacancy_id
+                    if($existing_user_vacancy) {
+                        $existing_user_vacancy ->update([
+                            'type' => $type,
                         ]);
+                        $existing_user_vacancy->save();
+                    } else {
+                        $user_vacancy = new UserVacancy;
+                        $user_vacancy->user_id = $user->id;
+                        $user_vacancy->vacancy_id = $vacancy_id;
+                        $user_vacancy->type = $type;
+                        $user_vacancy->save();
+
+                        if($user_vacancy && $type == 'SUBMITTED'){
+                            event(new NewInvitationSent(
+                                $user->id,
+                                $vacancy->company_id,
+                                $vacancy->id
+                            ));
+                        }
+
+                        // open chat
+                        $chat = Chat::where('user_id', $user->id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
+                        if(!$chat) {
+                            Chat::create([
+                                'user_id' => $user->id,
+                                'company_id' => $vacancy->company_id,
+                                'vacancy_id' => $vacancy_id
+                            ]);
+                        }
                     }
                 }
             }
@@ -427,14 +445,14 @@ class VacancyController extends Controller
             $type = $request->type;
 
             if($type == 'ALL'){
-                $result1 = UserVacancy::whereIn('type', ['SUBMITTED'])
+                $result1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->pluck('vacancy_id')->toArray();
                 $result2 = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
                     ->pluck('vacancy_id')->toArray();
 
-                $resultResponse1 = UserVacancy::whereIn('type', ['SUBMITTED'])
+                $resultResponse1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->pluck('type', 'vacancy_id')->toArray();
                 $resultResponse2 = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
@@ -449,6 +467,13 @@ class VacancyController extends Controller
                     ->where("user_id", $user->id)
                     ->pluck('vacancy_id')->toArray();
                 $resultResponse = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
+                    ->where("user_id", $user->id)
+                    ->pluck('type', 'vacancy_id')->toArray();
+            } elseif($type == 'SUBMITTED') {
+                $result = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
+                    ->where("user_id", $user->id)
+                    ->pluck('vacancy_id')->toArray();
+                $resultResponse = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->pluck('type', 'vacancy_id')->toArray();
             } else {
@@ -467,6 +492,7 @@ class VacancyController extends Controller
             foreach ($vacancies as $item){
 
                 $user_company = UserCompany::where('user_id', $user->id)->where('vacancy_id', $item->id)->where('type', 'INVITED')->first();
+                $user_vacancy = UserVacancy::where('user_id', $user->id)->where('vacancy_id', $item->id)->whereIn('type', ['SUBMITTED', 'DECLINED'])->first();
 
                 $result1[] = [
                     'id' => $item->id,
@@ -488,9 +514,12 @@ class VacancyController extends Controller
                     'longitude' => $item->lonq,
                     'company' => $item->company->id,
                     'response_type' => $resultResponse[$item->id],
-                    'response_read' => $user_company->read ?? 0,
+                    'response_read' => $resultResponse[$item->id] == 'SUBMITTED' || $resultResponse[$item->id] == 'DECLINED' ?
+                        ($user_vacancy ? $user_vacancy->read : 0) :
+                        ($user_company ? $user_company->read : 0)
                 ];
             }
+
             return $result1;
         }
         else{
@@ -619,12 +648,28 @@ class VacancyController extends Controller
         $token = $request->header('Authorization');
         $user = User::where("password", $token)->firstOrFail();
 
+        $user_id = $request->user_id ?? null;
+
         if($user){
+
             $result1 = [];
-            $vacancies = Vacancy::where('company_id', $user->id)
-                ->where('status', 'active')
-                ->orderBy('created_at', 'desc')
-                ->get();
+
+            if($user_id){
+                $invited =  UserCompany::whereNotNull('vacancy_id')->where('user_id', $user_id)->where('type', 'INVITED')->pluck('vacancy_id')->toArray();
+                $submitted =  UserVacancy::whereNotNull('vacancy_id')->where('user_id', $user_id)->where('type', 'SUBMITTED')->pluck('vacancy_id')->toArray();
+
+                $result = $invited + $submitted;
+                $vacancies = Vacancy::where('company_id', $user->id)
+                    ->whereNotIn('id', $result)
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $vacancies = Vacancy::where('company_id', $user->id)
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
 
             foreach ($vacancies as $item){
 

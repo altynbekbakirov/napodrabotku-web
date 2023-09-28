@@ -194,7 +194,7 @@ class ChatController extends Controller
             } else {
                 event(new NewMessageSent(
                     $message->message,
-                    $this->user->id,
+                    $request->receiver_id,
                     $chat->company_id,
                     $chat->id,
                     $this->user->avatar,

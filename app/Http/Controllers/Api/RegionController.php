@@ -123,19 +123,40 @@ class RegionController extends Controller
     {
         $result = [];
         $resultTemp = [];
+        $resultTemp1 = [];
+        $resultTemp2 = [];
         $districts = $request->districts;
 
-        $vacancies = Vacancy::whereNotNull('region')->whereNotNull('district')->whereNotNull('metro')
-            ->whereIn('district', $districts)->get();
+        $vacancies = Vacancy::whereNotNull('region')->whereNotNull('district')->whereNotNull('metro')->whereNotNull('metro_colors')
+            ->whereIn('district', $districts)->where('status', 'active')->orderBy('updated_at', 'desc')->get();
 
         foreach ($vacancies as $vacancy) {
-            $resultTemp = Arr::collapse([$resultTemp, $vacancy->metro]);
+            foreach ($vacancy->metro as $metro){
+                if(!in_array($metro, $resultTemp1)){
+                    $resultTemp1[] = $metro;
+                }
+            }
+
+            if($vacancy->metro_colors){
+                foreach ($vacancy->metro_colors as $key => $metro_color){
+                    if(!in_array($key, $resultTemp2)){
+                        $resultTemp2[$key] = $metro_color;
+                    }
+                }
+            }
         }
 
-        foreach ($resultTemp as $row){
-//            $result[] = ['name' => explode('-', $row)[0]];
-            $result[] = ['name' => $row];
+        foreach ($resultTemp1 as $row){
+            $result[] = [
+                'name' => explode('--', $row)[0],
+                'line' => count(explode('--', $row)) > 1 ? explode('--', $row)[1] : '',
+                'name_line' => count(explode('--', $row)) > 1 ? explode('--', $row)[0].'\n'.explode('--', $row)[1] : explode('--', $row)[0],
+                'color' => $resultTemp2[$row]
+            ];
+//            $result[] = ['name' => $row];
         }
+
+//        dd($resultTemp, $resultTemp2, $result);
 
         return $result;
     }

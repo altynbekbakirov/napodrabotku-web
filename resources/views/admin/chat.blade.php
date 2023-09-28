@@ -269,7 +269,7 @@
                                 <p class="font-weight-bold mb-0 vacancy_name"></p>
                             </div>
                         </div>
-                        <div class="form-group row align-items-center"> 
+                        <div class="form-group row align-items-center">
                             <label
                                 class="col-xl-3 col-lg-3 col-form-label font-weight-bolder text-left text-lg-right text-uppercase">Зарплата:</label>
                             <div class="col-lg-9 col-xl-6">
@@ -378,7 +378,7 @@
 
 @section('scripts')
 
-    <script src="{{asset('assets/js/pages/custom/chat/chat.js')}}"></script>
+    <script src="{{asset('assets/js/pages/custom/chat/chat1.js')}}"></script>
 
     <script>
 

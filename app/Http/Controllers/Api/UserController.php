@@ -100,8 +100,21 @@ class UserController extends Controller
         }
 
         if($user) {
-            $liked_users = UserCompany::where("company_id", $user->id)->whereIn('type', ['LIKED', 'INVITED'])->orderBy('id', 'desc')->pluck('user_id')->toArray();
-            $users = User::where('type', 'USER')->whereNotIn('id', $liked_users);
+            $vacancies = Vacancy::where('company_id', $user->id)->where('status', 'active')->orderBy('created_at', 'desc')->pluck('id')->toArray();
+            $invited_users = UserCompany::where("company_id", $user->id)->whereIn('vacancy_id', $vacancies)->whereIn('type', ['INVITED'])->orderBy('id', 'desc')->get();
+            $banned_users = [];
+            $vacancies_invited = 0;
+            foreach ($invited_users as $invited_user){
+                foreach ($vacancies as $vacancy){
+                    if($vacancy == $invited_user->vacancy_id){
+                        $vacancies_invited++;
+                    }
+                }
+                if($vacancies_invited == count($vacancies)){
+                    $banned_users[] = $invited_user->id;
+                }
+            }
+            $users = User::where('type', 'USER')->whereNotIn('id', $banned_users);
 
             $specificDate = strtotime('2000-1-1');
             $specificDate = date("Y-m-d H:i:s", $specificDate);
@@ -641,7 +654,7 @@ class UserController extends Controller
         $user = User::where("password", $token)->firstOrFail();
 
         if ($user) {
-            $user_vacancies = UserVacancy::where('user_id', $user->id)->where('type', 'DISLIKED')->delete();
+            UserVacancy::where('user_id', $user->id)->where('type', 'DISLIKED')->delete();
             return response()->json('OK');
         }
         return response()->json('user id does not exist');
@@ -915,40 +928,50 @@ class UserController extends Controller
         $company = User::where("password", $token)->firstOrFail();
 
         if($company){
-            $existing_user_company = UserCompany::where("user_id", $user_id)
-                ->where("vacancy_id", $vacancy_id)
-                ->first();
-            if($existing_user_company) {
-                $existing_user_company ->update([
-                    'type' => $type,
-                ]);
-                $existing_user_company->save();
+
+            if($type == 'SUBMITTED'){
+                $existing_user_vacancy = UserVacancy::where("user_id", $user_id)
+                    ->where("vacancy_id", $vacancy_id)
+                    ->where("type", "SUBMITTED")
+                    ->first();
+
+                if($existing_user_vacancy) {
+                    $existing_user_vacancy ->update(['type' => 'DECLINED']);
+                    $existing_user_vacancy->save();
+                }
             } else {
-                $user_company = new UserCompany;
-                $user_company->user_id = $user_id;
-                $user_company->company_id = $company->id;
-                $user_company->type = $type;
-                $user_company->save();
+                $existing_user_company = UserCompany::where("user_id", $user_id)
+                    ->where("vacancy_id", $vacancy_id)
+                    ->first();
+                if($existing_user_company) {
+                    $existing_user_company ->update([
+                        'type' => $type,
+                    ]);
+                    $existing_user_company->save();
+                } else {
+
+                    $existing_user_company_1 = UserCompany::where("user_id", $user_id)
+                        ->where("company_id", $company->id)
+                        ->orderBy('id', 'desc')
+                        ->first();
+
+                    if($existing_user_company_1){
+                        $existing_user_company_1 ->update([
+                            'type' => $type,
+                        ]);
+                        $existing_user_company_1->save();
+                    } else {
+                        $user_company = new UserCompany;
+                        $user_company->user_id = $user_id;
+                        $user_company->company_id = $company->id;
+                        $user_company->type = $type;
+                        $user_company->save();
+                    }
+                }
             }
 
-            $existing_user_vacancy = UserVacancy::where("user_id", $user_id)
-                ->where("vacancy_id", $vacancy_id)
-                ->first();
-            if($existing_user_vacancy) {
-                $existing_user_vacancy ->update([
-                    'type' => $type,
-                ]);
-                $existing_user_vacancy->save();
-            } else {
-                $user_vacancy = new UserVacancy;
-                $user_vacancy->user_id = $user_id;
-                $user_vacancy->vacancy_id = $vacancy_id;
-                $user_vacancy->type = $type;
-                $user_vacancy->save();
-            }
             return 'OK';
-        }
-        else{
+        } else {
             return "token is not valid";
         }
 
@@ -1020,7 +1043,7 @@ class UserController extends Controller
             $response_type = '';
 
             if($type == 'ALL'){
-                $result1 = UserCompany::whereNotNull('vacancy_id')->whereIn('type', ['INVITED'])
+                $result1 = UserCompany::whereNotNull('vacancy_id')->whereIn("type", ['INVITED', 'DECLINED'])
                     ->where('company_id', $user->id)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
@@ -1044,8 +1067,8 @@ class UserController extends Controller
 //                dd($result2);
 
                 $result = $result1 + $result2;
-            } elseif($type == 'INVITED') {
-                $result = UserCompany::whereNotNull('vacancy_id')->where("type", $type)
+            } elseif ($type == 'INVITED') {
+                $result = UserCompany::whereNotNull('vacancy_id')->whereIn("type", ['INVITED', 'DECLINED'])
                     ->where('company_id', $user->id)->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [

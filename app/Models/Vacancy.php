@@ -53,7 +53,8 @@ class Vacancy extends Model
         'vacancy_link',
         'deadline',
         'status',
-        'status_update_at'
+        'status_update_at',
+        'metro_colors'
     ];
 
     protected $searchable = [
@@ -64,7 +65,8 @@ class Vacancy extends Model
     ];
 
     protected $casts = [
-        'metro' => 'array'
+        'metro' => 'array',
+        'metro_colors' => 'array'
     ];
 
     public function company()
