@@ -2,7 +2,10 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Название вакансии: <span style="color: red">*</span></label>
         <div class="col-lg-4">
-            {!! Form::text('name', null, ['maxlength' => 50, 'class' => 'form-control ' . $errors->first('name', 'is-invalid') . '']) !!}
+            {!! Form::text('name', null, [
+                'maxlength' => 50,
+                'class' => 'form-control ' . $errors->first('name', 'is-invalid') . '',
+            ]) !!}
             @if ($errors->has('name'))
                 <div class="invalid-feedback">{{ $errors->first('name') }}</div>
             @endif
@@ -100,6 +103,17 @@
         </div>
     </div>
     <div class="form-group row">
+        <label class="col-lg-3 col-form-label">Телефон:</label>
+        <div class="col-lg-4">
+            {!! Form::text('phone_number', null, [
+                'class' => 'phone_number form-control ' . $errors->first('phone_number', 'is-invalid'),
+            ]) !!}
+            @if ($errors->has('phone_number'))
+                <div class="invalid-feedback">{{ $errors->first('phone_number') }}</div>
+            @endif
+        </div>
+    </div>
+    <div class="form-group row">
         <label class="col-lg-3 col-form-label">Адрес: <span style="color: red">*</span></label>
         <div class="col-lg-5">
             {!! Form::text('address', null, ['class' => 'form-control ' . $errors->first('address', 'is-invalid')]) !!}
@@ -118,7 +132,8 @@
     <div class="form-group row">
         <label class="col-lg-3 col-form-label">Метро:</label>
         <div class="col-lg-5">
-            <select name="metro[]" id="data_metro" class="selectpicker" title="Выбрать" data-width="100%" data-live-search="true" data-size="6" multiple>
+            <select name="metro[]" id="data_metro" class="selectpicker" title="Выбрать" data-width="100%"
+                data-live-search="true" data-size="6" multiple>
                 @foreach ($metros as $metro)
                     {!! $metro !!}
                 @endforeach

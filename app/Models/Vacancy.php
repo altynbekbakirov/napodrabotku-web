@@ -26,6 +26,7 @@ class Vacancy extends Model
         'job_type_id',
         'is_disability_person_vacancy',
         'vacancy_type_id',
+        'phone_number',
         'address',
         'region',
         'district',

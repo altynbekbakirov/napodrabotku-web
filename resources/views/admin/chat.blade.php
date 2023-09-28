@@ -455,6 +455,7 @@
             // Form submit
             $('form').on('submit', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 var message = $('textarea[name=new_message]');
                 var chat_id = $('input[name=chat_id]').val();
                 var user_id = $('input[name=user_id]').val();

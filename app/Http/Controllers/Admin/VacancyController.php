@@ -244,8 +244,12 @@ class VacancyController extends Controller
         return view('admin.vacancies.create', compact('vacancy', 'title', 'companies', 'regions', 'districts', 'busynesses', 'vacancy_types', 'job_types', 'schedules', 'currencies', 'countries', 'metros', 'badwords'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request)        
     {
+        $requestData = $request->all();
+        $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
+        $request->replace($requestData);
+
         $this->validate($request, [
             'name' => ['required'],
             'salary_from' => ['required_without:salary_to'],
@@ -373,6 +377,10 @@ class VacancyController extends Controller
 
     public function update(Request $request, Vacancy $vacancy)
     {
+        $requestData = $request->all();
+        $requestData['phone_number'] = preg_replace('/\s+/', '', $request->phone_number);
+        $request->replace($requestData);
+        
         $this->validate($request, [
             'name' => ['required'],
             'salary_from' => ['required_without:salary_to'],
