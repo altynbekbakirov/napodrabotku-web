@@ -158,6 +158,7 @@ class VacancyController extends Controller
                 'id' => $item->id,
                 'name' => $item->name,
                 'address' => $item->address,
+                'phone_number' => $item->phone_number,
                 'description' => $item->description,
                 'salary' => $item->salary,
                 'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -447,16 +448,20 @@ class VacancyController extends Controller
             if($type == 'ALL'){
                 $result1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('vacancy_id')->toArray();
                 $result2 = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('vacancy_id')->toArray();
 
                 $resultResponse1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('type', 'vacancy_id')->toArray();
                 $resultResponse2 = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('type', 'vacancy_id')->toArray();
 
                 $result = Arr::collapse([$result1, $result2]);
@@ -465,28 +470,35 @@ class VacancyController extends Controller
             } elseif($type == 'INVITED') {
                 $result = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('vacancy_id')->toArray();
                 $resultResponse = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('type', 'vacancy_id')->toArray();
             } elseif($type == 'SUBMITTED') {
                 $result = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('vacancy_id')->toArray();
                 $resultResponse = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('type', 'vacancy_id')->toArray();
             } else {
                 $result = UserVacancy::where("type", $type)
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('vacancy_id')->toArray();
                 $resultResponse = UserVacancy::where("type", $type)
                     ->where("user_id", $user->id)
+                    ->orderBy('created_at', 'desc')
                     ->pluck('type', 'vacancy_id')->toArray();
             }
 
             $vacancies = Vacancy::whereIn('id', $result)->whereNotNull('region')
-                ->whereNotNull('district')->get();
+                ->whereNotNull('district')
+                ->get();
 
             $result1 = [];
             foreach ($vacancies as $item){
@@ -498,6 +510,7 @@ class VacancyController extends Controller
                     'id' => $item->id,
                     'name' => $item->name,
                     'address' => $item->company->address,
+                    'phone_number' => $item->phone_number,
                     'description' => $item->description,
                     'salary' => $item->salary,
                     'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -580,6 +593,7 @@ class VacancyController extends Controller
                     'name'=> $item->name,
                     'title'=> $item->title,
                     'address'=> $item->address ?? null,
+                    'phone_number'=> $item->phone_number ?? null,
                     'description'=> $item->description,
                     'salary' => $item->salary,
                     'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -678,6 +692,7 @@ class VacancyController extends Controller
                     'name'=> $item->name,
                     'title'=> $item->title,
                     'address'=> $item->company->address,
+                    'phone_number'=> $item->phone_number,
                     'description'=> $item->description,
                     'salary'=> $item->salary,
                     'currency' => $item->getcurrency ? $item->getcurrency->code : '',
@@ -725,6 +740,7 @@ class VacancyController extends Controller
                     'name'=> $item->name,
                     'title'=> $item->title,
                     'address'=> $item->company->address,
+                    'phone_number'=> $item->phone_number,
                     'description'=> $item->description,
                     'salary'=> $item->salary,
                     'currency' => $item->getcurrency ? $item->getcurrency->code : '',

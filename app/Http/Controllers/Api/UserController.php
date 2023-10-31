@@ -253,7 +253,7 @@ class UserController extends Controller
     protected function getCompanySubmittedUserCvs(Request $request, $company_id)
     {
         if($company_id){
-            $vacancy_ids =Vacancy::where('company_id', $company_id)->pluck('id')->toArray();
+            $vacancy_ids = Vacancy::where('company_id', $company_id)->pluck('id')->toArray();
             $submitted_user_vacancies = UserVacancy::whereIn("vacancy_id", $vacancy_ids)->where("type", 'SUBMITTED')->orderBy('id', 'desc')->get();
             $result = [];
             foreach ($submitted_user_vacancies as $submitted_user_vacancy) {
@@ -944,9 +944,8 @@ class UserController extends Controller
                     ->where("vacancy_id", $vacancy_id)
                     ->first();
                 if($existing_user_company) {
-                    $existing_user_company ->update([
-                        'type' => $type,
-                    ]);
+                    $existing_user_company->type = $type;
+                    $existing_user_company->read = 0;
                     $existing_user_company->save();
                 } else {
 
@@ -958,6 +957,7 @@ class UserController extends Controller
                     if($existing_user_company_1){
                         $existing_user_company_1 ->update([
                             'type' => $type,
+                            'read' => 0
                         ]);
                         $existing_user_company_1->save();
                     } else {
@@ -1044,7 +1044,8 @@ class UserController extends Controller
 
             if($type == 'ALL'){
                 $result1 = UserCompany::whereNotNull('vacancy_id')->whereIn("type", ['INVITED', 'DECLINED'])
-                    ->where('company_id', $user->id)->orderBy('read')->get()
+                    ->where('company_id', $user->id)
+                    ->orderBy('created_at', 'desc')->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
@@ -1055,7 +1056,8 @@ class UserController extends Controller
 
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result2 = UserVacancy::whereIn('type', ['SUBMITTED'])
-                    ->whereIn('vacancy_id', $companyVacancies)->orderBy('read')->get()
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->orderBy('created_at', 'desc')->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
@@ -1069,7 +1071,8 @@ class UserController extends Controller
                 $result = $result1 + $result2;
             } elseif ($type == 'INVITED') {
                 $result = UserCompany::whereNotNull('vacancy_id')->whereIn("type", ['INVITED', 'DECLINED'])
-                    ->where('company_id', $user->id)->orderBy('read')->get()
+                    ->where('company_id', $user->id)
+                    ->orderBy('created_at', 'desc')->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
@@ -1080,7 +1083,8 @@ class UserController extends Controller
             } else {
                 $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
                 $result = UserVacancy::where('type', $type)
-                    ->whereIn('vacancy_id', $companyVacancies)->orderBy('read')->get()
+                    ->whereIn('vacancy_id', $companyVacancies)
+                    ->orderBy('created_at', 'desc')->orderBy('read')->get()
                     ->mapToGroups(function ($item, $key) {
                         return [$item['vacancy_id'] => [
                             'user_id' => $item['user_id'],
