@@ -9874,18 +9874,18 @@ var KTLayoutChat = function () {
 		});
 
 		// attach events
-		KTUtil.on(element, '.card-footer textarea', 'keydown', function(e) {
-			if (e.keyCode == 13) {
-				_handeMessaging(element);
-				e.preventDefault();
+		// KTUtil.on(element, '.card-footer textarea', 'keydown', function(e) {
+		// 	if (e.keyCode == 13) {
+		// 		_handeMessaging(element);
+		// 		e.preventDefault();
+        //
+		// 		return false;
+		// 	}
+		// });
 
-				return false;
-			}
-		});
-
-		KTUtil.on(element, '.card-footer .chat-send', 'click', function(e) {
-			_handeMessaging(element);
-		});
+		// KTUtil.on(element, '.card-footer .chat-send', 'click', function(e) {
+		// 	_handeMessaging(element);
+		// });
 	}
 
 	var _handeMessaging = function(element) {
@@ -9901,16 +9901,16 @@ var KTLayoutChat = function () {
 		KTUtil.addClass(node, 'd-flex flex-column mb-5 align-items-end');
 
 		var html = '';
-		html += '<div class="d-flex align-items-center">';
-		html += '	<div>';
-		html += '		<span class="text-muted font-size-sm">2 Hours</span>';
-		html += '		<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>';
-		html += '	</div>';
-		html += '	<div class="symbol symbol-circle symbol-40 ml-3">';
-		html += '		<img alt="Pic" src="assets/media/users/300_12.jpg"/>';
-		html += '	</div>';
-		html += '</div>';
-		html += '<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">' + textarea.value + '</div>';
+		// html += '<div class="d-flex align-items-center">';
+		// html += '	<div>';
+		// html += '		<span class="text-muted font-size-sm">2 Hours</span>';
+		// html += '		<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>';
+		// html += '	</div>';
+		// html += '	<div class="symbol symbol-circle symbol-40 ml-3">';
+		// html += '		<img alt="Pic" src="assets/media/users/300_12.jpg"/>';
+		// html += '	</div>';
+		// html += '</div>';
+		// html += '<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">' + textarea.value + '</div>';
 
 		KTUtil.setHTML(node, html);
 		messagesEl.appendChild(node);

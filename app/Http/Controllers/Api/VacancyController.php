@@ -449,11 +449,11 @@ class VacancyController extends Controller
                 $result1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->pluck('vacancy_id')->toArray();
+                    ->pluck('vacancy_id', 'created_at')->toArray();
                 $result2 = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->pluck('vacancy_id')->toArray();
+                    ->pluck('vacancy_id', 'created_at')->toArray();
 
                 $resultResponse1 = UserVacancy::whereIn('type', ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
@@ -466,7 +466,6 @@ class VacancyController extends Controller
 
                 $result = Arr::collapse([$result1, $result2]);
                 $resultResponse = $resultResponse1 + $resultResponse2;
-
             } elseif($type == 'INVITED') {
                 $result = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
@@ -496,12 +495,22 @@ class VacancyController extends Controller
                     ->pluck('type', 'vacancy_id')->toArray();
             }
 
-            $vacancies = Vacancy::whereIn('id', $result)->whereNotNull('region')
-                ->whereNotNull('district')
-                ->get();
+//            $vacancies = Vacancy::whereIn('id', $result)->whereNotNull('region')
+//                ->whereNotNull('district')
+//                ->get();
+
+            $vacancies = collect();
+
+            foreach ($result as $key=>$row) {
+                $vacancy = Vacancy::find($row);
+                if($vacancy) {
+                    $vacancy->vacancy_date = $key;
+                    $vacancies->push($vacancy);
+                }
+            }
 
             $result1 = [];
-            foreach ($vacancies as $item){
+            foreach ($vacancies->sortByDesc('vacancy_date') as $item){
 
                 $user_company = UserCompany::where('user_id', $user->id)->where('vacancy_id', $item->id)->where('type', 'INVITED')->first();
                 $user_vacancy = UserVacancy::where('user_id', $user->id)->where('vacancy_id', $item->id)->whereIn('type', ['SUBMITTED', 'DECLINED'])->first();

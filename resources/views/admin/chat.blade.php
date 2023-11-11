@@ -204,7 +204,7 @@
                                         </button>
 
                                         <div class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
-                                            @if ($words)
+                                            @if (isset($words))
                                                 <div class="dropdown-menu-menu">
                                                     @foreach ($words as $word)
                                                     <div class="d-flex flex-col justify-content-center align-items-center">
@@ -417,7 +417,7 @@
                 if (!$.isEmptyObject(vacancy_id)) {
                     $.ajax({
                         headers: {
-                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                         },
                         cache: false,
                         type: 'POST',
@@ -464,7 +464,7 @@
 
                     $.ajax({
                         headers: {
-                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                         },
                         cache: false,
                         type: 'POST',
@@ -473,6 +473,7 @@
                             'user_id': user_id,
                             'chat_id': chat_id,
                             'new_message': $('textarea[name=new_message]').val(),
+                            '_token': '{{csrf_token()}}'
                         },
                         success: function(result) {
                             result['created_at'] = moment(result['created_at']).format(
@@ -541,7 +542,7 @@
 
                 $.ajax({
                     headers: {
-                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     cache: false,
                     type: 'POST',

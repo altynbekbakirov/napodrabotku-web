@@ -499,7 +499,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         if ($user) {
 
-            if($request->hasFile('avatar')){
+            if($request->file('avatar')){
 
                 if($user->avatar) @unlink($user->avatar);
 
@@ -512,7 +512,14 @@ class UserController extends Controller
 
                 $name = Str::slug($user->name, '-').'-'.$user->id.'.'.$file->getClientOriginalExtension();
 
-                Image::make($file)->fit(400, 400)->save($dir.$name, 75);
+                $imageResize = Image::make($file);
+                $imageResize->orientate()
+                    ->fit(400, 400, function ($constraint) {
+                        $constraint->upsize();
+                    })
+                    ->save($dir.$name, 75);
+
+//                Image::make($file)->fit(400, 400)->save($dir.$name, 75);
 
                 $user->avatar = $dir.$name;
             }
@@ -523,7 +530,7 @@ class UserController extends Controller
             $department = Department::where('name_ru', $request->department)->orWhere('name', $request->department)->first();
             $social_orientation = SocialOrientation::where('name_ru', $request->social_orientation)->orWhere('name', $request->social_orientation)->first();
 
-            $user ->update([
+            $user->update([
                 'name' => $request->name,
                 'lastname' => $request->lastname,
                 'email' => $request->email,
