@@ -137,7 +137,7 @@
 
             if(data.avatar){
                 messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">
-                                <img alt="Pic" src="//{{$_SERVER['SERVER_NAME']}}/${data.avatar}" />
+                                <img alt="Pic" src="/${data.avatar}" />
                             </div>`;
             } else {
                 messageContent += `<div class="symbol symbol-circle symbol-40 mr-3">

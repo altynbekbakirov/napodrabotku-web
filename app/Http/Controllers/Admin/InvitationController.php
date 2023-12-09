@@ -25,6 +25,7 @@ use App\Models\Invitation;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 
 class InvitationController extends Controller
 {
@@ -68,11 +69,13 @@ class InvitationController extends Controller
 
         if (request()->ajax()) {
 
-            $data = UserCompany::where('user_company.company_id', auth()->user()->id)->orderBy('id', 'desc');
+//            $data = UserCompany::where('user_company.company_id', auth()->user()->id)->orderBy('id', 'desc');
+            $data = UserCompany::select('*', DB::raw('row_number() over (partition by user_id) AS rowCnt'))
+                ->where('user_company.company_id', auth()->user()->id)->orderBy('id', 'desc');
 
             if (request()->status_id && request()->status_id != 'all') {
                 $data = $data->where('user_company.type', request()->status_id);
-            } 
+            }
 
             if (request()->search) {
                 $data = $data->search(request()->search);
@@ -119,6 +122,8 @@ class InvitationController extends Controller
                     ]
                 );
             }
+
+            $data = $data->get()->where('rowCnt', '<', 3);
 
             return datatables()->of($data)
                 ->addColumn('check_box', function ($row) {
@@ -201,9 +206,11 @@ class InvitationController extends Controller
                     if ($row->vacancy_id && $row->vacancy_date) {
                         return 'Отправлено <br />' . date('d.m.Y H:s', strtotime($row->vacancy_date));
                     } else {
-                        return '<a href="#" data-user-id="' . $row->id . '" class="btn btn-primary font-weight-bold mr-2 btn-invite" title="Пригласить">
-                    Пригласить
-                            </a>';
+                        if ($row->show_phone < 1) {
+                            return '<a href="#" data-user-id="' . $row->id . '" class="btn btn-primary font-weight-bold mr-2 btn-invite" title="Пригласить">Пригласить</a>';
+                        } else {
+                            return '-';
+                        }
                     }
                 })
                 ->rawColumns(['check_box', 'acts', 'status', 'phone', 'recommended'])

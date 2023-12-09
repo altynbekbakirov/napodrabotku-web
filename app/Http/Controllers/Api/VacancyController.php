@@ -154,6 +154,9 @@ class VacancyController extends Controller
 //        dd(count($vacancies));
 
         foreach ($vacancies as $item) {
+
+            $item->salary = $item->salary_final;
+
             array_push($result, [
                 'id' => $item->id,
                 'name' => $item->name,
@@ -391,6 +394,13 @@ class VacancyController extends Controller
                         $invited_user_company->type = 'DECLINED';
                         $invited_user_company->save();
                     }
+
+                    $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
+                        ->where("vacancy_id", $vacancy_id)
+                        ->where("type", "SUBMITTED")
+                        ->first();
+
+                    $existing_user_vacancy->delete();
                 } else {
                     $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
                         ->where("vacancy_id", $vacancy_id)
@@ -470,7 +480,7 @@ class VacancyController extends Controller
                 $result = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->pluck('vacancy_id')->toArray();
+                    ->pluck('vacancy_id', 'created_at')->toArray();
                 $resultResponse = UserCompany::whereNotNull('vacancy_id')->where('type', 'INVITED')
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
@@ -479,7 +489,7 @@ class VacancyController extends Controller
                 $result = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->pluck('vacancy_id')->toArray();
+                    ->pluck('vacancy_id', 'created_at')->toArray();
                 $resultResponse = UserVacancy::whereIn("type", ['SUBMITTED', 'DECLINED'])
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
@@ -488,7 +498,7 @@ class VacancyController extends Controller
                 $result = UserVacancy::where("type", $type)
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->pluck('vacancy_id')->toArray();
+                    ->pluck('vacancy_id', 'created_at')->toArray();
                 $resultResponse = UserVacancy::where("type", $type)
                     ->where("user_id", $user->id)
                     ->orderBy('created_at', 'desc')
@@ -510,13 +520,17 @@ class VacancyController extends Controller
             }
 
             $result1 = [];
+
             foreach ($vacancies->sortByDesc('vacancy_date') as $item){
+
+                $item->salary = $item->salary_final;
 
                 $user_company = UserCompany::where('user_id', $user->id)->where('vacancy_id', $item->id)->where('type', 'INVITED')->first();
                 $user_vacancy = UserVacancy::where('user_id', $user->id)->where('vacancy_id', $item->id)->whereIn('type', ['SUBMITTED', 'DECLINED'])->first();
 
                 $result1[] = [
                     'id' => $item->id,
+                    'date' => $item->vacancy_date,
                     'name' => $item->name,
                     'address' => $item->company->address,
                     'phone_number' => $item->phone_number,
@@ -596,6 +610,8 @@ class VacancyController extends Controller
                 } else {
                     $currency = null;
                 }
+
+                $item->salary = $item->salary_final;
 
                 array_push($result1, [
                     'id'=> $item->id,
@@ -696,6 +712,8 @@ class VacancyController extends Controller
 
             foreach ($vacancies as $item){
 
+                $item->salary = $item->salary_final;
+
                 array_push($result1, [
                     'id'=> $item->id,
                     'name'=> $item->name,
@@ -743,6 +761,8 @@ class VacancyController extends Controller
                 $opportunity_type = OpportunityType::where('id', $item->opportunity_type_id)->first();
                 $internship_language = IntershipLanguage::where('id', $item->internship_language_id)->first();
                 $recommendation_letter_type = RecommendationLetterType::where('id', $item->recommendation_letter_type_id)->first();
+
+                $item->salary = $item->salary_final;
 
                 array_push($result1, [
                     'id'=> $item->id,

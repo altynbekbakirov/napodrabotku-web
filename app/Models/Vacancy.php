@@ -70,6 +70,8 @@ class Vacancy extends Model
         'metro_colors' => 'array'
     ];
 
+    protected $appends = ['salary_final'];
+
     public function company()
     {
         return $this->belongsTo(User::class, 'company_id');
@@ -185,6 +187,25 @@ class Vacancy extends Model
             $status = 'Удалено';
         }
         return $status;
+    }
+
+    public function getSalaryFinalAttribute()
+    {
+        $salary = '';
+
+        if ($this->salary_from) {
+            if ($this->salary_to) {
+                $salary = $this->salary_from . '-' . $this->salary_to;
+            } else {
+                $salary = 'от ' . $this->salary_from;
+            }
+        } else {
+            if ($this->salary_to) {
+                $salary = 'до ' . $this->salary_to;
+            }
+        }
+
+        return $salary;
     }
 
     //    Scopes

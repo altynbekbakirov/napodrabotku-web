@@ -100,8 +100,8 @@ class UserController extends Controller
         }
 
         if($user) {
-            $vacancies = Vacancy::where('company_id', $user->id)->where('status', 'active')->orderBy('created_at', 'desc')->pluck('id')->toArray();
-            $invited_users = UserCompany::where("company_id", $user->id)->whereIn('vacancy_id', $vacancies)->whereIn('type', ['INVITED'])->orderBy('id', 'desc')->get();
+            $vacancies = Vacancy::where('company_id', $user->id)->where('status', 'active')->pluck('id')->toArray();
+            $invited_users = UserCompany::where("company_id", $user->id)->whereIn('vacancy_id', $vacancies)->whereIn('type', ['INVITED'])->orderBy('created_at', 'desc')->get();
             $banned_users = [];
             $vacancies_invited = 0;
             foreach ($invited_users as $invited_user){
@@ -1058,10 +1058,11 @@ class UserController extends Controller
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
                             'read' => $item['read'],
+                            'created_at' => $item['created_at'],
                         ]];
                     })->toArray();
 
-                $companyVacancies = Vacancy::where('company_id', $user->id)->pluck('id')->toArray();
+                $companyVacancies = Vacancy::where('company_id', $user->id)->orderBy('created_at', 'desc')->pluck('id')->toArray();
                 $result2 = UserVacancy::whereIn('type', ['SUBMITTED'])
                     ->whereIn('vacancy_id', $companyVacancies)
                     ->orderBy('created_at', 'desc')->orderBy('read')->get()
@@ -1070,11 +1071,13 @@ class UserController extends Controller
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
                             'read' => $item['read'],
+                            'created_at' => $item['created_at'],
                         ]];
                     })
                     ->toArray();
-//                dd($result2);
+//                dd($result1, $result2);
 
+//                $result = Arr::collapse([$result1, $result2]);
                 $result = $result1 + $result2;
             } elseif ($type == 'INVITED') {
                 $result = UserCompany::whereNotNull('vacancy_id')->whereIn("type", ['INVITED', 'DECLINED'])
@@ -1085,6 +1088,7 @@ class UserController extends Controller
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
                             'read' => $item['read'],
+                            'created_at' => $item['created_at'],
                         ]];
                     })->toArray();
             } else {
@@ -1097,16 +1101,25 @@ class UserController extends Controller
                             'user_id' => $item['user_id'],
                             'type' => $item['type'],
                             'read' => $item['read'],
+                            'created_at' => $item['created_at'],
                         ]];
                     })->toArray();
             }
+
+            $temp = collect();
+            foreach ($result as $key=>$row){
+                foreach ($row as $single){
+                    $single['vacancy_id'] = $key;
+                    $temp->push($single);
+                }
+            }
             $users = [];
 
-            foreach ($result as $key=>$row){
+//            foreach ($result as $key=>$row){
 
-                foreach ($row as $item){
+                foreach ($temp->sortByDesc('created_at') as $item){
                     $user = User::findOrFail($item['user_id']);
-                    $vacancy = Vacancy::findOrFail($key);
+                    $vacancy = Vacancy::findOrFail($item['vacancy_id']);
 
                     if($user) {
                         $user->vacancy_type = $user->getVacancyType ? $user->getVacancyType->getName($lang) : null;
@@ -1122,11 +1135,12 @@ class UserController extends Controller
                         $user->schedules = $user->schedules ? Schedule::whereIn('id', $user->schedules)->pluck('name_ru')->toArray() : null;
                         $user->vacancy_name = $vacancy->name;
                         $user->user_vacancy_id = $vacancy->id;
+                        $user->vacancy_date = $item['created_at'];
 
                         $users[] = $user;
                     }
                 }
-            }
+//            }
 
             return response()->json($users);
         }

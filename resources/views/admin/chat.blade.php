@@ -195,13 +195,13 @@
                                 <input type="hidden" name="chat_id" value="{{ $selected_chat->id }}">
                                 <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
                                 <!--begin::Compose-->
-                                <textarea class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message"></textarea>
+                                <input class="form-control border-0 p-0" rows="2" placeholder="Написать сообщение" name="new_message">
                                 <div class="d-flex align-items-center justify-content-between mt-5">
                                     <div class="dropdown dropdown-inline w-75" id="quick_add_words">
-                                        <button type="button" class="btn btn-light-grey btn-icon btn-sm"
+                                        <a href="#" class="btn btn-light-grey btn-icon btn-sm"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="flaticon2-pen"></i>
-                                        </button>
+                                        </a>
 
                                         <div class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
                                             @if (isset($words))
@@ -220,17 +220,15 @@
                                             <div class="d-flex flex-col justify-content-center align-items-center">
                                                 &nbsp;&nbsp;<input type="text" id="new_quick_word" class="form-control w-80"
                                                     placeholder="Добавить" />&nbsp;&nbsp;
-                                                <button type="button" id="new_quick_button"
+                                                <a href="#" id="new_quick_button"
                                                     class="btn btn-light-grey btn-icon btn-sm"><i
-                                                        class="flaticon2-add"></i></button>&nbsp;&nbsp;
+                                                        class="flaticon2-add"></i></a>&nbsp;&nbsp;
                                             </div>
                                         </div>
 
                                     </div>
                                     <div class="ml-auto">
-                                        <input type="submit"
-                                            class="btn btn-primary btn-md text-uppercase font-weight-bold py-2 px-6"
-                                            value="Отправить">
+                                        <button type="submit" class="btn btn-primary btn-md text-uppercase font-weight-bold py-2 px-6">Отправить</button>
                                     </div>
                                 </div>
                                 <!--begin::Compose-->
@@ -455,8 +453,8 @@
             // Form submit
             $('form').on('submit', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                var message = $('textarea[name=new_message]');
+                // e.stopPropagation();
+                var message = $('input[name=new_message]');
                 var chat_id = $('input[name=chat_id]').val();
                 var user_id = $('input[name=user_id]').val();
 
@@ -472,7 +470,7 @@
                         data: {
                             'user_id': user_id,
                             'chat_id': chat_id,
-                            'new_message': $('textarea[name=new_message]').val(),
+                            'new_message': $('input[name=new_message]').val(),
                             '_token': '{{csrf_token()}}'
                         },
                         success: function(result) {
@@ -520,13 +518,13 @@
                 }
             });
 
-            // Add quick word to textarea
+            // Add quick word to input
             $('.dropdown-menu-menu').on('click', 'a', function(e) {
                 e.stopPropagation();
 
-                var text_area = $('textarea[name=new_message]');
-                if ($('textarea[name=new_message]').val().length > 0) {
-                    text_area.val($('textarea[name=new_message]').val() + ' ' + $(this).text());
+                var text_area = $('input[name=new_message]');
+                if ($('input[name=new_message]').val().length > 0) {
+                    text_area.val($('input[name=new_message]').val() + ' ' + $(this).text());
                 } else {
                     text_area.val($(this).text());
                 }
