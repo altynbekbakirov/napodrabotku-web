@@ -325,33 +325,46 @@ class VacancyController extends Controller
                     $liked_user_company->delete();
                 }
 
-                $existing_user_company = UserCompany::where("user_id", $user_id)
-                    ->where("company_id", $user->id)
-                    ->where("vacancy_id", $vacancy_id)
-                    ->first();
+                if($vacancy_id){
+                    $existing_user_company = UserCompany::where("user_id", $user_id)
+                        ->where("company_id", $user->id)
+                        ->where("vacancy_id", $vacancy_id)
+                        ->first();
 
-                if($existing_user_company) {
-                    $existing_user_company ->update([
-                        'type' => $type,
-                    ]);
-                    $existing_user_company->save();
-                } else {
-
-                    $user_company = new UserCompany;
-                    $user_company->user_id = $user_id;
-                    $user_company->company_id = $user->id;
-                    $user_company->vacancy_id = $vacancy_id;
-                    $user_company->type = $type;
-                    $user_company->save();
-
-                    // open chat
-                    $chat = Chat::where('user_id', $user_id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
-                    if(!$chat) {
-                        Chat::create([
-                            'user_id' => $user_id,
-                            'company_id' => $vacancy->company_id,
-                            'vacancy_id' => $vacancy_id
+                    if($existing_user_company) {
+                        $existing_user_company ->update([
+                            'type' => $type,
                         ]);
+                        $existing_user_company->save();
+                    } else {
+
+                        $user_company = new UserCompany;
+                        $user_company->user_id = $user_id;
+                        $user_company->company_id = $user->id;
+                        $user_company->vacancy_id = $vacancy_id;
+                        $user_company->vacancy_date = date("Y-m-d H:i:s");
+                        $user_company->type = $type;
+                        $user_company->show_phone = 1;
+                        $user_company->save();
+
+                        if($user_company && $type == 'INVITED'){
+                            event(new NewInvitationSent(
+                                $user_company->user_id,
+                                $user_company->company_id,
+                                $user_company->vacancy_id,
+                                'INVITED'
+                            ));
+                        }
+
+                        // open chat
+                        $chat = Chat::where('user_id', $user_id)->where('vacancy_id', $vacancy_id)->where('deleted', false)->first();
+                        if(!$chat) {
+                            Chat::create([
+                                'user_id' => $user_id,
+                                'company_id' => $vacancy->company_id,
+                                'vacancy_id' => $vacancy_id
+                            ]);
+                        }
                     }
                 }
 
@@ -397,7 +410,7 @@ class VacancyController extends Controller
 
                     $existing_user_vacancy = UserVacancy::where("user_id", $user->id)
                         ->where("vacancy_id", $vacancy_id)
-                        ->where("type", "SUBMITTED")
+                        ->whereIn("type", ["SUBMITTED", 'DECLINED'])
                         ->first();
 
                     $existing_user_vacancy->delete();
@@ -423,7 +436,8 @@ class VacancyController extends Controller
                             event(new NewInvitationSent(
                                 $user->id,
                                 $vacancy->company_id,
-                                $vacancy->id
+                                $vacancy->id,
+                                'SUBMITTED'
                             ));
                         }
 

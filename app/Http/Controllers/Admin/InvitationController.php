@@ -50,17 +50,17 @@ class InvitationController extends Controller
 
         $stats = [
             'all' => '<button type="button" class="btn btn-lg btn-success" status_id="all">Всего <span class="label label-primary">' . count($statuses) . '</span></button>&nbsp;',
-            'LIKED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
+            'INVITED' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">0</span></button>&nbsp;',
             'LIKED_THEN_DELETED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED_THEN_DELETED">Удаленные <span class="label label-primary">0</span></button>&nbsp;',
-            'INVITED' => '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">0</span></button>&nbsp;',
+            'LIKED' => '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Отобранные <span class="label label-primary">0</span></button>&nbsp;',
         ];
 
         foreach ($statuses as $key => $value) {
-            if ($value === 'LIKED') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
-            }
             if ($value === 'INVITED') {
-                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Отобранные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="INVITED">Приглашенные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
+            }
+            if ($value === 'LIKED') {
+                $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED">Отобранные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
             }
             if ($value === 'LIKED_THEN_DELETED') {
                 $stats[$value] = '<button type="button" class="btn btn-lg btn-light" status_id="LIKED_THEN_DELETED">Удаленные <span class="label label-primary">' . $statuses_count[$value] . '</span></button>&nbsp;';
@@ -123,12 +123,11 @@ class InvitationController extends Controller
                 );
             }
 
-            $data = $data->get()->where('rowCnt', '<', 3);
+//            $data = $data->get()->where('rowCnt', '<', 3);
 
             return datatables()->of($data)
                 ->addColumn('check_box', function ($row) {
                     return '<input type="checkbox" name="checkbox-product" product_data_id="' . $row->id . '" />';
-
                 })
                 ->addColumn('acts', function ($row) {
                     $chat = Chat::where('user_id', $row->user->id)->where('vacancy_id', $row->vacancy_id)->first();
@@ -203,14 +202,16 @@ class InvitationController extends Controller
                     return $age . ' лет';
                 })
                 ->addColumn('status', function ($row) {
-                    if ($row->vacancy_id && $row->vacancy_date) {
-                        return 'Отправлено <br />' . date('d.m.Y H:s', strtotime($row->vacancy_date));
-                    } else {
-                        if ($row->show_phone < 1) {
+                    if($row->type == 'LIKED_THEN_DELETED'){
+                        return '<span class="label label-danger label-inline label-lg"><strong>Удалено</strong></span>';
+                    } elseif($row->type == 'LIKED') {
+                        if ($row->show_phone > 0) {
                             return '<a href="#" data-user-id="' . $row->id . '" class="btn btn-primary font-weight-bold mr-2 btn-invite" title="Пригласить">Пригласить</a>';
                         } else {
                             return '-';
                         }
+                    } else {
+                        return 'Отправлено <br />' . date('d.m.Y H:s', strtotime($row->vacancy_date));
                     }
                 })
                 ->rawColumns(['check_box', 'acts', 'status', 'phone', 'recommended'])
@@ -501,7 +502,6 @@ class InvitationController extends Controller
 
     public function show_phone(Request $request)
     {
-
         $total_invited = UserCompany::where('company_id', auth()->user()->id)->where('show_phone', '1')->get()->count();
         $invitation_count = Invitation::where('user_id', auth()->user()->id)->sum('invitation_count');
         if ($invitation_count <= $total_invited) {

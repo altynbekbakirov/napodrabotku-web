@@ -15,15 +15,18 @@ class NewInvitationSent implements ShouldBroadcast
     public $user_id;
     public $company_id;
     public $vacancy_id;
+    public $type;
 
     public function __construct(
         $user_id,
         $company_id,
-        $vacancy_id)
+        $vacancy_id,
+        $type)
     {
         $this->user_id = $user_id;
         $this->company_id = $company_id;
         $this->vacancy_id = $vacancy_id;
+        $this->type = $type;
     }
 
     public function broadcastOn()
