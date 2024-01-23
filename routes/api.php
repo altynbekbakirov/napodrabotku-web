@@ -30,6 +30,7 @@ Route::group([
     Route::get('skillset_category', ['uses' => 'SkillsetCategoryController@index']);
     Route::get('vacancy_type', ['uses' => 'VacancyTypeController@index']);
     Route::post('vacancy', ['uses' => 'VacancyController@index']);
+    Route::post('map_vacancy', ['uses' => 'VacancyController@indexMap']);
     Route::post('user_vacancy', ['uses' => 'VacancyController@likeOrSubmit']);
     Route::get('user_vacancy/{type}', ['uses' => 'VacancyController@getVacanciesByType']);
     Route::get('num_of/{type}', ['uses' => 'VacancyController@getNumberOfLikedVacancies']);

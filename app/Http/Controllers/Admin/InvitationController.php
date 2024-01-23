@@ -159,6 +159,9 @@ class InvitationController extends Controller
                     return $options ? substr($options, 0, -2) : '';
                 })
                 ->addColumn('recommended', function ($row) {
+                    if($row->type == 'LIKED_THEN_DELETED'){
+                        return '-';
+                    }
                     if ($row->vacancy_id && $row->vacancy_date) {
                         $vacancy = Vacancy::where('id', $row->vacancy_id)->first();
                         return $vacancy->name;

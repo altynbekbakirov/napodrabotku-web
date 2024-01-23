@@ -395,6 +395,35 @@
                 </div>
             </div>
         @endif
+        <div class="form-group row">
+            <label class="col-lg-3 col-form-label text-danger">Срок действия открытых контактов <br> (в днях):</label>
+            <div class="col-lg-4">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="la la-calendar"></i>
+                            </span>
+                    </div>
+                    @if ($user->invitation_enabled == 0)
+                        {!! Form::number('invitation_valid', null, [
+                            'class' => 'form-control',
+                            'min' => 0,
+                            'onkeypress' => 'return event.charCode >= 48',
+                            'placeholder' => '0',
+                            'disabled' => true,
+                        ]) !!}
+                    @else
+                        {!! Form::number('invitation_valid', null, [
+                            'class' => 'form-control',
+                            'min' => 0,
+                            'onkeypress' => 'return event.charCode >= 48',
+                            'placeholder' => '0',
+                            'disabled' => false,
+                        ]) !!}
+                    @endif
+                </div>
+            </div>
+        </div>
     @endif
     {!! Form::hidden('type', $user->type) !!}
     <div class="card-footer">

@@ -187,6 +187,109 @@ class VacancyController extends Controller
         return $result;
     }
 
+
+    public function indexMap(Request $request)
+    {
+        $limit = $request->limit;
+        $offset = $request->offset;
+        $region_ids = $request->region_ids;
+        $time_type = $request->type;
+
+        $route = $request->route;
+
+        if (!$region_ids || $region_ids[0] == null) {
+            $region_ids = [];
+            foreach (Region::all() as $model) {
+                array_push($region_ids, $model->id);
+            }
+        }
+
+        if(!$offset){
+            $offset = 0;
+        }
+
+        $specificDate = strtotime('2000-1-1');
+        $specificDate = date("Y-m-d H:i:s", $specificDate);
+        if($time_type == 'day'){
+            $date = new DateTime('-1 day');
+            $specificDate = $date->format('Y-m-d H:i:s');
+        }
+        else if($time_type == 'week'){
+            $date = new DateTime('-1 week');
+            $specificDate = $date->format('Y-m-d H:i:s');
+        }
+        else if($time_type == 'month'){
+            $date = new DateTime('-1 month');
+            $specificDate = $date->format('Y-m-d H:i:s');
+        }
+
+        $result = [];
+        $banned_ones = [];
+
+        $token = $request->header('Authorization');
+        if($token!="null") {
+            $user = User::where("password", $token)->firstOrFail();
+            if($user){
+                $banned_ones = UserVacancy::where("user_id", $user->id)->where("type",'!=', 'LIKED_THEN_DELETED')->pluck('vacancy_id')->toArray();
+            }
+        }
+
+        $vacancies = Vacancy::where('status', 'active')
+            ->whereNotNull('region')
+            ->whereNotNull('district')
+            ->whereNotNull('lat')
+            ->whereNotNull('lonq')
+            ->whereDate('created_at', '>', $specificDate);
+
+        if($region_ids) $vacancies = $vacancies->whereIn('region', $region_ids);
+
+        $vacancies = $vacancies->orderBy('created_at', 'desc');
+
+        if ($offset) {
+            $vacancies = $vacancies->skip($offset);
+        }
+
+        if($limit) {
+            $vacancies = $vacancies->take($limit);
+        }
+
+        $vacancies = $vacancies->get();
+//        dd(count($vacancies));
+
+        foreach ($vacancies as $item) {
+
+            $item->salary = $item->salary_final;
+
+            array_push($result, [
+                'id' => $item->id,
+                'name' => $item->name,
+                'address' => $item->address,
+                'phone_number' => $item->phone_number,
+                'description' => $item->description,
+                'salary' => $item->salary,
+                'currency' => $item->getcurrency ? $item->getcurrency->code : '',
+                'period' => $item->period,
+                'is_disability_person_vacancy' => $item->is_disability_person_vacancy,
+                'company_name' => $item->company->name,
+                'company_logo'=> $item->company->avatar,
+                'busyness' => $item->busyness ? $item->busyness->getName($request->lang) : null,
+                'job_type' => $item->jobtype ? $item->jobtype->getName($request->lang) : null,
+                'schedule' => $item->schedule ? $item->schedule->getName($request->lang) : null,
+                'type' => $item->vacancytype ? $item->vacancytype->getName($request->lang) : null,
+                'region' => $item->getRegion ? $item->getRegion->getName($request->lang) : null,
+                'district' => $item->getDistrict ? $item->getDistrict->getName($request->lang) : null,
+                'street' => $item->street,
+                'house_number' => $item->house,
+                'latitude' => $item->lat,
+                'longitude' => $item->lonq,
+                'company' => $item->company->id,
+                'metro' => $item->metro,
+            ]);
+        }
+
+        return $result;
+    }
+
     public function storeCompanyVacancy(Request $request)
     {
         $token = $request->header('Authorization');
@@ -325,7 +428,10 @@ class VacancyController extends Controller
                     $liked_user_company->delete();
                 }
 
+                $show_phone = UserCompany::where('user_id', $user_id)->where('show_phone', 1)->first();
+
                 if($vacancy_id){
+
                     $existing_user_company = UserCompany::where("user_id", $user_id)
                         ->where("company_id", $user->id)
                         ->where("vacancy_id", $vacancy_id)
@@ -335,6 +441,7 @@ class VacancyController extends Controller
                         $existing_user_company ->update([
                             'type' => $type,
                         ]);
+                        if($show_phone) $existing_user_company->show_phone = 1;
                         $existing_user_company->save();
                     } else {
 
@@ -346,6 +453,10 @@ class VacancyController extends Controller
                         $user_company->type = $type;
                         $user_company->show_phone = 1;
                         $user_company->save();
+
+                        UserCompany::where('user_id', $user_id)->update([
+                            'show_phone' => 1
+                        ]);
 
                         if($user_company && $type == 'INVITED'){
                             event(new NewInvitationSent(

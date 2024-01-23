@@ -947,33 +947,25 @@ class UserController extends Controller
                     $existing_user_vacancy->save();
                 }
             } else {
+
                 $existing_user_company = UserCompany::where("user_id", $user_id)
                     ->where("vacancy_id", $vacancy_id)
                     ->first();
+
+                $show_phone = UserCompany::where('user_id', $user_id)->where('show_phone', 1)->first();
+
                 if($existing_user_company) {
+                    if($show_phone) $existing_user_company->show_phone = 1;
                     $existing_user_company->type = $type;
                     $existing_user_company->read = 0;
                     $existing_user_company->save();
                 } else {
-
-                    $existing_user_company_1 = UserCompany::where("user_id", $user_id)
-                        ->where("company_id", $company->id)
-                        ->orderBy('id', 'desc')
-                        ->first();
-
-                    if($existing_user_company_1){
-                        $existing_user_company_1 ->update([
-                            'type' => $type,
-                            'read' => 0
-                        ]);
-                        $existing_user_company_1->save();
-                    } else {
-                        $user_company = new UserCompany;
-                        $user_company->user_id = $user_id;
-                        $user_company->company_id = $company->id;
-                        $user_company->type = $type;
-                        $user_company->save();
-                    }
+                    $user_company = new UserCompany;
+                    $user_company->user_id = $user_id;
+                    $user_company->company_id = $company->id;
+                    $user_company->type = $type;
+                    if($show_phone) $user_company->show_phone = 1;
+                    $user_company->save();
                 }
             }
 
