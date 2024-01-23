@@ -1,4 +1,4 @@
-### ishtapp web app
+### napodrabotku web app
 
 Установка зависимостей / Install dependencies
 ```php
